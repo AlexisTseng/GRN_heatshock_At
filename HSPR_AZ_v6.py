@@ -60,6 +60,9 @@ description
 --hillCoeff,-hco
     The Hill Coefficient (default: 1)
 
+--A2positiveAutoReg,-a2p
+    Whether HSFA2 positively regulates itself in the model (default: 0)
+
 ################################################################################
 
 reference
@@ -345,8 +348,7 @@ def gillespie_store(param_dict, opt, data_dir):
         print(f"iteration {i} saved")
     return listM4, listtime2, numberofiteration, end_time
 
-
-def gillespi(param_dict, opt):
+def gillespi_archive(param_dict, opt):
     listM4=[]
     listtime2=[]
     numberofiteration = param_dict["numberofiteration"]
@@ -553,8 +555,12 @@ def gillespie_save_1_tsp(param_dict, opt):
             R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
             R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
             R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
-            #increase in HSFA2 by transcription with TF HSFA1 
-            R_HSFA2_inc=leakage+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n) # + a8*HSFA2/(h6+HSFA2+HSFB)
+            if bool(opt.a2p) == False:
+                #increase in HSFA2 by transcription with TF HSFA1 
+                R_HSFA2_inc=leakage+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n) # + a8*HSFA2/(h6+HSFA2+HSFB)
+            else:
+                #increase in HSFA2 by transcription with TF HSFA1 and HSFA2 itself
+                R_HSFA2_inc=leakage+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n) + a8*HSFA2**n/(h6**n+HSFA2**n+HSFB**n)
             #decrease in HSFA2 by transcription and dess
             R_HSFA2_dec=Decay3*HSFA2
             #increase in HSFB by transcription with TF HSFA1 and HSFB
