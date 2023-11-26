@@ -895,9 +895,9 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, 
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
 
-        #plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.svg"
-        #unique_plot_name = get_unique_filename(plot_name)
-        #plt.savefig(f"{unique_plot_name}")
+        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.svg"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
 
         print(f"save figure {opt.sfg == True}")
 

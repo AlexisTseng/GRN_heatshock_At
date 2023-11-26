@@ -1,3 +1,12 @@
 Start : 11/26/23 13:37:02
 Script: HSPR_AZ_v6.py
 Call  : -tsp 20000 -nit 1 -hco 2
+Start : 11/26/23 13:45:47
+Script: HSPR_AZ_v6.py
+Call  : -nit -imd Exp3_SimuData_2023-11-26_numIter1_Time20000.042228003625_HSstart10000_HSduration5000.csv
+Start : 11/26/23 13:45:59
+Script: HSPR_AZ_v6.py
+Call  : -nit 1 -imd Exp3_SimuData_2023-11-26_numIter1_Time20000.042228003625_HSstart10000_HSduration5000.csv
+Start : 11/26/23 13:47:38
+Script: HSPR_AZ_v6.py
+Call  : -nit 1 -imd Exp3_SimuData_2023-11-26_numIter1_Time20000.042228003625_HSstart10000_HSduration5000.csv
