@@ -1,0 +1,3 @@
+Start : 11/26/23 13:37:02
+Script: HSPR_AZ_v6.py
+Call  : -tsp 20000 -nit 1 -hco 2

@@ -58,7 +58,7 @@ description
     How often is simulation datasaved (default: 1)
 
 --hillCoeff,-hco
-    The Hill Coefficient (default: 2)
+    The Hill Coefficient (default: 1)
 
 ################################################################################
 
@@ -750,7 +750,7 @@ def plot_outcome(data_file, data_dir, plot_dir, numberofiteration, end_time, opt
     ### Call ploting functions ###
 
     ### Plot trajectories of all species for all iterations
-    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
+    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
 
     ### Variability Analysis
     plot_before_during_after_HS(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
@@ -797,7 +797,7 @@ def plot_before_during_after_HS(data_df, grouped_data, plot_dir, numberofiterati
 
 
 
-    plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
+    #plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
     #plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
 
 
@@ -861,7 +861,7 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, 
     conc_col = data_df.drop(columns = ["time", "Iteration_Identifier"])
 
     if numberofiteration == 1:
-        fig, ax = plt.subplots(figsize=(15, 10))
+        fig, ax = plt.subplots(figsize=(15, 5))
         for species in conc_col:
             ax.plot(data_df['time'], data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
         ax.set_xlabel('Time')
@@ -873,7 +873,7 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, 
         plt.subplots_adjust(right=0.8)  # Increase the right margin
 
     else:
-        fig, ax = plt.subplots(nrows= numberofiteration, figsize=(15,10))
+        fig, ax = plt.subplots(nrows= numberofiteration, figsize=(15,5*numberofiteration))
         ax = ax.flatten() # Flatten the 2D array of subplots to a 1D array
         for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):# Now 'ax' is a 1D array, and you can iterate over it
             for species in conc_col:
