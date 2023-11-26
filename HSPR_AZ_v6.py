@@ -124,7 +124,7 @@ def main(opt):
 
 def extract_para_from_name(filename, opt):
     data_file = str(filename)
-    print(data_file)
+    print(f" {data_file}")
     # Define a pattern to match the relevant parts of the filename
     pattern = re.compile(r"Exp3_SimuData_\d+-\d+-\d+_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)\.(pcl|csv)")
     #pattern = re.compile(r"Exp3_SimuData_\d+-\d+-\d+_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)(?:_decay8-([\d.]+))?\.(pcl|csv)")
@@ -137,7 +137,7 @@ def extract_para_from_name(filename, opt):
         opt.hsd = int(match.group(4))
         #opt.dmh = float(match.group(5))
         opt.ofm = str(match.group(5))
-        print("Extracted parameters")
+        print(" Extracted parameters")
         print("     Number of Iteration:", numberofiteration)
         print("     End Time:", end_time)
         print("     HSstart:", opt.hss)
@@ -824,7 +824,7 @@ def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, 
     fig.suptitle('Variability of Total HSPR')
     plt.tight_layout()
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pdf"
+        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
         print(f"save figure {opt.sfg == True}")
@@ -853,7 +853,7 @@ def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, 
     plt.tight_layout()
 
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pdf"
+        plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
         print(f"save figure {opt.sfg == True}")
@@ -863,7 +863,7 @@ def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, 
 
 def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt):
 
-    print("Plot trajectories of all species for all iterations")
+    print(" Plot trajectories of all species for all iterations")
     conc_col = data_df.drop(columns = ["time", "Iteration_Identifier"])
 
     if numberofiteration == 1:
@@ -897,15 +897,15 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, 
 
 
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pdf"
+        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
 
-        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.svg"
+        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
 
-        print(f"save figure {opt.sfg == True}")
+        print(f" save figure {opt.sfg == True}")
 
     plt.show()
     plt.close()
@@ -940,10 +940,10 @@ def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofitera
     fig.suptitle('Plot of time vs total HSPR for all Iterations separately')
     plt.tight_layout()
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pdf"
+        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.svg"
+        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
 
@@ -964,10 +964,10 @@ def plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, end_time, opt
         ax1.set_title('Plot of HSFA1 vs time for all Iterations')
     plt.tight_layout()
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pdf"
+        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.svg"
+        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
     plt.show()
