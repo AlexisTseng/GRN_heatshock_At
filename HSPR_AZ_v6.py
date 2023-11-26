@@ -756,7 +756,7 @@ def plot_outcome(data_file, data_dir, plot_dir, numberofiteration, end_time, opt
     ### Call ploting functions ###
 
     ### Plot trajectories of all species for all iterations
-    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
+    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
 
     ### Variability Analysis
     plot_before_during_after_HS(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
@@ -803,8 +803,8 @@ def plot_before_during_after_HS(data_df, grouped_data, plot_dir, numberofiterati
 
 
 
-    #plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
-    #plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
+    plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
+    plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
 
 
 def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt):
@@ -827,6 +827,11 @@ def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, 
         plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
+
+        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.svg"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+
         print(f"save figure {opt.sfg == True}")
 
     plt.show()
@@ -854,6 +859,10 @@ def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, 
 
     if bool(opt.sfg) == True:
         plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.pdf"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+
+        plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
         print(f"save figure {opt.sfg == True}")
