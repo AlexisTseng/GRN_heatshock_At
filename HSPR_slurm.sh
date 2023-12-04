@@ -31,6 +31,6 @@ module load rhel8/default-icl
 source /home/jz531/.bashrc
 module load miniconda/3
 
-conda activate model_GRN
+conda activate /home/jz531/.conda/envs/model_GRN
 
 python HSPR_AZ_v6.py -nit 30 -tsp 20000 -hss 10000 -hsd 5000
