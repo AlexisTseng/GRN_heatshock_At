@@ -27,6 +27,7 @@
  
 . /etc/profile.d/modules.sh # Leave this line (enables the module command)
 module purge  # Removes all modules still loaded
+module load rhel8/default-icl
 source /home/jz531/.bashrc
 module load miniconda/3
 
