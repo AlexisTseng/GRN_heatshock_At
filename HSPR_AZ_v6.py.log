@@ -31,3 +31,6 @@ Call  : -tsp 20000 -nit 1 -imd Exp3_SimuData_2023-11-20_numIter1_Time20000.00066
 Start : 11/26/23 14:53:59
 Script: HSPR_AZ_v6.py
 Call  : -tsp 20000 -nit 1 -dmh 0.1
+Start : 12/04/23 13:46:23
+Script: HSPR_AZ_v6.py
+Call  : -nit 2 -tsp 500
