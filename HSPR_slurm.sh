@@ -32,6 +32,6 @@ source /home/jz531/.bashrc
 conda activate /home/jz531/.conda/envs/model_GRN
 conda list
 
-CMD="python3 HSPR_AZ_v6.py -nit 30 -tsp 20000 -hss 10000 -hsd 5000"
+CMD="python3 HSPR_AZ_v6.py -nit 2 -tsp 20 -hss 10 -hsd 5"
 
 eval $CMD
