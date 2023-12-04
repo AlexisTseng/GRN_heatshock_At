@@ -81,7 +81,7 @@ import traceback
 
 import random
 import math
-#import matplotlib.pyplot as plt #for my sanity
+import matplotlib.pyplot as plt #for my sanity
 import numpy as np
 import os
 import csv
@@ -107,7 +107,7 @@ def main(opt):
         listM6 = combine_data(listtime2, listM4, opt)
         data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, opt)
         param_outfile = saveParam(param_dict, data_dir, numberofiteration, end_time, opt)
-        
+
 
     else:
         print("Extracting Simulating Results")
