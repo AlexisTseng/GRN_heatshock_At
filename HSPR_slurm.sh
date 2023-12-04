@@ -27,7 +27,7 @@
  
 . /etc/profile.d/modules.sh # Leave this line (enables the module command)
 module purge  # Removes all modules still loaded
-source .bashrc
+source /home/jz531/.bashrc
 module load miniconda/3
 
 conda activate model_GRN
