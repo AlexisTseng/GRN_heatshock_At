@@ -101,6 +101,7 @@ def main(opt):
     print("Step3: Simulation begins")
     listM4, listtime2, numberofiteration, end_time, Stoich_df = gillespie_woA2(param_dict, opt)
     print(Stoich_df)
+    exit()
 
     print("Step4: Combine and save data")
     listM6 = combine_data(listtime2, listM4, opt)
@@ -498,7 +499,6 @@ def gillespie_woA2(param_dict, opt):
                           param_dict["init_MMP"],
                           param_dict["init_FMP"],
                           param_dict["init_C_HSPR_MMP"],
-                          param_dict["init_HSFA2"],
                           param_dict["init_HSFB"]])
         listM2 =[listM]
         Time=0
