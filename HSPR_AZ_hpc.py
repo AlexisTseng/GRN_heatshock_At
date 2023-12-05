@@ -100,8 +100,7 @@ def main(opt):
     
     print("Step3: Simulation begins")
     listM4, listtime2, numberofiteration, end_time, Stoich_df = gillespie_woA2(param_dict, opt)
-    print(Stoich_df)
-    exit()
+    #print(Stoich_df)
 
     print("Step4: Combine and save data")
     listM6 = combine_data(listtime2, listM4, opt)
