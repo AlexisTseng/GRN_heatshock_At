@@ -30,6 +30,9 @@ description
 --saveFig,-sfg
     Whether to save the figures and plots generated. Default = True (default: 1)
 
+--showFig,-shf
+    Whether to show  the figures generated (default: 1)
+
 --varAnalysis,-van
     whether to analysis variability by plotting histograms etc. (default: 0)
 
@@ -67,27 +70,30 @@ def main(opt):
 
     print("Step2: Extracting Parameter Dictionary")
     param_dict, numberofiteration, end_time, hss, hsd, date = param_extract(data_dir, opt)
+    #print(param_dict)
 
     print("Step3: Import Simulating Results")
     data_df, grouped_data, Rows, Columns = import_tidy_simuData(data_dir, numberofiteration, opt)
 
     print("Step 4: Generate Plot Name")
-    diff_dict, name_suffix = nondefault_extract(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
+    name_suffix = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
+    #print(diff_dict)
+    #print(name_suffix)
 
 
     print("Step4: Plot Temporal Trajectories")
     ## Plot trajectories of all species for all iterations
-    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
+    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
-    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
+    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, opt)
     ## Plot overlayed trajectory of A1 concentrations for all trajectory
-    #plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, end_time, opt)
+    #plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, name_suffix, opt)
 
     print("Step 5: Variability Analysis")
     if bool(opt.van) == True:
         totalHSPR_df_outlist = df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt)
         plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
-        plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
+        plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
 
 
 
@@ -116,7 +122,6 @@ def param_extract(data_dir, opt):
         headers = next(csv_reader)
         data = next(csv_reader)
         param_dict = dict(zip(headers, data))
-    print(param_dict)
 
     pattern = re.compile(r"(\d+-\d+-\d+)_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)\.(pcl|csv)")
     match = pattern.match(opt.ids)
@@ -135,7 +140,28 @@ def param_extract(data_dir, opt):
     #print(f"para.numberofiteration:{para.numberofiteration}")
     return param_dict, numberofiteration, end_time, hss, hsd, date
 
-def nondefault_extract(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
+
+
+#######################################################################
+## 3. Import Simulation Data
+#######################################################################
+def import_tidy_simuData(data_dir, numberofiteration, opt):
+    data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
+    data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
+    #print(data_df)
+    #print(data_df.shape)
+    ### number of rows and columns for all iterations
+    Rows = int(math.sqrt(numberofiteration))
+    Columns = int(math.ceil(numberofiteration/ Rows))
+    grouped_data = data_df.groupby('Iteration_Identifier')
+    return data_df, grouped_data, Rows, Columns
+
+
+#######################################################################
+## 4. Generate Plot Name Suffix
+#######################################################################
+
+def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
     default_param_dict = {
         ## initial concentrations
         'init_HSFA1': 1,
@@ -189,45 +215,24 @@ def nondefault_extract(param_dict, numberofiteration, end_time, hss, hsd, date, 
     }
     diff_dict = {}
     for (dk,dv) in default_param_dict.items():
-        if param_dict[dk] != dv:
+        if str(param_dict[dk]) != str(dv):
+            print(f"default: {dk}, {dv}")
+            print(f"actual: {dk}, {param_dict[dk]}")
             diff_dict[dk] = param_dict[dk]
-    print(diff_dict)
 
     name_suffix = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
-
     for key, val in diff_dict.items():
         name_suffix += f"_{key}{val}"
-    
-    print(name_suffix)
-    return diff_dict, name_suffix
-
-
-
-#######################################################################
-## 3. Import Simulation Data
-#######################################################################
-def import_tidy_simuData(data_dir, numberofiteration, opt):
-    data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
-    data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
-    #print(data_df)
-    #print(data_df.shape)
-    ### number of rows and columns for all iterations
-    Rows = int(math.sqrt(numberofiteration))
-    Columns = int(math.ceil(numberofiteration/ Rows))
-    grouped_data = data_df.groupby('Iteration_Identifier')
-    return data_df, grouped_data, Rows, Columns
-
-
-
+    return name_suffix
 
 
 
 
 #######################################################################
-## 4. Plotting Trajectories
+## 5. Plotting Trajectories
 #######################################################################
 
-def plot_allvsTime_separate(data_df, param_dict, hss, hsd,grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt):
+def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt):
 
     print(" Plot trajectories of all species for all iterations")
     conc_col = data_df.drop(columns = ["time", "Iteration_Identifier"])
@@ -261,25 +266,22 @@ def plot_allvsTime_separate(data_df, param_dict, hss, hsd,grouped_data, plot_dir
     fig.suptitle('Plot of all concentrations vs time for all iterations separately')
     plt.tight_layout()
 
-
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
+        plot_name = f"{plot_dir}/allConcTraj_{name_suffix}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-
-        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
+        plot_name = f"{plot_dir}/allConcTraj_{name_suffix}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-
         print(f" save figure {opt.sfg == True}")
 
-    #plt.show()
+    if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
 
 
-def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, end_time, Rows, Columns, opt):
+def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, opt):
     print("Plot trajectory of total HSPR for all iterations")
     if numberofiteration == 1:
         # If only one subplot, create a single subplot without flattening
@@ -306,21 +308,21 @@ def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofitera
     fig.suptitle('Plot of time vs total HSPR for all Iterations separately')
     plt.tight_layout()
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
+        plot_name = f"{plot_dir}/totalHSPRtrajec_{name_suffix}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
+        plot_name = f"{plot_dir}/totalHSPRtrajec_{name_suffix}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
 
-    #plt.show()
+    if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
 
 
 
-def plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, end_time, opt):
+def plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, name_suffix, opt):
     fig, ax1 = plt.subplots(figsize=(15,10))  # Set the figure size 
     for Iteration_Identifier, group_data in grouped_data:
         ax1.plot(group_data['time'], group_data['HSFA1'], label='{}'.format(Iteration_Identifier))
@@ -330,13 +332,13 @@ def plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, end_time, opt
         ax1.set_title('Plot of HSFA1 vs time for all Iterations')
     plt.tight_layout()
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
+        plot_name = f"{plot_dir}/A1TrajMerged_{name_suffix}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
+        plot_name = f"{plot_dir}/A1TrajMerged_{name_suffix}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-    #plt.show()
+    if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
@@ -384,7 +386,7 @@ def df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt):
 
 
 
-def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt):
+def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
     print("plot HSPR CV vs Mean")
     fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(15,5))
     for i, (df,ax) in enumerate(zip(totalHSPR_df_outlist,axes)):
@@ -400,23 +402,22 @@ def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, 
         else: print("i exception in function plot_CVsq_mean")
     fig.suptitle('Variability of Total HSPR')
     plt.tight_layout()
+
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
+        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_{name_suffix}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-
-        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
+        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_{name_suffix}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
-
         print(f"save figure {opt.sfg == True}")
 
-    #plt.show()
+    if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
 
-def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt):
+def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
 
     print("Plot total HSPR histogram")
     fig = plt.figure(figsize=(12, 8))
@@ -435,15 +436,15 @@ def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, 
     plt.tight_layout()
 
     if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
+        plot_name = f"{plot_dir}/Hist_TotalHSPR_{name_suffix}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
 
-        plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
+        plot_name = f"{plot_dir}/Hist_TotalHSPR_{name_suffix}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
         print(f"save figure {opt.sfg == True}")
-    #plt.show()
+    if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
