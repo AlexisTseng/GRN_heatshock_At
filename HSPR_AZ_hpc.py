@@ -465,6 +465,7 @@ def gillespi_archive(param_dict, opt):
     return listM4, listtime2, numberofiteration, end_time
 
 def gillespie_save_1_tsp(param_dict, opt):
+
     listM4=[]
     listtime2=[]
     numberofiteration = param_dict["numberofiteration"]
@@ -609,6 +610,142 @@ def gillespie_save_1_tsp(param_dict, opt):
         param_dict['end_time'] = end_time
     return listM4, listtime2, numberofiteration, end_time
 
+def gillespie_woA2(param_dict, opt):
+    listM4=[]
+    listtime2=[]
+    numberofiteration = param_dict["numberofiteration"]
+    for i in range(numberofiteration):    
+        print(f" \n iteration: {i}")
+        listM = np.array([param_dict["init_HSFA1"],
+                          param_dict["init_HSPR"],
+                          param_dict["init_C_HSFA1_HSPR"],
+                          param_dict["init_MMP"],
+                          param_dict["init_FMP"],
+                          param_dict["init_C_HSPR_MMP"],
+                          param_dict["init_HSFA2"],
+                          param_dict["init_HSFB"]])
+        listM2 =[listM]
+        Time=0
+        listtime =[Time]
+
+        counter = 0
+        while Time < int(opt.tsp): 
+            if counter % 5000 ==0 and counter != 0:
+                print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
+
+            a1 = param_dict['a1']
+            a2 = param_dict['a2']
+            a3 = param_dict['a3']
+            a4 = param_dict['a4']
+            a5 = param_dict['a5']
+            a6 = param_dict['a6']
+            a7 = param_dict['a7']
+            a8 = param_dict['a8']
+            h1 = param_dict['h1']
+            h2 = param_dict['h2']
+            h3 = param_dict['h3']
+            h4 = param_dict['h4']
+            h5 = param_dict['h5']
+            h6 = param_dict['h6']
+            c1 = param_dict['c1']
+            c3 = param_dict['c3']
+            d1 = param_dict['d1']
+            d3 = param_dict['d3']
+            Decay1 = param_dict['Decay1']
+            Decay2 = param_dict['Decay2']
+            Decay3 = param_dict['Decay3']
+            Decay4 = param_dict['Decay4']
+            Decay6 = param_dict['Decay6']
+            Decay7 = param_dict['Decay7']
+            Decay8 = param_dict['Decay8']
+            Decay5 = param_dict['Decay5']
+            leakage = param_dict['leakage']
+            n = param_dict['hillcoeff']
+            HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
+
+            if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
+            else: d4 = param_dict['d4_norm']
+                
+            #HSFa1 andHSFA2 may makes complex
+            #increase in HSFA1 by transcription and dessociation from the complex C_HSFA1_HSPR
+            R_HSFA1_inc=leakage+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) # + d1*C_HSFA1_HSPR
+            #decrease in HSFA1 by association to the 1st complex C_HSFA1_HSPR and decay in the protein
+            R_HSFA1_dec= Decay1*HSFA1
+            #increase in HSPR by transcription and dess
+            R_HSPR_inc= leakage+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
+            #decrease in HSPR by transcription and dess **-> should be decay
+            R_HSPR_dec= Decay2*HSPR
+            #increase in C_HSFA1_HSPR association to the 1st complex
+            R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
+            #decrease in C_HSFA1_HSPR dissociation from the 1st complex and degradation of the complex as a whole (?)
+            R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
+            R_C_HSFA1_HSPR_dec2=Decay7*C_HSFA1_HSPR
+            #increase in MMP when 2nd complex decreases
+            R_MMP_inc= d4*FMP
+            #decrease in MMP by 2nd complex increases (may be we want to change the slope of dexcay later)
+            R_MMP_dec= Decay5*MMP
+            #increase in FMP by FMP production and MMP to FMP
+            R_FMP_inc=a7  #how to write the production?
+            #decrease in FMP by decay or
+            R_FMP_dec= Decay6*FMP
+            #increase in HSPR_MMP by association to the 2nd complex
+            R_C_HSPR_MMP_inc=c3*HSPR*MMP #how to write the production?
+            #decrease in HSPR_MMP by dissociation from the 2nd complex
+            R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
+            R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
+            R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
+            #increase in HSFB by transcription with TF HSFA1 and HSFB
+            R_HSFB_inc=leakage+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
+            #decrease in HSFB by transcription and dess
+            R_HSFB_dec=Decay4*HSFB
+
+
+            listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3,R_HSFB_inc,R_HSFB_dec])
+
+            TotR = sum(listR) #production of the MRNA 
+            Rn = random.random() #getting random numbers
+            Tau=-math.log(Rn)/TotR #when the next thing happen
+            #Rn2= random.uniform(0,TotR) # for the next random number
+            # HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB
+            Stoich = [[1,0,0,0,0,0,0,0], #R_HSFA1_inc
+                      [-1,0,0,0,0,0,0,0], #R_HSFA1_dec
+                      [0,1,0,0,0,0,0,0], #R_HSPR_inc
+                      [0,-1,0,0,0,0,0,0], #R_HSPR_dec
+                      [-1,-1,1,0,0,0,0,0], #R_C_HSFA1_HSPR_inc
+                      [1,1,-1,0,0,0,0,0], #R_C_HSFA1_HSPR_dec1
+                      [0,0,-1,0,0,0,0,0], #R_C_HSFA1_HSPR_dec2
+                    [0,0,0,1,-1,0,0,0], #R_MMP_inc
+                    [0,0,0,-1,0,0,0,0], #R_MMP_dec
+                    [0,0,0,0,1,0,0,0], #R_FMP_inc
+                    [0,0,0,0,-1,0,0,0], #R_FMP_dec
+                    [0,-1,0,-1,0,1,0,0], #R_C_HSPR_MMP_inc
+                    [0,1,0,1,0,-1,0,0], #R_C_HSPR_MMP_dec1 = dissociation of the complex to form free HSPR and MMP -> dissociation
+                    [0,1,0,0,1,-1,0,0], #R_C_HSPR_MMP_dec2 = dissociation of the complex to form free HSPR and FMP -> refolding step
+                    [0,0,0,0,0,-1,0,0], #R_C_HSPR_MMP_dec3, complex decrease by 1, decay 8
+                    [0,0,0,0,0,0,0,1], #R_HSFB_inc
+                    [0,0,0,0,0,0,0,-1] #R_HSFB_dec
+                    ]
+            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFA2', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3', 'R_HSFB_inc', 'R_HSFB_dec'])
+            Outcome = random.choices(Stoich, weights = listR, k=1)
+            #print(f"listM before: {listM}")
+            #print(f"outcome: {Outcome} \n {Outcome[0]}")
+            listM = listM+Outcome[0] ### why does it add term-by-term??? -> because listM is a np.array
+            #print(f"listM after: {listM}")
+            #exit()
+            last_time = Time
+            Time+=Tau # the new time the time before the step +the time to happen the next step ()
+            counter += 1
+            # print (Time,listM)
+            if int(Time) == int(last_time) + opt.spf:
+                listtime.append(Time) #this is to add stuff to the list
+                listM2.append(listM)
+        listM4.append(listM2)
+        listtime2.append(listtime)
+        end_time = Time
+        param_dict['end_time'] = end_time
+    return listM4, listtime2, numberofiteration, end_time
+
+
 def combine_data(listtime2, listM4, opt):
     #to combine the data 
     listM6 = []
@@ -637,10 +774,10 @@ def saveGilData_2(list, data_dir, numberofiteration, end_time, opt):
         with open(data_file, 'w') as csvfile:
             # Create a CSV writer object
             csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFA2','HSFB'])
+            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB'])
             csv_writer.writerows(list) #how different it is to use .writerow and .writerows
     elif opt.ofm == "pcl":
-        headers = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFA2','HSFB']
+        headers = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB']
         data_df = pd.DataFrame(list, columns=headers)
         #print(data_df.shape)
         data_df.columns = headers
@@ -730,272 +867,6 @@ def get_unique_filename(base_filename):
         new_filename = f"{filename}-run{counter}{extension}"
 
     return new_filename
-
-
-
-
-def plot_outcome(data_file, data_dir, plot_dir, numberofiteration, end_time, opt):
-    ########################################
-    ### Data tidying
-    if opt.ofm == "csv":
-        try: data_df = pd.read_csv(f"{data_file}")
-        except Exception as e1: 
-            try: data_df = pd.read_csv(f"{data_dir}/{data_file}")
-            except Exception as e2: 
-                print(f"Error 1: {e1} \nError 2: {e2}")
-                exit()
-    elif opt.ofm == "pcl":
-        try: data_df = loadData(f"{data_file}")
-        except Exception as e1:
-            try: data_df = loadData(f"{data_dir}/{data_file}")
-            except Exception as e2: 
-                print(f"Error 1: {e1} \nError 2: {e2}")
-                exit()
-    data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
-    #print(data_df)
-    #print(data_df.shape)
-    ### number of rows and columns for all iterations
-    Rows = int(math.sqrt(numberofiteration))
-    Columns = int(math.ceil(numberofiteration / Rows))
-    grouped_data = data_df.groupby('Iteration_Identifier')
-
-    ########################################
-    ### Call ploting functions ###
-
-    ### Plot trajectories of all species for all iterations
-    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
-
-    ### Variability Analysis
-    #plot_before_during_after_HS(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
-
-    ### Plot trajectory of total HSPR for all iterations
-    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, end_time, Rows, Columns, opt)
-
-    ### Plot overlayed trajectory of A1 concentrations for all trajectory
-    #plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, end_time, opt)
-
-
-def plot_before_during_after_HS(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt):
-    ss1_start = 1000
-    ss1_end = int(opt.hss)
-    ssHS_start = int(opt.hss) + 100
-    ssHS_end = int(opt.hss) + int(opt.hsd)
-    ss3_start = ssHS_end + 500
-    ss3_end = end_time
-    print(f"hss:{opt.hss}, hsd: {opt.hsd}")
-    print(f"ss1: {ss1_start} - {ss1_end} \nssHS: {ssHS_start} - {ssHS_end} \nss3:{ss3_start} - {ss3_end} ")
-
-    ss1_df = data_df[(data_df['time'] >= ss1_start) & (data_df['time'] <= ss1_end)].groupby('Iteration_Identifier')['totalHSPR']
-    ssHS_df = data_df[(data_df['time'] >= ssHS_start) & (data_df['time'] <= ssHS_end)].groupby('Iteration_Identifier')['totalHSPR']
-    ss3_df = data_df[(data_df['time'] >= ss3_start) & (data_df['time'] <= ss3_end)].groupby('Iteration_Identifier')['totalHSPR']
-
-    #print("ss1_df")
-    #print(ss1_df)
-    #print(ss1_df.shape)
-    #print("ssHS_df")
-    #print(ssHS_df)
-    #print(ssHS_df.shape)
-    #print("ss3_df")
-    #print(ss3_df)
-    #print(ss3_df.shape)
-
-    df_list = [ss1_df, ssHS_df, ss3_df]
-    totalHSPR_df_outlist = []
-    for grouped_df in df_list:
-        result_df = grouped_df.agg(['mean','std'])
-        result_df['cv'] = result_df['std'] / result_df['mean']
-        result_df.columns = ['mean_totalHSPR', 'std_totalHSPR', 'cv_totalHSPR']
-        result_df.reset_index(inplace=True)
-        totalHSPR_df_outlist.append(result_df)
-
-
-
-    plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
-    plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
-
-
-def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt):
-    print("plot HSPR CV vs Mean")
-    fig, axes = plt.subplots(nrows=1, ncols=3, sharey=True, figsize=(15,5))
-    for i, (df,ax) in enumerate(zip(totalHSPR_df_outlist,axes)):
-        ax.scatter(df['mean_totalHSPR'], df['cv_totalHSPR'])
-        ax.set_xlabel('Mean Total HSPR')
-        ax.set_ylabel('CV')
-        if i == 0:
-            ax.set_title("Before HS")
-        elif i ==1: 
-            ax.set_title("During HS")
-        elif i ==2:
-            ax.set_title("After HS")
-        else: print("i exception in function plot_CVsq_mean")
-    fig.suptitle('Variability of Total HSPR')
-    plt.tight_layout()
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-        plot_name = f"{plot_dir}/CV-Mean_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-        print(f"save figure {opt.sfg == True}")
-
-    #plt.show()
-    plt.close()
-
-
-
-def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt):
-
-    print("Plot total HSPR histogram")
-    fig = plt.figure(figsize=(12, 8))
-    #plt.hist(ss1_df['mean_totalHSPR'], label="before HS", density=True,alpha=0.50, color="blue")
-    #plt.hist(ssHS_df['mean_totalHSPR'], label="during HS", density=True, alpha=0.50, color="red")
-    #plt.hist(ss3_df['mean_totalHSPR'], label="after HS", density=True, alpha=0.50, color="orange")
-
-    for df in totalHSPR_df_outlist:
-        plt.hist(df['mean_totalHSPR'], label="before HS", density=True,alpha=0.50)
-
-    plt.title("Distribution of mean total HSPR")
-    plt.xlabel("total HSPR")
-    plt.ylabel("Frequency")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.) # Adjust the figure size to accommodate the legend
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    plt.tight_layout()
-
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-        plot_name = f"{plot_dir}/Hist_TotalHSPR_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        print(f"save figure {opt.sfg == True}")
-    #plt.show()
-    plt.close()
-
-
-def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration, end_time, Rows, Columns, opt):
-
-    print(" Plot trajectories of all species for all iterations")
-    conc_col = data_df.drop(columns = ["time", "Iteration_Identifier"])
-
-    if numberofiteration == 1:
-        fig, ax = plt.subplots(figsize=(15, 5))
-        for species in conc_col:
-            ax.plot(data_df['time'], data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-        ax.set_xlabel('Time')
-        ax.set_ylabel('Concentration')
-        ax.legend(loc="upper right")
-        ax.set_title(f"iteration 0")
-        ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-        # Adjust the figure size to accommodate the legend
-        plt.subplots_adjust(right=0.8)  # Increase the right margin
-
-    else:
-        fig, ax = plt.subplots(nrows= numberofiteration, figsize=(15,5*numberofiteration))
-        ax = ax.flatten() # Flatten the 2D array of subplots to a 1D array
-        for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):# Now 'ax' is a 1D array, and you can iterate over it
-            for species in conc_col:
-                ax.plot(group_data['time'], group_data[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-            ax.set_xlabel('Time')
-            ax.set_ylabel('Concentration')
-            ax.legend(loc="upper right")
-            ax.set_title(f"{Iteration_Identifier}")
-            # Move the legend outside the plot
-            ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-            # Adjust the figure size to accommodate the legend
-            plt.subplots_adjust(right=0.8)  # Increase the right margin
-    fig.suptitle('Plot of all concentrations vs time for all iterations separately')
-    plt.tight_layout()
-
-
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-        plot_name = f"{plot_dir}/separate_allConc_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-        print(f" save figure {opt.sfg == True}")
-
-    #plt.show()
-    plt.close()
-
-
-
-
-def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, end_time, Rows, Columns, opt):
-    print("Plot trajectory of total HSPR for all iterations")
-    if numberofiteration == 1:
-        # If only one subplot, create a single subplot without flattening
-        fig, ax = plt.subplots(figsize=(15, 10))
-        ax.plot(data_df['time'], data_df['totalHSPR']) 
-        ax.set_xlabel('time')
-        ax.set_ylabel('totalHSPR')
-        ax.legend(loc="upper right")
-        ax.set_title(f"iteration 0")
-    else:
-        # If more than one subplot, create a subplot grid
-        fig, ax = plt.subplots(nrows=numberofiteration, figsize=(15, 10))
-        ax = ax.flatten()
-
-        # Iterate through grouped data and plot on each subplot
-        for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):
-            ax.plot(group_data['time'], group_data['totalHSPR'], label='{}'.format(Iteration_Identifier))
-            ax.set_xlabel('time')
-            ax.set_ylabel('totalHSPR')
-            ax.set_title(f"{Iteration_Identifier}")
-            ax.legend(loc="upper right")
-
-        # Set the title for the entire plot
-    fig.suptitle('Plot of time vs total HSPR for all Iterations separately')
-    plt.tight_layout()
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/separate_totalHSPR_vs_time_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-    #plt.show()
-    plt.close()
-
-
-
-
-
-def plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, end_time, opt):
-    fig, ax1 = plt.subplots(figsize=(15,10))  # Set the figure size 
-    for Iteration_Identifier, group_data in grouped_data:
-        ax1.plot(group_data['time'], group_data['HSFA1'], label='{}'.format(Iteration_Identifier))
-        ax1.set_xlabel('time')
-        ax1.legend()
-        ax1.set_ylabel('HSFA1')
-        ax1.set_title('Plot of HSFA1 vs time for all Iterations')
-    plt.tight_layout()
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/allAsOne_{ax1.get_ylabel()}_vs_{ax1.get_xlabel()}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_hil-{opt.hco}_a2p-{opt.a2p}_decay8-{opt.dmh}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-    #plt.show()
-    plt.close()
-
-
-
-
-
-
-
-
 
 
 
