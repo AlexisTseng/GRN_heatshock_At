@@ -99,8 +99,9 @@ def main(opt):
     param_dict = param_spec(opt)
     
     print("Step3: Simulation begins")
-    listM4, listtime2, numberofiteration, end_time = gillespie_save_1_tsp(param_dict, opt)
-    #listM4, listtime2, numberofiteration, end_time = gillespie_store(param_dict, opt, data_dir)
+    listM4, listtime2, numberofiteration, end_time, Stoich_df = gillespie_woA2(param_dict, opt)
+    print(Stoich_df)
+
     print("Step4: Combine and save data")
     listM6 = combine_data(listtime2, listM4, opt)
     data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, opt)
@@ -215,131 +216,6 @@ def dir_gen():
 ############################################################################
 ## 3. Gillespi Simulation
 ############################################################################
-
-def gillespie_store(param_dict, opt, data_dir):
-    listM4=[]
-    listtime2=[]
-    numberofiteration = param_dict["numberofiteration"]
-    for i in range(numberofiteration):    
-        print(f" iteration: {i}\n")
-        listM = np.array([param_dict["init_HSFA1"],
-                          param_dict["init_HSPR"],
-                          param_dict["init_C_HSFA1_HSPR"],
-                          param_dict["init_MMP"],
-                          param_dict["init_FMP"],
-                          param_dict["init_C_HSPR_MMP"],
-                          param_dict["init_HSFA2"],
-                          param_dict["init_HSFB"]])
-        listM2 =[listM]
-        Time=0
-        listtime =[Time]
-
-        counter = 0
-        while Time < int(opt.tsp): 
-            if counter % 5000 ==0 and counter != 0:
-                print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
-
-            a1 = param_dict['a1']
-            a2 = param_dict['a2']
-            a3 = param_dict['a3']
-            a4 = param_dict['a4']
-            a5 = param_dict['a5']
-            a6 = param_dict['a6']
-            a7 = param_dict['a7']
-            a8 = param_dict['a8']
-            h1 = param_dict['h1']
-            h2 = param_dict['h2']
-            h3 = param_dict['h3']
-            h4 = param_dict['h4']
-            h5 = param_dict['h5']
-            h6 = param_dict['h6']
-            c1 = param_dict['c1']
-            c3 = param_dict['c3']
-            d1 = param_dict['d1']
-            d3 = param_dict['d3']
-            Decay1 = param_dict['Decay1']
-            Decay2 = param_dict['Decay2']
-            Decay3 = param_dict['Decay3']
-            Decay4 = param_dict['Decay4']
-            Decay6 = param_dict['Decay6']
-            Decay7 = param_dict['Decay7']
-            Decay8 = param_dict['Decay8']
-            Decay5 = param_dict['Decay5']
-            leakage = param_dict['leakage']
-            HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB = listM
-
-            if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
-            else: d4 = param_dict['d4_norm']
-                
-            #HSFa1 andHSFA2 may makes complex
-            #increase in HSFA1 by transcription and dessociation from the complex C_HSFA1_HSPR
-            R_HSFA1_inc=leakage+a1*HSFA1/(h1+HSFA1+HSFB)+ a3*HSFA2/(h3+HSFA2+HSFB) # + d1*C_HSFA1_HSPR
-            #decrease in HSFA1 by association to the 1st complex C_HSFA1_HSPR and decay in the protein
-            R_HSFA1_dec= Decay1*HSFA1
-            #increase in HSPR by transcription and dess
-            R_HSPR_inc= leakage+a2*HSFA1/(h2+HSFA1+HSFB)+ a3*HSFA2/(h3+HSFA2+HSFB)
-            #decrease in HSPR by transcription and dess **-> should be decay
-            R_HSPR_dec= Decay2*HSPR
-            #increase in C_HSFA1_HSPR association to the 1st complex
-            R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
-            #decrease in C_HSFA1_HSPR dissociation from the 1st complex and degradation of the complex as a whole (?)
-            R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
-            R_C_HSFA1_HSPR_dec2=Decay7*C_HSFA1_HSPR
-            #increase in MMP when 2nd complex decreases
-            R_MMP_inc= d4*FMP
-            #decrease in MMP by 2nd complex increases (may be we want to change the slope of dexcay later)
-            R_MMP_dec= Decay5*MMP
-            #increase in FMP by FMP production and MMP to FMP
-            R_FMP_inc=a7  #how to write the production?
-            #decrease in FMP by decay or
-            R_FMP_dec= Decay6*FMP
-            #increase in HSPR_MMP by association to the 2nd complex
-            R_C_HSPR_MMP_inc=c3*HSPR*MMP #how to write the production?
-            #decrease in HSPR_MMP by dissociation from the 2nd complex
-            R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP # complex dissociation
-            R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP # refolding step
-            R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP # complex degraded
-            #increase in HSFA2 by transcription with TF HSFA1 
-            R_HSFA2_inc=leakage+a4*HSFA1/(h4+HSFA1+HSFB) # + a8*HSFA2/(h6+HSFA2+HSFB)
-            #decrease in HSFA2 by transcription and dess
-            R_HSFA2_dec=Decay3*HSFA2
-            #increase in HSFB by transcription with TF HSFA1 and HSFB
-            R_HSFB_inc=leakage+a5*HSFA1/(h5+HSFA1+HSFB)
-            #decrease in HSFB by transcription and dess
-            R_HSFB_dec=Decay4*HSFB
-
-
-            listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3, R_HSFA2_inc,R_HSFA2_dec,R_HSFB_inc,R_HSFB_dec])
-
-            TotR = sum(listR) #production of the MRNA 
-            Rn = random.random() #getting random numbers
-            Tau=-math.log(Rn)/TotR #when the next thing happen
-            #Rn2= random.uniform(0,TotR) # for the next random number
-            # HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB
-            Stoich = [[1,0,0,0,0,0,0,0], [-1,0,0,0,0,0,0,0], [0,1,0,0,0,0,0,0], [0,-1,0,0,0,0,0,0], [-1,-1,1,0,0,0,0,0], [1,1,-1,0,0,0,0,0],[0,0,-1,0,0,0,0,0],
-                    [0,0,0,1,-1,0,0,0], [0,0,0,-1,0,0,0,0], [0,0,0,0,1,0,0,0], [0,0,0,0,-1,0,0,0], [0,-1,0,-1,0,1,0,0], 
-                    [0,1,0,1,0,-1,0,0], #R_C_HSPR_MMP_dec2 = dissociation of the complex to form free HSPR and MMP -> dissociation
-                    [0,1,0,0,1,-1,0,0], #R_C_HSPR_MMP_dec2 = dissociation of the complex to form free HSPR and FMP -> refolding step
-                    [0,0,0,0,0,-1,0,0], #R_C_HSPR_MMP_dec3, complex decrease by 1, decay 8
-                    [0,0,0,0,0,0,1,0], [0,0,0,0,0,0,-1,0], [0,0,0,0,0,0,0,1], [0,0,0,0,0,0,0,-1]]
-
-            Outcome = random.choices(Stoich, weights = listR, k=1)
-            #print(f"listM before: {listM}")
-            #print(f"outcome: {Outcome} \n {Outcome[0]}")
-            listM = listM+Outcome[0] ### why does it add term-by-term??? -> because listM is a np.array
-            #print(f"listM after: {listM}")
-            #exit()
-            Time+=Tau # the new time the time before the step +the time to happen the next step ()
-            counter += 1
-            # print (Time,listM)
-            listtime.append(Time) #this is to add stuff to the list
-            listM2.append(listM)
-        listM4.append(listM2)
-        listtime2.append(listtime)
-        end_time = Time
-        saveGilData_2(combine_data(listtime2, listM4, opt), data_dir, i, end_time, opt)
-        print(f"iteration {i} saved")
-    return listM4, listtime2, numberofiteration, end_time
 
 def gillespi_archive(param_dict, opt):
     listM4=[]
@@ -707,25 +583,25 @@ def gillespie_woA2(param_dict, opt):
             Tau=-math.log(Rn)/TotR #when the next thing happen
             #Rn2= random.uniform(0,TotR) # for the next random number
             # HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB
-            Stoich = [[1,0,0,0,0,0,0,0], #R_HSFA1_inc
-                      [-1,0,0,0,0,0,0,0], #R_HSFA1_dec
-                      [0,1,0,0,0,0,0,0], #R_HSPR_inc
-                      [0,-1,0,0,0,0,0,0], #R_HSPR_dec
-                      [-1,-1,1,0,0,0,0,0], #R_C_HSFA1_HSPR_inc
-                      [1,1,-1,0,0,0,0,0], #R_C_HSFA1_HSPR_dec1
-                      [0,0,-1,0,0,0,0,0], #R_C_HSFA1_HSPR_dec2
-                    [0,0,0,1,-1,0,0,0], #R_MMP_inc
-                    [0,0,0,-1,0,0,0,0], #R_MMP_dec
-                    [0,0,0,0,1,0,0,0], #R_FMP_inc
-                    [0,0,0,0,-1,0,0,0], #R_FMP_dec
-                    [0,-1,0,-1,0,1,0,0], #R_C_HSPR_MMP_inc
-                    [0,1,0,1,0,-1,0,0], #R_C_HSPR_MMP_dec1 = dissociation of the complex to form free HSPR and MMP -> dissociation
-                    [0,1,0,0,1,-1,0,0], #R_C_HSPR_MMP_dec2 = dissociation of the complex to form free HSPR and FMP -> refolding step
-                    [0,0,0,0,0,-1,0,0], #R_C_HSPR_MMP_dec3, complex decrease by 1, decay 8
-                    [0,0,0,0,0,0,0,1], #R_HSFB_inc
-                    [0,0,0,0,0,0,0,-1] #R_HSFB_dec
-                    ]
-            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFA2', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3', 'R_HSFB_inc', 'R_HSFB_dec'])
+            Stoich = [[1,0,0,0,0,0,0], #R_HSFA1_inc
+                      [-1,0,0,0,0,0,0], #R_HSFA1_dec
+                      [0,1,0,0,0,0,0], #R_HSPR_inc
+                      [0,-1,0,0,0,0,0], #R_HSPR_dec
+                      [-1,-1,1,0,0,0,0], #R_C_HSFA1_HSPR_inc
+                      [1,1,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec1
+                      [0,0,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec2
+                      [0,0,0,1,-1,0,0], #R_MMP_inc
+                      [0,0,0,-1,0,0,0], #R_MMP_dec
+                      [0,0,0,0,1,0,0], #R_FMP_inc
+                      [0,0,0,0,-1,0,0], #R_FMP_dec
+                      [0,-1,0,-1,0,1,0], #R_C_HSPR_MMP_inc
+                      [0,1,0,1,0,-1,0], #R_C_HSPR_MMP_dec1 = dissociation of the complex to form free HSPR and MMP
+                      [0,1,0,0,1,-1,0], #R_C_HSPR_MMP_dec2 = refolding step, dissociation of the complex to form free HSPR and FMP 
+                      [0,0,0,0,0,-1,0], #R_C_HSPR_MMP_dec3, complex decrease by 1, decay 8
+                      [0,0,0,0,0,0,1], #R_HSFB_inc
+                      [0,0,0,0,0,0,-1] #R_HSFB_dec
+                      ]
+            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3', 'R_HSFB_inc', 'R_HSFB_dec'])
             Outcome = random.choices(Stoich, weights = listR, k=1)
             #print(f"listM before: {listM}")
             #print(f"outcome: {Outcome} \n {Outcome[0]}")
@@ -743,7 +619,7 @@ def gillespie_woA2(param_dict, opt):
         listtime2.append(listtime)
         end_time = Time
         param_dict['end_time'] = end_time
-    return listM4, listtime2, numberofiteration, end_time
+    return listM4, listtime2, numberofiteration, end_time, Stoich_df
 
 
 def combine_data(listtime2, listM4, opt):
