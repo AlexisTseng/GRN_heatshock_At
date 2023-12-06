@@ -43,7 +43,7 @@ description
     The formation rate of misfolded protein from folded protein under heat shock condition (default: 0.05)
 
 --decayMMP_HSPR,-dmh
-    The decay rate of MMP-HSPR complex (default: 0.01)
+    The decay rate 8 of MMP-HSPR complex (default: 0.01)
 
 --assoMMP_HSPR,-amh
     The association rate between MMP and HSPR (default: 0.5)
