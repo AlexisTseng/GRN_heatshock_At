@@ -10,3 +10,6 @@ Call  : -nit 1 -tsp 50
 Start : 12/05/23 14:50:24
 Script: HSPR_AZ_hpc.py
 Call  : -nit 1 -lkg 0.001
+Start : 12/06/23 16:01:02
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -lkg 0.001

@@ -30,7 +30,7 @@ module purge  # Removes all modules still loaded
 module load miniconda/3
 source /home/jz531/.bashrc # need to source before conda activate
 conda activate /home/jz531/.conda/envs/model_GRN
-#conda list
+conda list
 
 CMD="python3 HSPR_AZ_hpc.py -nit 30 -lkg 0.001" # need to use python3 instead of pythons
 

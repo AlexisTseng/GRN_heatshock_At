@@ -92,7 +92,7 @@ def main(opt):
     print("Step 5: Variability Analysis")
     if bool(opt.van) == True:
         totalHSPR_df_outlist = df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt)
-        plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, numberofiteration, end_time, opt)
+        plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
         plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
 
 
