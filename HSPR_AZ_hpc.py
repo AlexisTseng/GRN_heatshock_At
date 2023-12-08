@@ -60,6 +60,9 @@ description
 --hilHalfSaturation,-hhs
     The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
 
+--maxA1,-ma1
+    The max transcription rate of A1
+
 --outputFormat,-ofm
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
 
@@ -161,7 +164,7 @@ def param_spec(opt):
         'init_HSFB': 1,
         'Time': 0.0,
         ## Maximum expression level in Hill equation
-        'a1': 10.0,
+        'a1': 20.0,
         'a2': 100.0,
         'a3': 5.0,
         'a4': 5.0,
