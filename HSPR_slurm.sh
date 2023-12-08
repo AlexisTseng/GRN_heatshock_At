@@ -5,7 +5,7 @@
 
 #! Which project should be charged:
 #SBATCH -A LOCKE-SL3-CPU
-#SBATCH -p cclake
+#SBATCH -p icelake
 
 #! How many (MPI) tasks will there be in total? (<= nodes*76)
 #! The Ice Lake (icelake) nodes have 76 CPUs (cores) each and

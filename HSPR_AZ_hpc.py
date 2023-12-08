@@ -46,7 +46,7 @@ description
     The decay rate 8 of MMP-HSPR complex (default: 0.01)
 
 --assoMMP_HSPR,-amh
-    The association rate between MMP and HSPR (default: 0.5)
+    The association rate between MMP and HSPR, c3 (default: 0.5)
 
 --hillCoeff,-hco
     The Hill Coefficient (default: 1)
@@ -56,6 +56,9 @@ description
 
 --leakage,-lkg
     Trancription leakage (default: 0.01)
+
+--hilHalfSaturation,-hhs
+    The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
 
 --outputFormat,-ofm
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
@@ -167,12 +170,12 @@ def param_spec(opt):
         'a7': 10,
         'a8': 5.0,
         ## Ka in Hill equation
-        'h1': 1.0,
-        'h2': 1.0,
-        'h3': 1.0,
-        'h4': 1.0,
-        'h5': 1.0,
-        'h6': 1,
+        'h1': float(opt.hhs),
+        'h2': float(opt.hhs),
+        'h3': float(opt.hhs),
+        'h4': float(opt.hhs),
+        'h5': float(opt.hhs),
+        'h6': float(opt.hhs),
         ## association rates
         'c1': 10.0, #between A1 and HSPR
         'c3': float(opt.amh), #between MMP and HSPR
