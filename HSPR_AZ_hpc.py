@@ -174,7 +174,7 @@ def param_spec(opt):
         'h5': 1.0,
         'h6': 1,
         ## association rates
-        'c1': 10.0,
+        'c1': 10.0, #between A1 and HSPR
         'c3': float(opt.amh), #between MMP and HSPR
         ## decay rates
         'd1': 0.1, # decay path 1 of A1-HSPR
