@@ -14,7 +14,7 @@
 
 #SBATCH -D /home/jz531/rds/hpc-work/GRN_heatshock_At/
 #SBATCH -o /home/jz531/rds/hpc-work/hpc_output/Gilespie_output.log
-#SBATCH -c 1     # increase if doing multiprocessing, max 32 CPUs
+#SBATCH -c 5     # increase if doing multiprocessing, max 32 CPUs
 #SBATCH --array=1 # max is 9999
 #SBATCH --mem-per-cpu=5980MB   # max 5980MB or 12030MB for skilake-himem
 
@@ -29,17 +29,10 @@
 module purge  # Removes all modules still loaded
 module load rhel7/default-ccl
 
-
 module load miniconda/3
 source /home/jz531/.bashrc # need to source before conda activate
 conda activate /home/jz531/.conda/envs/model_GRN
-conda list
-CMD="python3 --version"
-#CMD="python3 HSPR_AZ_hpc.py -nit 1 -lkg 0.001" # need to use python3 instead of pythons
-
-eval $CMD
-CMD="python --version"
-eval $CMD
+#conda list
 
 CMD="/home/jz531/.conda/envs/model_GRN/bin/python HSPR_AZ_hpc.py -nit 1 -lkg 0.001" # need to use python3 instead of pythons
 eval $CMD

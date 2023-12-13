@@ -61,7 +61,10 @@ description
     The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
 
 --maxA1,-ma1
-    The max transcription rate of A1 (default: 10.0)
+    a1, the max transcription rate of A1 (default: 10.0)
+
+--foldedProduction,-fpp
+    a7, folded protein production rate (default: 10.0)
 
 --outputFormat,-ofm
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
@@ -170,7 +173,7 @@ def param_spec(opt):
         'a4': 5.0,
         'a5': 5.0,
         'a6': 0.2, # refolding rate from MMP-HSPR
-        'a7': 10,
+        'a7': int(opt.fpp), #folded protein production rate
         'a8': 5.0,
         ## Ka in Hill equation
         'h1': float(opt.hhs),
