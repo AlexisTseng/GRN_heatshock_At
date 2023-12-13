@@ -222,7 +222,7 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
 
     name_suffix = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
     for key, val in diff_dict.items():
-        name_suffix += f"_{key}{val}"
+        name_suffix += f"_{key}-{val}"
     return name_suffix
 
 
