@@ -34,5 +34,5 @@ source /home/jz531/.bashrc # need to source before conda activate
 conda activate /home/jz531/.conda/envs/model_GRN
 #conda list
 
-CMD="/home/jz531/.conda/envs/model_GRN/bin/python HSPR_AZ_hpc.py -nit 1 -lkg 0.001" # need to use python3 instead of pythons
+CMD="/home/jz531/.conda/envs/model_GRN/bin/python HSPR_AZ_hpc.py -nit 10 -hco 2 -lkg 0.001 -hhs 10.0 -ma1 20.0 -fpp 50.0" # need to use python3 instead of pythons
 eval $CMD
