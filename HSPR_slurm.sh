@@ -27,7 +27,7 @@
  
 . /etc/profile.d/modules.sh # Leave this line (enables the module command)
 module purge  # Removes all modules still loaded
-module load rhel7/default-ccl
+#module load rhel7/default-ccl
 module load miniconda/3
 source /home/jz531/.bashrc # need to source before conda activate
 conda activate /home/jz531/.conda/envs/model_GRN
@@ -35,4 +35,6 @@ conda list
 CMD="python3 --version"
 #CMD="python3 HSPR_AZ_hpc.py -nit 1 -lkg 0.001" # need to use python3 instead of pythons
 
+eval $CMD
+CMD="python --version"
 eval $CMD
