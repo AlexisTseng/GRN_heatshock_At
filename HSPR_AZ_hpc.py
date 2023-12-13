@@ -97,7 +97,7 @@ import csv
 from os.path import join
 import pandas as pd
 import sys
-
+from multiprocessing import Process
 
 
 def main(opt):
@@ -108,7 +108,7 @@ def main(opt):
     param_dict = param_spec(opt)
     
     print("Step3: Simulation begins")
-    listM4, listtime2, numberofiteration, end_time, Stoich_df = gillespie_woA2(param_dict, opt)
+    listM4, listtime2, numberofiteration, end_time = gillespie_woA2(param_dict, opt)
     #print(Stoich_df)
 
     print("Step4: Combine and save data")
@@ -499,53 +499,53 @@ def gillespie_woA2(param_dict, opt):
     listM4=[]
     listtime2=[]
     numberofiteration = param_dict["numberofiteration"]
+    listM = np.array([param_dict["init_HSFA1"],
+                      param_dict["init_HSPR"],
+                      param_dict["init_C_HSFA1_HSPR"],
+                      param_dict["init_MMP"],
+                      param_dict["init_FMP"],
+                      param_dict["init_C_HSPR_MMP"],
+                      param_dict["init_HSFB"]])
+    a1 = param_dict['a1']
+    a2 = param_dict['a2']
+    a3 = param_dict['a3']
+    a4 = param_dict['a4']
+    a5 = param_dict['a5']
+    a6 = param_dict['a6']
+    a7 = param_dict['a7']
+    a8 = param_dict['a8']
+    h1 = param_dict['h1']
+    h2 = param_dict['h2']
+    h3 = param_dict['h3']
+    h4 = param_dict['h4']
+    h5 = param_dict['h5']
+    h6 = param_dict['h6']
+    c1 = param_dict['c1']
+    c3 = param_dict['c3']
+    d1 = param_dict['d1']
+    d3 = param_dict['d3']
+    Decay1 = param_dict['Decay1']
+    Decay2 = param_dict['Decay2']
+    Decay3 = param_dict['Decay3']
+    Decay4 = param_dict['Decay4']
+    Decay6 = param_dict['Decay6']
+    Decay7 = param_dict['Decay7']
+    Decay8 = param_dict['Decay8']
+    Decay5 = param_dict['Decay5']
+    leakage = param_dict['leakage']
+    n = param_dict['hillcoeff']
+    HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
+
     for i in range(numberofiteration):    
         print(f" \n iteration: {i}")
-        listM = np.array([param_dict["init_HSFA1"],
-                          param_dict["init_HSPR"],
-                          param_dict["init_C_HSFA1_HSPR"],
-                          param_dict["init_MMP"],
-                          param_dict["init_FMP"],
-                          param_dict["init_C_HSPR_MMP"],
-                          param_dict["init_HSFB"]])
         listM2 =[listM]
         Time=0
         listtime =[Time]
-
         counter = 0
+
         while Time < int(opt.tsp): 
             if counter % 5000 ==0 and counter != 0:
                 print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
-
-            a1 = param_dict['a1']
-            a2 = param_dict['a2']
-            a3 = param_dict['a3']
-            a4 = param_dict['a4']
-            a5 = param_dict['a5']
-            a6 = param_dict['a6']
-            a7 = param_dict['a7']
-            a8 = param_dict['a8']
-            h1 = param_dict['h1']
-            h2 = param_dict['h2']
-            h3 = param_dict['h3']
-            h4 = param_dict['h4']
-            h5 = param_dict['h5']
-            h6 = param_dict['h6']
-            c1 = param_dict['c1']
-            c3 = param_dict['c3']
-            d1 = param_dict['d1']
-            d3 = param_dict['d3']
-            Decay1 = param_dict['Decay1']
-            Decay2 = param_dict['Decay2']
-            Decay3 = param_dict['Decay3']
-            Decay4 = param_dict['Decay4']
-            Decay6 = param_dict['Decay6']
-            Decay7 = param_dict['Decay7']
-            Decay8 = param_dict['Decay8']
-            Decay5 = param_dict['Decay5']
-            leakage = param_dict['leakage']
-            n = param_dict['hillcoeff']
-            HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
 
             if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
             else: d4 = param_dict['d4_norm']
@@ -609,7 +609,7 @@ def gillespie_woA2(param_dict, opt):
                       [0,0,0,0,0,0,1], #R_HSFB_inc
                       [0,0,0,0,0,0,-1] #R_HSFB_dec
                       ]
-            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3', 'R_HSFB_inc', 'R_HSFB_dec'])
+            #Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3', 'R_HSFB_inc', 'R_HSFB_dec'])
             Outcome = random.choices(Stoich, weights = listR, k=1)
             #print(f"listM before: {listM}")
             #print(f"outcome: {Outcome} \n {Outcome[0]}")
@@ -627,7 +627,7 @@ def gillespie_woA2(param_dict, opt):
         listtime2.append(listtime)
         end_time = Time
         param_dict['end_time'] = end_time
-    return listM4, listtime2, numberofiteration, end_time, Stoich_df
+    return listM4, listtime2, numberofiteration, end_time
 
 
 def combine_data(listtime2, listM4, opt):
@@ -877,6 +877,7 @@ if __name__ == "__main__":
     ## call main function
     try:
         #saved = main(opt)
+        processes = [Process(target=gillespie_woA2, args=(i,)) for i in range(numberofiteration)]
         saved = main(copt)
     except KeyboardInterrupt:
         print("Error: Interrupted by user!")

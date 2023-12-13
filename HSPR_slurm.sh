@@ -14,7 +14,7 @@
 
 #SBATCH -D /home/jz531/rds/hpc-work/GRN_heatshock_At/
 #SBATCH -o /home/jz531/rds/hpc-work/hpc_output/Gilespie_output.log
-#SBATCH -c 5     # increase if doing multiprocessing, max 32 CPUs
+#SBATCH -c 10     # increase if doing multiprocessing, max 32 CPUs
 #SBATCH --array=1 # max is 9999
 #SBATCH --mem-per-cpu=5980MB   # max 5980MB or 12030MB for skilake-himem
 
