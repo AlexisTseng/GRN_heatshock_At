@@ -72,6 +72,9 @@ description
 --samplingFreq,-spf
     How often is simulation datasaved (default: 1)
 
+--thread,-thr
+    The number of threads used for multiprocessing (default: 4)
+
 ################################################################################
 
 reference
@@ -628,6 +631,15 @@ def gillespie_woA2(param_dict, opt):
         end_time = Time
         param_dict['end_time'] = end_time
     return listM4, listtime2, numberofiteration, end_time
+
+def parallel_gillespie_woA2(param_dict,opt):
+    num_processor = int(opt.thr)
+    num_iterations = param_dict["numberofiteration"]
+    chunk_size = num_iterations // num_processor # // round the result to the neares whole number
+    iteration_chunks = [chunk_size] * (num_processor - 1)
+    iteration_chunks.append(num_iterations - (chunk_size * (num_processor - 1)))
+
+
 
 
 def combine_data(listtime2, listM4, opt):
