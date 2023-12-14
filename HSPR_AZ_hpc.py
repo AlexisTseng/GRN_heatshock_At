@@ -58,7 +58,7 @@ description
     Trancription leakage (default: 0.01)
 
 --hilHalfSaturation,-hhs
-    The conc of inducer/repressor at half-max transcriptional rate (default: 1)
+    The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
 
 --maxA1,-ma1
     a1, the max transcription rate of A1 (default: 10.0)

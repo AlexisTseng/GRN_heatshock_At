@@ -188,7 +188,7 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         'h3': 1.0,
         'h4': 1.0,
         'h5': 1.0,
-        'h6': 1,
+        'h6': 1.0,
         ## association rates
         'c1': 10.0,
         'c3': 0.5, #between MMP and HSPR
