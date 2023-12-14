@@ -70,3 +70,9 @@ Call  : -ids 2023-12-08_numIter5_Time20000.023105241737_HSstart10000_HSduration5
 Start : 12/14/23 13:50:23
 Script: HSPR_AZ_plot.py
 Call  : -ids 2023-12-14_numIter10_Time20000.009681623687_HSstart10000_HSduration5000.csv -van 1
+Start : 12/14/23 15:08:40
+Script: HSPR_AZ_plot.py
+Call  : -ids Exp3_SimuData_2023-12-14_numIter5_Time20000.03395620179_HSstart10000_HSduration5000.csv
+Start : 12/14/23 15:08:56
+Script: HSPR_AZ_plot.py
+Call  : -ids 2023-12-14_numIter5_Time20000.03395620179_HSstart10000_HSduration5000.csv
