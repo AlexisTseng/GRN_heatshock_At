@@ -169,7 +169,7 @@ def param_spec(opt):
         'init_HSFB': 1,
         'Time': 0.0,
         ## Maximum expression level in Hill equation
-        'a1': int(opt.ma1),
+        'a1': float(opt.ma1),
         'a2': 100.0,
         'a3': 5.0,
         'a4': 5.0,
