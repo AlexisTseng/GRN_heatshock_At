@@ -178,12 +178,12 @@ def param_spec(opt):
         'a7': int(opt.fpp), #folded protein production rate
         'a8': 5.0,
         ## Ka in Hill equation
-        'h1': int(opt.hhs),
-        'h2': int(opt.hhs),
-        'h3': int(opt.hhs),
-        'h4': int(opt.hhs),
-        'h5': int(opt.hhs),
-        'h6': int(opt.hhs),
+        'h1': float(opt.hhs),
+        'h2': float(opt.hhs),
+        'h3': float(opt.hhs),
+        'h4': float(opt.hhs),
+        'h5': float(opt.hhs),
+        'h6': float(opt.hhs),
         ## association rates
         'c1': 10.0, #between A1 and HSPR
         'c3': float(opt.amh), #between MMP and HSPR
