@@ -82,3 +82,12 @@ Call  : -ids 2023-12-14_numIter10_Time20000.100038337063_HSstart10000_HSduration
 Start : 12/14/23 15:49:26
 Script: HSPR_AZ_plot.py
 Call  : -ids 2023-12-14_numIter10_Time20000.006174139522_HSstart10000_HSduration5000.csv -van 1
+Start : 12/14/23 16:29:53
+Script: HSPR_AZ_plot.py
+Call  : -ids 2023-12-14_numIter10_Time20000.005613451918_HSstart10000_HSduration5000.csv -van 1
+Start : 12/14/23 16:41:20
+Script: HSPR_AZ_plot.py
+Call  : -ids 2023-12-14_numIter10_Time20000.005613451918_HSstart10000_HSduration5000.csv -sfg 0
+Start : 12/14/23 16:43:57
+Script: HSPR_AZ_plot.py
+Call  : -ids 2023-12-14_numIter10_Time20000.005613451918_HSstart10000_HSduration5000.csv -sfg 0
