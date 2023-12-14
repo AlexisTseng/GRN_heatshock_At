@@ -108,12 +108,14 @@ def main(opt):
     param_dict = param_spec(opt)
     
     print("Step3: Simulation begins")
-
+    start = time.time()
     listM4, listtime2, numberofiteration, end_time, Stoich_df = gillespie_woA2(param_dict, opt)
-
+    print(time.time() - start)
+    print("A3 starts")
+    start = time.time()
     listM4, listtime2, numberofiteration, end_time, Stoich_df = gillespie_woA3(param_dict, opt)
     #print(Stoich_df)
-
+    print(time.time()-start)
     print("Step4: Combine and save data")
     listM6 = combine_data(listtime2, listM4, opt)
     data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, opt)

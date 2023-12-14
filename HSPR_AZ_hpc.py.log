@@ -37,3 +37,9 @@ Call  : -nit 10 -hco 2 -lkg 0.001 -hhs 10.0 -ma1 20 -fpp 50
 Start : 12/13/23 18:57:37
 Script: HSPR_AZ_hpc.py
 Call  : -nit 10 -hco 2 -lkg 0.001 -hhs 10.0 -ma1 20.0 -fpp 50.0
+Start : 12/14/23 14:40:39
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -hco 2 -amh 5.0 -lkg 0.001
+Start : 12/14/23 14:42:37
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -hco 2 -amh 5.0 -lkg 0.001
