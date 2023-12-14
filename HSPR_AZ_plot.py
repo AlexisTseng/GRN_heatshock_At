@@ -424,9 +424,10 @@ def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
     #plt.hist(ss1_df['mean_totalHSPR'], label="before HS", density=True,alpha=0.50, color="blue")
     #plt.hist(ssHS_df['mean_totalHSPR'], label="during HS", density=True, alpha=0.50, color="red")
     #plt.hist(ss3_df['mean_totalHSPR'], label="after HS", density=True, alpha=0.50, color="orange")
+    label_list = ["before HS", "during HS", "after HS"]
 
-    for df in totalHSPR_df_outlist:
-        plt.hist(df['mean_totalHSPR'], label="before HS", density=True,alpha=0.50)
+    for df, label in zip(totalHSPR_df_outlist, label_list):
+        plt.hist(df['mean_totalHSPR'], label=label, density=True,alpha=0.50)
 
     plt.title("Distribution of mean total HSPR")
     plt.xlabel("total HSPR")
