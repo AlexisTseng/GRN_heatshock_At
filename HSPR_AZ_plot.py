@@ -83,8 +83,8 @@ def main(opt):
 
     print("Step4: Plot Temporal Trajectories")
     ## Plot trajectories of all species for all iterations
-    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
-    plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
+    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
+    #plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
     #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, opt)
     ## Plot overlayed trajectory of A1 concentrations for all trajectory
@@ -92,9 +92,12 @@ def main(opt):
 
     print("Step 5: Variability Analysis")
     if bool(opt.van) == True:
-        totalHSPR_df_outlist = df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt)
-        plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
-        plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
+        df_list = df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt)
+        bootstrap_HSPR_hist_overlap(df_list, plot_dir, name_suffix, opt)
+        bootstrap_HSPR_hist_subplot(df_list, plot_dir, name_suffix, opt)
+        #totalHSPR_df_outlist = df_HSPR_stats(df_list, opt)
+        #plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
+        #plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
 
 
 
@@ -406,6 +409,34 @@ def df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt):
     print(f"hss:{hss}, hsd: {hsd}")
     print(f"ss1: {ss1_start} - {ss1_end} \nssHS: {ssHS_start} - {ssHS_end} \nss3:{ss3_start} - {ss3_end} ")
 
+    ss1_df = data_df[(data_df['time'] >= ss1_start) & (data_df['time'] <= ss1_end)]
+    ssHS_df = data_df[(data_df['time'] >= ssHS_start) & (data_df['time'] <= ssHS_end)]
+    ss3_df = data_df[(data_df['time'] >= ss3_start) & (data_df['time'] <= ss3_end)]
+
+    #print("ss1_df")
+    #print(ss1_df)
+    #print(ss1_df.shape)
+    #print("ssHS_df")
+    #print(ssHS_df)
+    #print(ssHS_df.shape)
+    #print("ss3_df")
+    #print(ss3_df)
+    #print(ss3_df.shape)
+
+    df_list = [ss1_df, ssHS_df, ss3_df]
+    return df_list
+
+
+def df_Processing_HS_1(data_df, plot_dir,hss,hsd, end_time, opt):
+    ss1_start = 1000
+    ss1_end = int(hss)
+    ssHS_start = int(hss) + 100
+    ssHS_end = int(hss) + int(hsd)
+    ss3_start = ssHS_end + 500
+    ss3_end = end_time
+    print(f"hss:{hss}, hsd: {hsd}")
+    print(f"ss1: {ss1_start} - {ss1_end} \nssHS: {ssHS_start} - {ssHS_end} \nss3:{ss3_start} - {ss3_end} ")
+
     ss1_df = data_df[(data_df['time'] >= ss1_start) & (data_df['time'] <= ss1_end)].groupby('Iteration_Identifier')['totalHSPR']
     ssHS_df = data_df[(data_df['time'] >= ssHS_start) & (data_df['time'] <= ssHS_end)].groupby('Iteration_Identifier')['totalHSPR']
     ss3_df = data_df[(data_df['time'] >= ss3_start) & (data_df['time'] <= ss3_end)].groupby('Iteration_Identifier')['totalHSPR']
@@ -431,7 +462,16 @@ def df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt):
     
     return totalHSPR_df_outlist
 
-
+def df_HSPR_stats(df_list, opt):
+    totalHSPR_df_outlist = []
+    for df in df_list:
+        df = df.groupby('Iteration_Identifier')['totalHSPR']
+        result_df = df.agg(['mean','std'])
+        result_df['cv'] = result_df['std'] / result_df['mean']
+        result_df.columns = ['mean_totalHSPR', 'std_totalHSPR', 'cv_totalHSPR']
+        result_df.reset_index(inplace=True)
+        totalHSPR_df_outlist.append(result_df)
+    return totalHSPR_df_outlist
 
 def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
     print("plot HSPR CV vs Mean")
@@ -461,7 +501,6 @@ def plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
 
     if bool(opt.shf) == True: plt.show()
     plt.close()
-
 
 
 def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
@@ -496,10 +535,72 @@ def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
     plt.close()
 
 
+def bootstrap_HSPR_hist_overlap(df_list, plot_dir, name_suffix, opt):
+    HSPR_list = []
+    for df in df_list:
+        HSPR_conc = random.choices(df['totalHSPR'].tolist(), k=2000)
+        HSPR_list.append(HSPR_conc)
+    print("Plot total HSPR histogram")
+    fig = plt.figure(figsize=(12, 6))
+    label_list = ["before HS", "during HS", "after HS"]
+    #for list, label in zip(HSPR_list, label_list):
+    #    plt.hist(list, bins, label=label, density=True, alpha=0.50)
+    plt.hist(HSPR_list, bins = range(0, 250, 1), label = label_list, density=True, alpha=0.50, histtype='stepfilled')
 
+    plt.title("Distribution of HSPR conc, bootstrapped")
+    plt.xlabel("HSPR")
+    plt.ylabel("Frequency")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.) # Adjust the figure size to accommodate the legend
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    plt.tight_layout()
 
+    if bool(opt.sfg) == True:
+        plot_name = f"{plot_dir}/HistOverlap_bootstrapHSPR_{name_suffix}.pdf"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
 
+        plot_name = f"{plot_dir}/HistOverlap_bootstrapHSPR_{name_suffix}.svg"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+        print(f"save figure {opt.sfg == True}")
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
 
+def bootstrap_HSPR_hist_subplot(df_list, plot_dir, name_suffix, opt):
+    HSPR_list = []
+    for df in df_list:
+        HSPR_conc = random.choices(df['totalHSPR'].tolist(), k=2000)
+        HSPR_list.append(HSPR_conc)
+    print("Plot total HSPR histogram")
+    label_list = ["before HS", "during HS", "after HS"]
+    color_list = ['green','red','blue']
+    fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True,sharey=True, figsize=(15,12))
+    for i, (HSPR_conc, label, ax, color) in enumerate(zip(HSPR_list, label_list, axes, color_list)):
+        ax.hist(HSPR_conc, bins = range(0, 250, 1), label = label, density=True, alpha=0.50, histtype='stepfilled', color = color)
+        ax.set_ylabel("Frequency")
+        if i == 0:
+            ax.set_title("Before HS")
+        elif i ==1: 
+            ax.set_title("During HS")
+        elif i ==2:
+            ax.set_title("After HS")
+        else: print("i exception in function plot_CVsq_mean")
+    fig.suptitle('Distribution of HSPR conc, bootstrapped')
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    plt.xlabel('HSPR level')
+    plt.tight_layout()
+
+    if bool(opt.sfg) == True:
+        plot_name = f"{plot_dir}/HistSub_bootstrapHSPR_{name_suffix}.pdf"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+
+        plot_name = f"{plot_dir}/HistSub_bootstrapHSPR_{name_suffix}.svg"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+        print(f"save figure {opt.sfg == True}")
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
 
 
 
