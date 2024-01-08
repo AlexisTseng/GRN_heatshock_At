@@ -634,13 +634,7 @@ def gillespie_woA2(param_dict, opt):
     return listM4, listtime2, numberofiteration, end_time
 
 def gillespie_woA2_mp(param_dict, opt):
-    listM = np.array([param_dict["init_HSFA1"],
-                      param_dict["init_HSPR"],
-                      param_dict["init_C_HSFA1_HSPR"],
-                      param_dict["init_MMP"],
-                      param_dict["init_FMP"],
-                      param_dict["init_C_HSPR_MMP"],
-                      param_dict["init_HSFB"]])
+    listM = np.array([param_dict["init_HSFA1"], param_dict["init_HSPR"], param_dict["init_C_HSFA1_HSPR"], param_dict["init_MMP"], param_dict["init_FMP"], param_dict["init_C_HSPR_MMP"], param_dict["init_HSFB"]])
     a1 = param_dict['a1']
     a2 = param_dict['a2']
     a3 = param_dict['a3']
@@ -757,8 +751,10 @@ def gillespie_woA2_mp(param_dict, opt):
 
 def parallel_gillespie_woA2(param_dict, opt):
     numberofiteration = param_dict["numberofiteration"]
-    pool = mp.Pool(processes= opt.thr)
-    results = pool.map(gillespie_woA2_mp, [param_dict, opt])
+    arg = [(param_dict,opt)]*opt.thr
+    #print(arg)
+    with mp.Pool(processes= opt.thr) as pool:
+        results = pool.starmap(gillespie_woA2_mp, arg)
     listM6 = []
     listM7 = []
     all_end_time = []
@@ -1020,7 +1016,6 @@ if __name__ == "__main__":
     ## call main function
     try:
         #saved = main(opt)
-        processes = [Process(target=gillespie_woA2, args=(i,)) for i in range(numberofiteration)]
         saved = main(copt)
     except KeyboardInterrupt:
         print("Error: Interrupted by user!")
