@@ -628,7 +628,7 @@ def gillespie_woA2(param_dict, opt):
             counter += 1
             # print (Time,listM)
             if int(Time) == int(last_time) + opt.spf:
-                listtime.append(Time) #this is to add stuff to the list
+                listtime.append(int(Time)) #this is to add stuff to the list
                 listM2.append(listM)
         listM4.append(listM2)
         listtime2.append(listtime)
