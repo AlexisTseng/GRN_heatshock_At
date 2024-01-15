@@ -74,6 +74,11 @@ def main(opt):
 
     print("Step3: Import Simulating Results")
     data_df, grouped_data, Rows, Columns = import_tidy_simuData(data_dir, numberofiteration, opt)
+    #print(data_df)
+    #exit()
+
+    plot_resTime_vs_preHSHSPR(data_df, hss, param_dict)
+    exit()
 
     print("Step 4: Generate Plot Name")
     name_suffix = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
@@ -83,7 +88,7 @@ def main(opt):
 
     print("Step4: Plot Temporal Trajectories")
     ## Plot trajectories of all species for all iterations
-    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
+    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     #plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
     #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, opt)
@@ -94,7 +99,7 @@ def main(opt):
     if bool(opt.van) == True:
         df_list = df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt)
         bootstrap_HSPR_hist_overlap(df_list, plot_dir, name_suffix, opt)
-        bootstrap_HSPR_hist_subplot(df_list, plot_dir, name_suffix, opt)
+        #bootstrap_HSPR_hist_subplot(df_list, plot_dir, name_suffix, opt)
         #totalHSPR_df_outlist = df_HSPR_stats(df_list, opt)
         #plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
         #plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
@@ -604,8 +609,19 @@ def bootstrap_HSPR_hist_subplot(df_list, plot_dir, name_suffix, opt):
 
 
 
+#############################################################################
+## Response time analysis
+#############################################################################
 
-
+def plot_resTime_vs_preHSHSPR(data_df, hss, param_dict):
+    preHS_totalHSPR = []
+    preHS_HSPR_A1 = []
+    preHS_HSPR_MMP = []
+    res_time = []
+    numberofiteration = int(param_dict["numberofiteration"])
+    #for i in range(numberofiteration + 1):
+    PreHS_row = data_df[(data_df["Iteration_Identifier"] == 1)].iloc[100]
+    print(PreHS_row["time"])
 
 
 
