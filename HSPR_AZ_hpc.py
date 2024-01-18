@@ -69,6 +69,9 @@ description
 --foldedProduction,-fpp
     a7, folded protein production rate (default: 10.0)
 
+--foldedDecay,-fpd
+    decay6, decay rate of folded protein (default: 0.01)
+
 --outputFormat,-ofm
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
 
@@ -199,7 +202,7 @@ def param_spec(opt):
         'Decay2': 0.01, # decay of free HSPR
         'Decay3': 0.01,
         'Decay4': 0.01,
-        'Decay6': 0.01,
+        'Decay6': float(opt.fpd),
         'Decay7': 0.01, # decay path 2 of A1-HSPR
         'Decay8': float(opt.dmh), # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
