@@ -77,8 +77,8 @@ def main(opt):
     #print(data_df)
     #exit()
 
-    plot_resTime_vs_preHSHSPR(data_df, hss, param_dict)
-    exit()
+    #plot_resTime_vs_preHSHSPR(data_df, hss, param_dict)
+    #exit()
 
     print("Step 4: Generate Plot Name")
     name_suffix = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)

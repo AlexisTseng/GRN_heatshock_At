@@ -67,7 +67,7 @@ description
     decay1, decay rate of free A1 (default: 0.01)
 
 --foldedProduction,-fpp
-    a7, folded protein production rate (default: 10.0)
+    a7, folded protein production rate (default: 10)
 
 --foldedDecay,-fpd
     decay6, decay rate of folded protein (default: 0.01)

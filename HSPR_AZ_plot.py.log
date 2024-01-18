@@ -274,3 +274,6 @@ Call  : -ids 2023-12-14_numIter10_Time20000.006174139522_HSstart10000_HSduration
 Start : 01/10/24 18:44:59
 Script: HSPR_AZ_plot.py
 Call  : -ids 2023-12-14_numIter10_Time20000.006174139522_HSstart10000_HSduration5000.csv
+Start : 01/18/24 15:04:19
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-01-18_numIter5_Time20000.017408643056_HSstart10000_HSduration5000.csv -van 1
