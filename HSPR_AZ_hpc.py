@@ -175,7 +175,7 @@ def param_spec(opt):
         'init_HSFB': 1,
         'Time': 0.0,
         ## Maximum expression level in Hill equation
-        'a1': float(opt.ma1),
+        'a1': float(opt.ma1), #10
         'a2': 100.0,
         'a3': 5.0,
         'a4': 5.0,
@@ -184,7 +184,7 @@ def param_spec(opt):
         'a7': int(opt.fpp), #folded protein production rate
         'a8': 5.0,
         ## Ka in Hill equation
-        'h1': float(opt.hhs),
+        'h1': float(opt.hhs), #1
         'h2': float(opt.hhs),
         'h3': float(opt.hhs),
         'h4': float(opt.hhs),

@@ -277,3 +277,30 @@ Call  : -ids 2023-12-14_numIter10_Time20000.006174139522_HSstart10000_HSduration
 Start : 01/18/24 15:04:19
 Script: HSPR_AZ_plot.py
 Call  : -ids 2024-01-18_numIter5_Time20000.017408643056_HSstart10000_HSduration5000.csv -van 1
+Start : 01/18/24 15:23:49
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-01-18_numIter5_Time20000.00196768318_HSstart10000_HSduration5000.csv -van 1
+Start : 01/19/24 15:08:55
+Script: HSPR_AZ_plot.py
+Call  : -nit 3 -tsp 10000 -hss 3000 -hsd 2500
+Start : 01/19/24 15:09:45
+Script: HSPR_AZ_plot.py
+Call  : -nit 3 -tsp 10000 --heatShockStart 3000 -hsd 2500
+Start : 01/19/24 15:11:07
+Script: HSPR_AZ_plot.py
+Call  : -nit 3 -tsp 10000 -hss 3000 -hsd 2500
+Start : 01/19/24 15:11:50
+Script: HSPR_AZ_plot.py
+Call  : -nit 3 -tsp 10000 --heatShockStart 3000 -heatShockDuration 2500
+Start : 01/19/24 15:11:58
+Script: HSPR_AZ_plot.py
+Call  : -nit 3 -tsp 10000 --heatShockStart 3000 --heatShockDuration 2500
+Start : 01/19/24 15:13:21
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-01-19_numIter3_Time10000.005551377395_HSstart3000_HSduration2500.csv
+Start : 01/19/24 15:42:22
+Script: HSPR_AZ_plot.py
+Call  : -nit 3 -tsp 10000 --heatShockStart 3000 --heatShockDuration 2500
+Start : 01/19/24 18:41:41
+Script: HSPR_AZ_plot.py
+Call  : -nit 3 -tsp 10000 --heatShockStart 3000 --heatShockDuration 2500
