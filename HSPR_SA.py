@@ -196,7 +196,7 @@ def simuAnneal(param_dict, opt):
             S_record.append(S)
             param_record.append(param_dict)
             time_used = time.time()-start_t
-            print(f" S = {S}, time used = {time_used}")
+            print(f" S = {S}")
         else: 
             start_t = time.time()
             T = 0.95*T
@@ -211,7 +211,7 @@ def simuAnneal(param_dict, opt):
                 S_record.append(S)
                 param_record.append(param_dict)
                 time_used = time.time()-start_t
-                print(f" accept,  S = {S}, delta_S = {delta_S}, time used = {time_used}")
+                print(f" accept,  S = {S}, delta_S = {delta_S}")
             else:
                 prob = math.exp(-delta_S/T)
                 print(f" prob = {prob}")
@@ -220,7 +220,7 @@ def simuAnneal(param_dict, opt):
                 if accept == 0: 
                     #time_used = time.time()-start_t
                     #print(f"  reject, time used = {time_used}")
-                    print(f"  reject,  S = {S}, delta_S = {delta_S},  time used = {time_used}")
+                    print(f"  reject,  S = {S}, delta_S = {delta_S}")
                     continue
                 else:
                     param_dict = param_dict_new
@@ -228,7 +228,7 @@ def simuAnneal(param_dict, opt):
                     param_record.append(param_dict)
                     #time_used = time.time()-start_t
                     #print(f"  accept, time used = {time_used}")
-                    print(f"  accept,  S = {S}, delta_S = {delta_S},  time used = {time_used}")
+                    print(f"  accept,  S = {S}, delta_S = {delta_S}")
     return S_record, param_record
 
 ##### Functions in SimuAnneal()
@@ -340,7 +340,9 @@ def Gillespie_1step(param_dict, opt):
         R_HSFB_dec=Decay4*HSFB
         listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3,R_HSFB_inc,R_HSFB_dec])
         TotR = np.sum(listR) #production of the MRNA 
-        print(f"total reaction rate: {TotR}", end='\r')
+        if counter >= 5000 and counter <=5010: 
+            print(f"    sum of rate = {TotR}\n    reaction rate: {listR}")
+        
         Rn = random.random() #getting random numbers
         Tau=-math.log(Rn)/TotR #when the next thing happen
         #Rn2= random.uniform(0,TotR) # for the next random number
@@ -428,7 +430,7 @@ def updatePara(param_dict, opt):
     param_dict['a2'] = 10*(random.randint(1,21)) # max HSPR transcription rate, default = 100, search range 10-200
     param_dict['a5'] = random.randint(1,30) # max HSFB transcription rate, default = 5, search range 1-30
     param_dict['a6'] = 10**(random.randint(-2,1)) # refolding rate from MMP-HSPR, default = 0.2, search range = 0.01-1
-    param_dict['a7'] = 10*random.randint(1, 11) # folded protein production rate, default = 10, search range = 10-100
+    #param_dict['a7'] = 10*random.randint(1, 11) # folded protein production rate, default = 10, search range = 10-100
     param_dict['h1'] = param_dict['h2'] = param_dict['h5'] = random.randint(1,10)
     #param_dict['h2'] = random.randint(1,10)
     #param_dict['h5'] = random.randint(1,10)
@@ -436,11 +438,11 @@ def updatePara(param_dict, opt):
     param_dict['c3'] = random.randint(1,6)
     param_dict['d1'] = 10**(random.randint(-2,1)) #search range = 0.01-1
     param_dict['d3'] = 10**(random.randint(-2,1))#search range = 0.01-1
-    param_dict['d4_norm'] = 10**(random.randint(-2,1)) # search range = 0.01-1
-    param_dict['d4_heat'] = param_dict['d4_norm']*5
-    param_dict['Decay1'] = param_dict['Decay2'] = param_dict['Decay4'] = param_dict['Decay6'] = param_dict['Decay7'] = param_dict['Decay8'] = 10**random.randint(-3, 0)
+    #param_dict['d4_norm'] = 10**(random.randint(-2,1)) # search range = 0.01-1
+    #param_dict['d4_heat'] = param_dict['d4_norm']*5
+    #param_dict['Decay1'] = param_dict['Decay2'] = param_dict['Decay4'] = param_dict['Decay6'] = param_dict['Decay7'] = param_dict['Decay8'] = 10**random.randint(-3, 0)
 
-    param_dict['Decay5'] = param_dict['Decay1']*(10**random.randint(1,3))#MMP decay rate
+    #param_dict['Decay5'] = param_dict['Decay1']*(10**random.randint(1,3))#MMP decay rate
     param_dict['hillcoeff']  = random.randint(1,3)
     param_dict['leakage'] = 0.001
     #time_used = time.time()-start_t

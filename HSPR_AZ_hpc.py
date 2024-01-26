@@ -42,9 +42,6 @@ description
 --misfoldRateHS,-mfh
     The formation rate of misfolded protein from folded protein under heat shock condition (default: 0.05)
 
---decayMMP_HSPR,-dmh
-    The decay rate 8 of MMP-HSPR complex (default: 0.01)
-
 --assoMMP_HSPR,-amh
     The association rate between MMP and HSPR, c3 (default: 0.5)
 
@@ -55,7 +52,7 @@ description
     Whether HSFA2 positively regulates itself in the model (default: 0)
 
 --leakage,-lkg
-    Trancription leakage (default: 0.01)
+    Trancription leakage (default: 0.001)
 
 --hilHalfSaturation,-hhs
     The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
@@ -69,8 +66,8 @@ description
 --foldedProduction,-fpp
     a7, folded protein production rate (default: 10)
 
---foldedDecay,-fpd
-    decay6, decay rate of folded protein (default: 0.01)
+--globalDecayRate,-gdr
+    the decay rate of species except for MMP (default:0.01)
 
 --outputFormat,-ofm
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
@@ -169,7 +166,7 @@ def param_spec(opt):
         'init_HSPR': 2,
         'init_C_HSFA1_HSPR': 50,
         'init_MMP': 0,
-        'init_FMP': 50,
+        'init_FMP': 700,
         'init_C_HSPR_MMP': 50,
         'init_HSFA2': 1,
         'init_HSFB': 1,
@@ -198,13 +195,13 @@ def param_spec(opt):
         'd3': 0.01, # dissociation rate of MMP-HSPR
         'd4_heat': float(opt.mfh),
         'd4_norm': float(opt.mfn),
-        'Decay1': 0.01,
-        'Decay2': 0.01, # decay of free HSPR
-        'Decay3': 0.01,
-        'Decay4': 0.01,
-        'Decay6': float(opt.fpd),
-        'Decay7': 0.01, # decay path 2 of A1-HSPR
-        'Decay8': float(opt.dmh), # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
+        'Decay1': float(opt.gdr),
+        'Decay2': float(opt.gdr), # decay of free HSPR
+        'Decay3': float(opt.gdr),
+        'Decay4': float(opt.gdr),
+        'Decay6': float(opt.gdr),
+        'Decay7': float(opt.gdr), # decay path 2 of A1-HSPR
+        'Decay8': float(opt.gdr), # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
         ####
         'leakage': float(opt.lkg),

@@ -88,3 +88,15 @@ Call  : -nit 5 -fpp 100 -fpd 7.5 -mfh 0.125 -lkg 0.001 -amh 5.0
 Start : 01/19/24 15:12:23
 Script: HSPR_AZ_hpc.py
 Call  : -nit 3 -tsp 10000 -hss 3000 -hsd 2500
+Start : 01/26/24 14:17:28
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -tsp 200 -hss 100 -hsd 3
+Start : 01/26/24 14:17:56
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -tsp 200 -hss 100 -hsd 3
+Start : 01/26/24 14:19:53
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -tsp 200 -hss 100 -hsd 3
+Start : 01/26/24 14:22:46
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -tsp 2000 -hss 1000 -hsd 30

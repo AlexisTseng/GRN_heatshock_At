@@ -3,7 +3,7 @@
 # author: Rituparna Goswami, Enrico Sandro Colizzi, Alexis Jiayi Zeng
 script_usage="""
 usage
-    HSPR_AZ_v3.py -nit <numberInteration> -tsp <timeStep> [options]
+    HSPR_AZ_plot.py -ids <importDataSuffix> [options]
 
 version
     HSPR_AZ_v3.py 0.0.2 (alpha)
