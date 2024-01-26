@@ -46,7 +46,7 @@ description
     The association rate between MMP and HSPR, c3 (default: 0.5)
 
 --hillCoeff,-hco
-    The Hill Coefficient (default: 1)
+    The Hill Coefficient (default: 2)
 
 --A2positiveAutoReg,-a2p
     Whether HSFA2 positively regulates itself in the model (default: 0)
@@ -73,7 +73,7 @@ description
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
 
 --samplingFreq,-spf
-    How often is simulation datasaved (default: 1)
+    How often is simulation datasaved (default: 1.0)
 
 ################################################################################
 
@@ -627,8 +627,8 @@ def gillespie_woA2(param_dict, opt):
             Time+=Tau # the new time the time before the step +the time to happen the next step ()
             counter += 1
             # print (Time,listM)
-            if int(Time) == int(last_time) + opt.spf:
-                listtime.append(int(Time)) #this is to add stuff to the list
+            if "{:.1f}".format(Time) == last_time + opt.spf:
+                listtime.append("{:.1f}".format(Time)) #this is to add stuff to the list
                 listM2.append(listM)
         listM4.append(listM2)
         listtime2.append(listtime)
