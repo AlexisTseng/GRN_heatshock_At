@@ -14,12 +14,12 @@
 
 #SBATCH -D /home/jz531/rds/hpc-work/GRN_heatshock_At/
 #SBATCH -o /home/jz531/rds/hpc-work/hpc_output/Gilespie_output.log
-#SBATCH -c 5     # increase if doing multiprocessing, max 32 CPUs
+#SBATCH -c 10     # increase if doing multiprocessing, max 32 CPUs
 #SBATCH --array=1 # max is 9999
 #SBATCH --mem-per-cpu=5980MB   # max 5980MB or 12030MB for skilake-himem
 
 #! How much wallclock time will be required?
-#SBATCH --time 2:00:00            # HH:MM:SS with maximum 12:00:00 for SL3 or 36:00:00 for SL2
+#SBATCH --time 10:00:00            # HH:MM:SS with maximum 12:00:00 for SL3 or 36:00:00 for SL2
 
 
 #! prevent the job from being requeued (e.g. if interrupted by node failure or system downtime):
