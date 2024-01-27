@@ -127,3 +127,24 @@ Call  : -nit 10 -tsp 1200 -hss 700 -hsd 3 -hhs 2.0
 Start : 01/26/24 15:19:33
 Script: HSPR_AZ_hpc.py
 Call  : -nit 10 -tsp 1200 -hss 700 -hsd 3 -hhs 2.0 -spf 0.1
+Start : 01/26/24 15:24:03
+Script: HSPR_AZ_hpc.py
+Call  : -nit 10 -tsp 1200 -hss 700 -hsd 3 -hhs 2.0 -spf 0.1
+Start : 01/26/24 15:27:30
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -tsp 10 -hss 700 -hsd 3 -hhs 2.0 -spf 0.1
+Start : 01/26/24 15:27:41
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -tsp 10 -hss 700 -hsd 3 -hhs 2.0 -spf 0.1
+Start : 01/26/24 15:28:57
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -tsp 10 -hss 700 -hsd 3 -hhs 2.0 -spf 0.1
+Start : 01/26/24 15:29:55
+Script: HSPR_AZ_hpc.py
+Call  : -nit 10 -tsp 1200 -hss 700 -hsd 3 -hhs 2.0 -spf 0.1
+Start : 01/26/24 15:30:06
+Script: HSPR_AZ_hpc.py
+Call  : -nit 10 -tsp 1200 -hss 700 -hsd 3 -hhs 2.0 -spf 0.1
+Start : 01/26/24 16:25:37
+Script: HSPR_AZ_hpc.py
+Call  : -nit 10 -tsp 1200 -hss 700 -hsd 3 -spf 0.1

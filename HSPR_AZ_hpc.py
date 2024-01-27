@@ -55,7 +55,7 @@ description
     Trancription leakage (default: 0.001)
 
 --hilHalfSaturation,-hhs
-    The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
+    The conc of inducer/repressor at half-max transcriptional rate (default: 10.0)
 
 --maxA1,-ma1
     a1, the max transcription rate of A1 (default: 10.0)
@@ -64,7 +64,7 @@ description
     decay1, decay rate of free A1 (default: 0.01)
 
 --foldedProduction,-fpp
-    a7, folded protein production rate (default: 10)
+    a7, folded protein production rate (default: 500)
 
 --globalDecayRate,-gdr
     the decay rate of species except for MMP (default:0.01)
@@ -73,7 +73,7 @@ description
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
 
 --samplingFreq,-spf
-    How often is simulation datasaved (default: 1.0)
+    How often is simulation datasaved (default: 0.1)
 
 ################################################################################
 
@@ -173,13 +173,13 @@ def param_spec(opt):
         'Time': 0.0,
         ## Maximum expression level in Hill equation
         'a1': float(opt.ma1), #10
-        'a2': 100.0,
+        'a2': 1000.0,
         'a3': 5.0,
         'a4': 5.0,
-        'a5': 5.0,
+        'a5': 50.0,
         'a6': 0.2, # refolding rate from MMP-HSPR
         'a7': int(opt.fpp), #folded protein production rate
-        'a8': 5.0,
+        'a8': 50.0,
         ## Ka in Hill equation
         'h1': float(opt.hhs), #1
         'h2': float(opt.hhs),
@@ -627,7 +627,9 @@ def gillespie_woA2(param_dict, opt):
             Time+=Tau # the new time the time before the step +the time to happen the next step ()
             counter += 1
             # print (Time,listM)
-            if "{:.1f}".format(Time) == last_time + opt.spf:
+            #print("{:.1f}".format(Time))
+            #print(last_time + opt.spf)
+            if "{:.1f}".format(Time) == "{:.1f}".format(last_time + opt.spf):
                 listtime.append("{:.1f}".format(Time)) #this is to add stuff to the list
                 listM2.append(listM)
         listM4.append(listM2)

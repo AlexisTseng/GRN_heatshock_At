@@ -88,9 +88,11 @@ def main(opt):
 
     print("Step4: Plot Temporal Trajectories")
     ## Plot trajectories of all species for all iterations
-    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
+    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd)
 
     plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
+
+
     #plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
     #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, opt)
@@ -243,7 +245,7 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
 ## 5. Plotting Trajectories
 #######################################################################
 
-def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt):
+def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd):
 
     print(" Plot trajectories of all species for all iterations")
     conc_col = data_df.drop(columns = ["time", "Iteration_Identifier"])
@@ -254,6 +256,7 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
             ax.plot(data_df['time'], data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
         ax.set_xlabel('Time')
         ax.set_ylabel('Concentration')
+        ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
         ax.legend(loc="upper right")
         ax.set_title(f"iteration 0")
         ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
@@ -269,6 +272,7 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
             ax.set_xlabel('Time')
             ax.set_ylabel('Concentration')
             ax.legend(loc="upper right")
+            ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
             ax.set_title(f"{Iteration_Identifier}")
             # Move the legend outside the plot
             ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
@@ -289,6 +293,9 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
+
+
+
 def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt):
 
     print("Zoomed In Trajectory Around HeatShock")
@@ -301,6 +308,7 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration
             ax.plot(cut_data_df['time'], cut_data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
         ax.set_xlabel('Time (hour)')
         ax.set_ylabel('Concentration')
+        ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
         ax.legend(loc="upper right")
         ax.set_title(f"iteration 0")
         ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
@@ -316,6 +324,7 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration
                 ax.plot(group_data['time'], group_data[f'{species}'], label ='{}'.format(species), linewidth = 1) 
             ax.set_xlabel('Time (hour)')
             ax.set_ylabel('Concentration')
+            ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
             ax.legend(loc="upper right")
             ax.set_title(f"{Iteration_Identifier}")
             # Move the legend outside the plot
@@ -336,6 +345,9 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration
 
     if bool(opt.shf) == True: plt.show()
     plt.close()
+
+
+
 
 def plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt):
 
