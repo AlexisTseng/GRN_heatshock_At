@@ -88,15 +88,14 @@ def main(opt):
 
     print("Step4: Plot Temporal Trajectories")
     ## Plot trajectories of all species for all iterations
-    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd)
+    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd)
 
-    #plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
+    plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
 
-    plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
 
     #plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
-    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, hss, hsd, opt)
+    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, opt)
     ## Plot overlayed trajectory of A1 concentrations for all trajectory
     #plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, name_suffix, opt)
 
@@ -255,8 +254,8 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
         fig, ax = plt.subplots(figsize=(15, 5))
         for species in conc_col:
             ax.plot(data_df['time'], data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-        ax.set_xlabel('Time (hour)')
-        ax.set_ylabel('Protein copy number')
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Concentration')
         ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
         ax.legend(loc="upper right")
         ax.set_title(f"iteration 0")
@@ -270,8 +269,8 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
         for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):# Now 'ax' is a 1D array, and you can iterate over it
             for species in conc_col:
                 ax.plot(group_data['time'], group_data[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-            ax.set_xlabel('Time (hour)')
-            ax.set_ylabel('Protein copy number')
+            ax.set_xlabel('Time')
+            ax.set_ylabel('Concentration')
             ax.legend(loc="upper right")
             ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
             ax.set_title(f"{Iteration_Identifier}")
@@ -294,71 +293,12 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
-def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt):
 
-    print(" Plot trajectories of Proteins and Regulators")
-    reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
-
-    if numberofiteration == 1:
-        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
-        ax[0].plot(data_df['time'], data_df['FMP'],label ='{}'.format('FMP'), linewidth = 1)
-        ax[0].plot(data_df['time'], data_df['MMP'],label ='{}'.format('FMP'), linewidth = 1)
-        ax[0].set_xlabel('Time (hour)')
-        ax[0].set_ylabel('Protein copy number')
-        ax[0].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
-        ax[0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-
-        for species in reg_conc_col:
-            ax[1].plot(data_df['time'], data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-        ax[1].set_xlabel('Time (hour)')
-        ax[1].set_ylabel('Protein copy number')
-        ax[1].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
-        ax[1].legend(loc="upper right")
-        ax[1].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-        # Adjust the figure size to accommodate the legend
-        plt.subplots_adjust(right=0.8)  # Increase the right margin
-
-    else:
-        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
-        #ax = ax.flatten() # Flatten the 2D array of subplots to a 1D array
-        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
-            ax[i,0].plot(group_data['time'], group_data['FMP'],label ='{}'.format('FMP'), linewidth = 1)
-            ax[i,0].plot(group_data['time'], group_data['MMP'],label ='{}'.format('FMP'), linewidth = 1)
-            ax[i,0].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
-            ax[i,0].set_xlabel('Time (hour)')
-            ax[i,0].set_ylabel('Protein copy number')
-            ax[i,0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-            ax[i,0].set_title(f"{Iteration_Identifier}")
-
-            for species in reg_conc_col:
-                ax[i,1].plot(group_data['time'], group_data[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-            ax[i,1].set_xlabel('Time')
-            ax[i,1].set_ylabel('Concentration')
-            ax[i,1].legend(loc="upper right")
-            ax[i,1].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
-            # Move the legend outside the plot
-            ax[i,1].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-            # Adjust the figure size to accommodate the legend
-            plt.subplots_adjust(right=0.8)  # Increase the right margin
-    #fig.suptitle('Trajectories of Proteins and Regulators')
-    plt.tight_layout()
-
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/ProReg_{name_suffix}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/ProReg_{name_suffix}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        print(f" save figure {opt.sfg == True}")
-
-    if bool(opt.shf) == True: plt.show()
-    plt.close()
 
 
 def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt):
 
-    print(" Zoomed In Trajectory Around HeatShock")
+    print("Zoomed In Trajectory Around HeatShock")
     cut_data_df = data_df[(data_df['time'] >= hss -50) & (data_df['time'] <= hss + hsd + 100)]
     conc_col = cut_data_df.drop(columns = ["time", "Iteration_Identifier"])
     
@@ -456,15 +396,14 @@ def plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
     plt.close()
 
 
-def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, hss, hsd, opt):
+def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, opt):
     print("Plot trajectory of total HSPR for all iterations")
     if numberofiteration == 1:
         # If only one subplot, create a single subplot without flattening
         fig, ax = plt.subplots(figsize=(15, 10))
         ax.plot(data_df['time'], data_df['totalHSPR']) 
-        ax.set_xlabel('Time (hour)')
+        ax.set_xlabel('time')
         ax.set_ylabel('totalHSPR')
-        ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
         ax.legend(loc="upper right")
         ax.set_title(f"iteration 0")
     else:
@@ -475,9 +414,8 @@ def plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofitera
         # Iterate through grouped data and plot on each subplot
         for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):
             ax.plot(group_data['time'], group_data['totalHSPR'], label='{}'.format(Iteration_Identifier))
-            ax.set_xlabel('Time (hour)')
+            ax.set_xlabel('time')
             ax.set_ylabel('totalHSPR')
-            ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
             ax.set_title(f"{Iteration_Identifier}")
             ax.legend(loc="upper right")
 
