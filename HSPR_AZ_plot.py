@@ -104,10 +104,10 @@ def main(opt):
     if bool(opt.van) == True:
         df_list = df_Processing_HS(data_df, plot_dir,hss,hsd, end_time, opt)
         bootstrap_HSPR_hist_overlap(df_list, plot_dir, name_suffix, opt)
-        #bootstrap_HSPR_hist_subplot(df_list, plot_dir, name_suffix, opt)
-        #totalHSPR_df_outlist = df_HSPR_stats(df_list, opt)
-        #plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
-        #plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
+        bootstrap_HSPR_hist_subplot(df_list, plot_dir, name_suffix, opt)
+        totalHSPR_df_outlist = df_HSPR_stats(df_list, opt)
+        plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
+        plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
 
 
 
@@ -640,7 +640,7 @@ def plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt):
     label_list = ["before HS", "during HS", "after HS"]
 
     for df, label in zip(totalHSPR_df_outlist, label_list):
-        plt.hist(df['mean_totalHSPR'], label=label, density=True, alpha=0.50)
+        plt.hist(df['mean_totalHSPR'], bins = range(0,200,1), label=label, density=True, alpha=0.50)
 
     plt.title("Distribution of mean total HSPR")
     plt.xlabel("total HSPR")
