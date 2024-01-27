@@ -364,3 +364,6 @@ Call  : -nit 2 -tsp 120 -hss 70 -hsd 3
 Start : 01/27/24 20:11:04
 Script: HSPR_AZ_hpc.py
 Call  : -nit 2 -tsp 120 -hss 70 -hsd 3
+Start : 01/27/24 20:20:22
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -tsp 120 -hss 70 -hsd 3

@@ -78,9 +78,6 @@ description
 --thread,-thr
     The number of threads used for multiprocessing (default: 4)
 
---thread,-thr
-    The number of threads used for multiprocessing (default: 4)
-
 ################################################################################
 
 reference
@@ -175,8 +172,8 @@ def param_spec(opt):
         'init_HSFA1': 1,
         'init_HSPR': 2,
         'init_C_HSFA1_HSPR': 50,
-        'init_MMP': 0,
-        'init_FMP': 700,
+        'init_MMP': 2500,
+        'init_FMP': 25000,
         'init_C_HSPR_MMP': 50,
         'init_HSFA2': 1,
         'init_HSFB': 1,
@@ -557,23 +554,6 @@ def gillespie_woA2(param_dict, opt):
           [0,0,0,0,0,0,1], #R_HSFB_inc
           [0,0,0,0,0,0,-1] #R_HSFB_dec
           ]
-          [-1,0,0,0,0,0,0], #R_HSFA1_dec
-          [0,1,0,0,0,0,0], #R_HSPR_inc
-          [0,-1,0,0,0,0,0], #R_HSPR_dec
-          [-1,-1,1,0,0,0,0], #R_C_HSFA1_HSPR_inc
-          [1,1,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec1
-          [0,0,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec2
-          [0,0,0,1,-1,0,0], #R_MMP_inc
-          [0,0,0,-1,0,0,0], #R_MMP_dec
-          [0,0,0,0,1,0,0], #R_FMP_inc
-          [0,0,0,0,-1,0,0], #R_FMP_dec
-          [0,-1,0,-1,0,1,0], #R_C_HSPR_MMP_inc
-          [0,1,0,1,0,-1,0], #R_C_HSPR_MMP_dec1 = dissociation of the complex to form free HSPR and MMP
-          [0,1,0,0,1,-1,0], #R_C_HSPR_MMP_dec2 = refolding step, dissociation of the complex to form free HSPR and FMP 
-          [0,0,0,0,0,-1,0], #R_C_HSPR_MMP_dec3, complex decrease by 1, decay 8
-          [0,0,0,0,0,0,1], #R_HSFB_inc
-          [0,0,0,0,0,0,-1] #R_HSFB_dec
-          ]
     for i in range(numberofiteration):    
         print(f" \n iteration: {i}")
         listM = np.array([param_dict["init_HSFA1"],
@@ -591,6 +571,7 @@ def gillespie_woA2(param_dict, opt):
         while Time < int(opt.tsp): 
             if counter % 5000 ==0 and counter != 0:
                 print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
+            HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
 
             if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
             else: d4 = param_dict['d4_norm']
