@@ -1,0 +1,3 @@
+Start : 01/27/24 19:30:01
+Script: HSPR_AZ_hpc_test.py
+Call  : -nit 1 -tsp 10
