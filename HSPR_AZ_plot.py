@@ -81,18 +81,20 @@ def main(opt):
     #exit()
 
     print("Step 4: Generate Plot Name")
-    name_suffix = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
+    name_suffix, diff_dict = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
     #print(diff_dict)
     #print(name_suffix)
 
 
     print("Step4: Plot Temporal Trajectories")
     ## Plot trajectories of all species for all iterations
-    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd)
+    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
 
     #plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
 
-    plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
+    #plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
+
+    #plot_FMPMMP_zoom(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
 
     #plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
@@ -175,7 +177,7 @@ def import_tidy_simuData(data_dir, numberofiteration, opt):
 ## 4. Generate Plot Name Suffix
 #######################################################################
 
-def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
+def genPlotName_nondefault_2(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
     default_param_dict = {
         ## initial concentrations
         'init_HSFA1': 1,
@@ -239,6 +241,69 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         name_suffix += f"_{key}-{val}"
     return name_suffix
 
+def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
+    default_param_dict = {
+        ## initial concentrations
+        'init_HSFA1': 1,
+        'init_HSPR': 2,
+        'init_C_HSFA1_HSPR': 50,
+        'init_MMP': 0,
+        'init_FMP': 50,
+        'init_C_HSPR_MMP': 50,
+        'init_HSFA2': 1,
+        'init_HSFB': 1,
+        'Time': 0.0,
+        ## Maximum expression level in Hill equation
+        'a1': 10.0,
+        'a2': 100.0,
+        'a3': 5.0,
+        'a4': 5.0,
+        'a5': 5.0,
+        'a6': 0.2, # refolding rate from MMP-HSPR
+        'a7': 10,
+        'a8': 5.0,
+        ## Ka in Hill equation
+        'h1': 1.0,
+        'h2': 1.0,
+        'h3': 1.0,
+        'h4': 1.0,
+        'h5': 1.0,
+        'h6': 1.0,
+        ## association rates
+        'c1': 10.0,
+        'c3': 0.5, #between MMP and HSPR
+        ## decay rates
+        'd1': 0.1, # decay path 1 of A1-HSPR
+        'd3': 0.01, # dissociation rate of MMP-HSPR
+        'd4_heat': 0.05,
+        'd4_norm': 0.01,
+        'Decay1': 0.01,
+        'Decay2': 0.01, # decay of free HSPR
+        'Decay3': 0.01,
+        'Decay4': 0.01,
+        'Decay6': 0.01,
+        'Decay7': 0.01, # decay path 2 of A1-HSPR
+        'Decay8': 0.01, # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
+        'Decay5': 0.1,
+        ####
+        'leakage': 0.001,
+        'hillcoeff': 2,
+        'numberofiteration': numberofiteration,
+        'hstart':hss,
+        'hduration':hsd,
+        'end_time':end_time
+    }
+    diff_dict = {}
+    for (dk,dv) in default_param_dict.items():
+        if str(param_dict[dk]) != str(dv):
+            print(f"default: {dk}, {dv}")
+            print(f"actual: {dk}, {param_dict[dk]}")
+            diff_dict[dk] = param_dict[dk]
+
+    name_suffix = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}\n"
+    for key, val in diff_dict.items():
+        name_suffix += f"_{key}-{val}"
+    return name_suffix, diff_dict
 
 
 
@@ -246,7 +311,26 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
 ## 5. Plotting Trajectories
 #######################################################################
 
-def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd):
+def plot_trajectory(ax, data_df, x_col, y_col, hss, hsd,):
+    ax.plot(data_df[x_col], data_df[y_col], label=y_col, linewidth=1)
+    ax.set_xlabel('Time (hour)')
+    ax.set_ylabel('Protein copy number')
+    ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
+    ax.legend(loc='upper left')
+    ax.set_title(f"iteration 0")
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+
+def saveFig(prefix ='allConcTraj', plot_dir, name_suffix, opt):
+    if bool(opt.sfg) == True:
+        plot_name = f"{plot_dir}/{prefix}_{name_suffix}.pdf"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+        plot_name = f"{plot_dir}/{prefix}_{name_suffix}.svg"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+        print(f" save figure {opt.sfg == True}")
+
+def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict):
 
     print(" Plot trajectories of all species for all iterations")
     conc_col = data_df.drop(columns = ["time", "Iteration_Identifier"])
@@ -263,6 +347,9 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
         ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
         # Adjust the figure size to accommodate the legend
         plt.subplots_adjust(right=0.8)  # Increase the right margin
+        left_margin = 0.15  # Adjust as needed
+        plt.subplots_adjust(left=left_margin)
+        fig.text(0.5, 1.05, name_suffix, transform=ax.transAxes, ha='center', va='center')
 
     else:
         fig, ax = plt.subplots(nrows= numberofiteration, figsize=(15,5*numberofiteration))
@@ -278,19 +365,15 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
             # Move the legend outside the plot
             ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
             # Adjust the figure size to accommodate the legend
+            left_margin = 0.3  # Adjust as needed
             plt.subplots_adjust(right=0.8)  # Increase the right margin
-    fig.suptitle('Plot of all concentrations vs time for all iterations separately')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    #fig.suptitle('Plot of all concentrations vs time for all iterations separately', fontsize=16, y = 1)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    
     plt.tight_layout()
 
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/allConcTraj_{name_suffix}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/allConcTraj_{name_suffix}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        print(f" save figure {opt.sfg == True}")
-
+    saveFig(prefix ='allConcTraj', plot_dir, name_suffix, opt)
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
@@ -300,9 +383,9 @@ def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_su
     reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
 
     if numberofiteration == 1:
-        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
+        fig, ax = plt.subplots(ncols=3, figsize=(20, 5))
         ax[0].plot(data_df['time'], data_df['FMP'],label ='{}'.format('FMP'), linewidth = 1)
-        ax[0].plot(data_df['time'], data_df['MMP'],label ='{}'.format('FMP'), linewidth = 1)
+        ax[0].plot(data_df['time'], data_df['MMP'],label ='{}'.format('MMP'), linewidth = 1)
         ax[0].set_xlabel('Time (hour)')
         ax[0].set_ylabel('Protein copy number')
         ax[0].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
@@ -320,10 +403,9 @@ def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_su
 
     else:
         fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
-        #ax = ax.flatten() # Flatten the 2D array of subplots to a 1D array
         for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
             ax[i,0].plot(group_data['time'], group_data['FMP'],label ='{}'.format('FMP'), linewidth = 1)
-            ax[i,0].plot(group_data['time'], group_data['MMP'],label ='{}'.format('FMP'), linewidth = 1)
+            ax[i,0].plot(group_data['time'], group_data['MMP'],label ='{}'.format('MMP'), linewidth = 1)
             ax[i,0].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
             ax[i,0].set_xlabel('Time (hour)')
             ax[i,0].set_ylabel('Protein copy number')
@@ -341,6 +423,8 @@ def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_su
             # Adjust the figure size to accommodate the legend
             plt.subplots_adjust(right=0.8)  # Increase the right margin
     #fig.suptitle('Trajectories of Proteins and Regulators')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
     if bool(opt.sfg) == True:
@@ -391,7 +475,9 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration
             ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
             # Adjust the figure size to accommodate the legend
             plt.subplots_adjust(right=0.8)  # Increase the right margin
-    fig.suptitle('Zoomed In Trajectories, Around HeatShock')
+    #fig.suptitle('Zoomed In Trajectories, Around HeatShock')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
     if bool(opt.sfg) == True:
@@ -406,6 +492,71 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
+def plot_FMPMMP_zoom(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt):
+
+    print(" Zoomed In Protein & Regulator Trajectory Around HeatShock")
+    cut_data_df = data_df[(data_df['time'] >= hss -50) & (data_df['time'] <= hss + hsd + 100)]
+    reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
+    
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
+        ax[0].plot(cut_data_df['time'], cut_data_df['FMP'],label ='{}'.format('FMP'), linewidth = 1)
+        ax[0].plot(cut_data_df['time'], cut_data_df['MMP'],label ='{}'.format('MMP'), linewidth = 1)
+        ax[0].set_xlabel('Time (hour)')
+        ax[0].set_ylabel('Protein copy number')
+        ax[0].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
+        ax[0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+
+        for species in reg_conc_col:
+            ax[1].plot(cut_data_df['time'], cut_data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
+        ax[1].set_xlabel('Time (hour)')
+        ax[1].set_ylabel('Concentration')
+        ax[1].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
+        ax[1].legend(loc="upper right")
+        ax[1].set_title(f"iteration 0")
+        ax[1].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+        # Adjust the figure size to accommodate the legend
+        plt.subplots_adjust(right=0.8)  # Increase the right margin
+
+    else:
+        grouped_data = cut_data_df.groupby('Iteration_Identifier')
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+    
+        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
+            ax[i,0].plot(group_data['time'], group_data['FMP'],label ='{}'.format('FMP'), linewidth = 1)
+            ax[i,0].plot(group_data['time'], group_data['MMP'],label ='{}'.format('MMP'), linewidth = 1)
+            ax[i,0].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
+            ax[i,0].set_xlabel('Time (hour)')
+            ax[i,0].set_ylabel('Protein copy number')
+            ax[i,0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+            ax[i,0].set_title(f"{Iteration_Identifier}")
+
+            for species in reg_conc_col:
+                ax[i,1].plot(group_data['time'], group_data[f'{species}'], label ='{}'.format(species), linewidth = 1) 
+            ax[i,1].set_xlabel('Time (hour)')
+            ax[i,1].set_ylabel('Concentration')
+            ax[i,1].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
+            ax[i,1].legend(loc="upper right")
+            ax[i,1].set_title(f"{Iteration_Identifier}")
+            ax[i,1].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+            # Adjust the figure size to accommodate the legend
+            plt.subplots_adjust(right=0.8)  # Increase the right margin
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    #fig.suptitle('Zoomed In Trajectories, Around HeatShock')
+    plt.tight_layout()
+
+    if bool(opt.sfg) == True:
+        plot_name = f"{plot_dir}/ProRegZoom_{name_suffix}.pdf"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+        plot_name = f"{plot_dir}/ProRegZoom_{name_suffix}.svg"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+        print(f" save figure {opt.sfg == True}")
+
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
 
 
 
@@ -440,7 +591,9 @@ def plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
             ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
             # Adjust the figure size to accommodate the legend
             plt.subplots_adjust(right=0.8)  # Increase the right margin
-    fig.suptitle('Plot of all concentrations vs time for all iterations separately')
+    #fig.suptitle('Plot of all concentrations vs time for all iterations separately')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
     if bool(opt.sfg) == True:
