@@ -311,16 +311,17 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
 ## 5. Plotting Trajectories
 #######################################################################
 
-def plot_trajectory(ax, data_df, x_col, y_col, hss, hsd,):
-    ax.plot(data_df[x_col], data_df[y_col], label=y_col, linewidth=1)
+def plot_trajectory(ax, data_df, x_col, y_col_list, hss, hsd, Iteration_Identifier):
+    for y_col in y_col_list:
+        ax.plot(data_df[x_col], data_df[y_col], label=y_col, linewidth=1)
     ax.set_xlabel('Time (hour)')
     ax.set_ylabel('Protein copy number')
     ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
+    ax.set_title(f"{Iteration_Identifier}")
     ax.legend(loc='upper left')
-    ax.set_title(f"iteration 0")
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 
-def saveFig(prefix ='allConcTraj', plot_dir, name_suffix, opt):
+def saveFig(plot_dir, name_suffix, opt, prefix):
     if bool(opt.sfg) == True:
         plot_name = f"{plot_dir}/{prefix}_{name_suffix}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
@@ -338,42 +339,21 @@ def plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,n
     if numberofiteration == 1:
         fig, ax = plt.subplots(figsize=(15, 5))
         for species in conc_col:
-            ax.plot(data_df['time'], data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-        ax.set_xlabel('Time (hour)')
-        ax.set_ylabel('Protein copy number')
-        ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
-        ax.legend(loc="upper right")
-        ax.set_title(f"iteration 0")
-        ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-        # Adjust the figure size to accommodate the legend
-        plt.subplots_adjust(right=0.8)  # Increase the right margin
-        left_margin = 0.15  # Adjust as needed
-        plt.subplots_adjust(left=left_margin)
-        fig.text(0.5, 1.05, name_suffix, transform=ax.transAxes, ha='center', va='center')
-
+            #ax.plot(data_df['time'], data_df[f'{species}'], label ='{}'.format(species), linewidth = 1) 
+            plot_trajectory(ax, data_df, 'time', conc_col, hss, hsd, "iteration 0")
     else:
         fig, ax = plt.subplots(nrows= numberofiteration, figsize=(15,5*numberofiteration))
         ax = ax.flatten() # Flatten the 2D array of subplots to a 1D array
         for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):# Now 'ax' is a 1D array, and you can iterate over it
-            for species in conc_col:
-                ax.plot(group_data['time'], group_data[f'{species}'], label ='{}'.format(species), linewidth = 1) 
-            ax.set_xlabel('Time (hour)')
-            ax.set_ylabel('Protein copy number')
-            ax.legend(loc="upper right")
-            ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
-            ax.set_title(f"{Iteration_Identifier}")
-            # Move the legend outside the plot
-            ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-            # Adjust the figure size to accommodate the legend
-            left_margin = 0.3  # Adjust as needed
-            plt.subplots_adjust(right=0.8)  # Increase the right margin
+            #for species in conc_col:
+            plot_trajectory(ax, group_data, 'time', conc_col, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
     fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
     #fig.suptitle('Plot of all concentrations vs time for all iterations separately', fontsize=16, y = 1)
     fig.suptitle(' ', fontsize=16, y = 1)
-    
     plt.tight_layout()
 
-    saveFig(prefix ='allConcTraj', plot_dir, name_suffix, opt)
+    saveFig(plot_dir, name_suffix, opt, prefix ='allConcTraj')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
@@ -381,7 +361,7 @@ def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_su
 
     print(" Plot trajectories of Proteins and Regulators")
     reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
-
+    #plot_trajectory(ax = ax[0], data_df, 'time', species, hss, hsd, "iteration 0")
     if numberofiteration == 1:
         fig, ax = plt.subplots(ncols=3, figsize=(20, 5))
         ax[0].plot(data_df['time'], data_df['FMP'],label ='{}'.format('FMP'), linewidth = 1)
@@ -398,8 +378,7 @@ def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_su
         ax[1].axvspan(hss, hss+hsd, facecolor='r', alpha=0.5)
         ax[1].legend(loc="upper right")
         ax[1].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-        # Adjust the figure size to accommodate the legend
-        plt.subplots_adjust(right=0.8)  # Increase the right margin
+
 
     else:
         fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
@@ -421,20 +400,13 @@ def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_su
             # Move the legend outside the plot
             ax[i,1].legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
             # Adjust the figure size to accommodate the legend
-            plt.subplots_adjust(right=0.8)  # Increase the right margin
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
     #fig.suptitle('Trajectories of Proteins and Regulators')
     fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    if bool(opt.sfg) == True:
-        plot_name = f"{plot_dir}/ProReg_{name_suffix}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        plot_name = f"{plot_dir}/ProReg_{name_suffix}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        print(f" save figure {opt.sfg == True}")
+    saveFig(plot_dir, name_suffix, opt, prefix ='ProReg', )
 
     if bool(opt.shf) == True: plt.show()
     plt.close()
