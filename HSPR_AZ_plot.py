@@ -88,9 +88,9 @@ def main(opt):
 
     print("Step4: Plot Temporal Trajectories")
     ## Plot trajectories of all species for all iterations
-    plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
+    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
 
-    plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
+    #plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
 
     plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
 
@@ -383,18 +383,22 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration
 def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt):
 
     print(" Plot trajectories of Proteins and Regulators")
-    reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
-    
+    HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
+    reg = ['HSFA1','HSFB']
+    protein = ['FMP','MMP']
+
     if numberofiteration == 1:
-        fig, ax = plt.subplots(ncols=3, figsize=(20, 5))
-        plot_trajectory(ax[0], data_df, 'time', ['FMP','MMP'], hss, hsd, "iteration 0")
-        plot_trajectory(ax[1], data_df, 'time', reg_conc_col, hss, hsd, "iteration 0")
+        fig, ax = plt.subplots(ncols=3, figsize=(27, 5))
+        plot_trajectory(ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
+        plot_trajectory(ax[1], data_df, 'time', HSPR_complex, hss, hsd, "iteration 0")
+        plot_trajectory(ax[2], data_df, 'time', reg, hss, hsd, "iteration 0")
 
     else:
-        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 3, figsize=(27,5*numberofiteration))
         for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
-            plot_trajectory(ax[i,0], group_data, 'time', ['FMP','MMP'], hss, hsd, Iteration_Identifier = Iteration_Identifier)
-            plot_trajectory(ax[i,1], group_data, 'time', reg_conc_col, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,0], group_data, 'time', protein, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,1], group_data, 'time', HSPR_complex, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,2], group_data, 'time', reg, hss, hsd, Iteration_Identifier = Iteration_Identifier)
     plt.subplots_adjust(right=0.8)  # Increase the right margin
     #fig.suptitle('Trajectories of Proteins and Regulators')
     fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
