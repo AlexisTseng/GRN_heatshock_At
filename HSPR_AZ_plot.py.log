@@ -619,3 +619,9 @@ Call  : -ids 2024-01-26_numIter10_Time1200.0003864998876_HSstart700_HSduration3
 Start : 01/31/24 02:55:47
 Script: HSPR_AZ_plot.py
 Call  : -ids 2024-01-26_numIter10_Time1200.0003864998876_HSstart700_HSduration3.csv
+Start : 01/31/24 03:47:29
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-01-31_numIter5_Time440.00015674477845_HSstart220_HSduration3.csv
+Start : 01/31/24 04:03:20
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-01-31_numIter2_Time1200.0002594743783_HSstart700_HSduration3.csv

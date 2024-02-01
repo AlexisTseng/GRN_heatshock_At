@@ -92,7 +92,11 @@ def main(opt):
 
     #plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
 
-    plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
+    #plot_FMPMMPvsTime_3(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
+
+    plot_FMPMMPvsTime_2(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
+
+    plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
 
     #plot_FMPMMP_zoom(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
 
@@ -265,10 +269,10 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         ## Ka in Hill equation
         'h1': 1.0,
         'h2': 1.0,
-        'h3': 1.0,
-        'h4': 1.0,
+        #'h3': 1.0,
+        #'h4': 1.0,
         'h5': 1.0,
-        'h6': 1.0,
+        #'h6': 1.0,
         ## association rates
         'c1': 10.0,
         'c3': 0.5, #between MMP and HSPR
@@ -279,7 +283,7 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         'd4_norm': 0.01,
         'Decay1': 0.01,
         'Decay2': 0.01, # decay of free HSPR
-        'Decay3': 0.01,
+        #'Decay3': 0.01,
         'Decay4': 0.01,
         'Decay6': 0.01,
         'Decay7': 0.01, # decay path 2 of A1-HSPR
@@ -380,7 +384,7 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
-def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt):
+def plot_FMPMMPvsTime_3(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt):
 
     print(" Plot trajectories of Proteins and Regulators")
     HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
@@ -405,14 +409,69 @@ def plot_FMPMMPvsTime(data_df, grouped_data, plot_dir, numberofiteration,name_su
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    saveFig(plot_dir, name_suffix, opt, prefix ='ProReg')
+    saveFig(plot_dir, name_suffix, opt, prefix ='ProReg3')
 
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
+def plot_FMPMMPvsTime_2(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt):
 
+    print(" Plot trajectories of Proteins and Regulators")
+    #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
+    protein = ['FMP','MMP']
 
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
+        plot_trajectory(ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
+        #plot_trajectory(ax[1], data_df, 'time', HSPR_complex, hss, hsd, "iteration 0")
+        plot_trajectory(ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+
+    else:
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
+            plot_trajectory(ax[i,0], group_data, 'time', protein, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            #plot_trajectory(ax[i,1], group_data, 'time', HSPR_complex, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,1], group_data, 'time', reg, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    #fig.suptitle('Trajectories of Proteins and Regulators')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    plt.tight_layout()
+
+    saveFig(plot_dir, name_suffix, opt, prefix ='ProReg2')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
+
+def plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt):
+
+    print(" Plot trajectories of Proteins and Regulators")
+    #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
+    protein = ['FMP','MMP']
+
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
+        plot_trajectory(ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
+        #plot_trajectory(ax[1], data_df, 'time', HSPR_complex, hss, hsd, "iteration 0")
+        plot_trajectory(ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+
+    else:
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
+            plot_trajectory(ax[i,0], data_df, 'time', protein, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            #plot_trajectory(ax[i,1], group_data, 'time', HSPR_complex, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,1], data_df, 'time', reg, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    #fig.suptitle('Trajectories of Proteins and Regulators')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    plt.tight_layout()
+
+    saveFig(plot_dir, name_suffix, opt, prefix ='ProReg2overlay')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
 
 def plot_FMPMMP_zoom(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt):
     print(" Zoomed In Protein & Regulator Trajectory Around HeatShock")
