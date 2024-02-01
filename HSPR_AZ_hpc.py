@@ -57,6 +57,30 @@ description
 --hilHalfSaturation,-hhs
     The conc of inducer/repressor at half-max transcriptional rate (default: 10.0)
 
+--KA1actA1,-hAA
+    h1, K constant for HSFA1 activating A1 (default: 10)
+
+--KA1actHSPR,-hAH
+    h2, K constant for HSFA1 activating HSPR (default: 10)
+
+--KA1actB,-hAB
+    h5, K constant for HSFA1 activating HSFB (default: 10)
+
+--KBrepA1,-hBA
+    h3, K constant for HSFB repressing A1 (default: 10)
+
+--KBrepB,-hBB
+    h6, K constant for HSFB repressing HSFB (default: 10)
+
+--KBrepHSPR,-hBH
+    h4, K constant for HSFB repressing HSPR (default: 10)
+
+--initFMP,-ifp
+    Initial FMP abundance (default: 25000)
+
+--initMMP,-imp
+    Initial MMP abundance (default: 2500)
+
 --decayA1,-da1
     decay1, decay rate of free A1 (default: 0.01)
 
@@ -169,8 +193,8 @@ def param_spec(opt):
         'init_HSFA1': 1,
         'init_HSPR': 2,
         'init_C_HSFA1_HSPR': 50,
-        'init_MMP': 2500,
-        'init_FMP': 25000,
+        'init_MMP': int(opt.imp),
+        'init_FMP': int(opt.ifp),
         'init_C_HSPR_MMP': 50,
         'init_HSFA2': 1,
         'init_HSFB': 1,
@@ -185,12 +209,12 @@ def param_spec(opt):
         'a7': int(opt.fpp), #folded protein production rate
         'a8': 50.0,
         ## Ka in Hill equation
-        'h1': float(opt.hhs), #1
-        'h2': float(opt.hhs),
-        'h3': float(opt.hhs),
-        'h4': float(opt.hhs),
-        'h5': float(opt.hhs),
-        'h6': float(opt.hhs),
+        'h1': float(opt.hAA), #1
+        'h2': float(opt.hAH),
+        'h3': float(opt.hBA),
+        'h4': float(opt.hBH),
+        'h5': float(opt.hAB),
+        'h6': float(opt.hBB),
         ## association rates
         'c1': 100.0, #between A1 and HSPR
         'c3': float(opt.amh), #between MMP and HSPR
@@ -575,11 +599,11 @@ def gillespie_woA2(param_dict, opt):
                 
             #HSFa1 andHSFA2 may makes complex
             #increase in HSFA1 by transcription and dessociation from the complex C_HSFA1_HSPR
-            R_HSFA1_inc=leakage+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) # + d1*C_HSFA1_HSPR
+            R_HSFA1_inc=leakage+a1*HSFA1**n*h3**n/(h1**n+HSFA1**n)*(h3**n+HSFB**n) # + d1*C_HSFA1_HSPR
             #decrease in HSFA1 by association to the 1st complex C_HSFA1_HSPR and decay in the protein
             R_HSFA1_dec= Decay1*HSFA1
             #increase in HSPR by transcription and dess
-            R_HSPR_inc= leakage+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
+            R_HSPR_inc= leakage+a2*HSFA1**n*h4**n/(h2**n+HSFA1**n)*(h4**n+HSFB**n)
             #decrease in HSPR by transcription and dess **-> should be decay
             R_HSPR_dec= Decay2*HSPR
             #increase in C_HSFA1_HSPR association to the 1st complex
@@ -602,7 +626,7 @@ def gillespie_woA2(param_dict, opt):
             R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
             R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
             #increase in HSFB by transcription with TF HSFA1 and HSFB
-            R_HSFB_inc=leakage+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
+            R_HSFB_inc=leakage+a5*HSFA1**n*h6**n/(h5**n+HSFA1**n)*(h6**n+HSFB**n)
             #decrease in HSFB by transcription and dess
             R_HSFB_dec=Decay4*HSFB
 
