@@ -57,6 +57,9 @@ description
 --disoA1_HSPR,-dah
     d1, dissociation rate of A1-HSPR (default: 0.1)
 
+--HSdisoA1_HSPR,-hda
+    d1_HS, dissociation rate of A1-HSPR (default: 0.1)
+
 --disoMMP_HSPR,-dmh
     d3, dissociation rate of A1-HSPR (default: 0.01)
 
@@ -102,7 +105,7 @@ description
 --initA1free,-iaf
     initial free A1 (default: 1)
 
---initB,ibf
+--initB,-ibf
     initial HSFB (default: 1)
 
 --initHSPRfree,-ihf
@@ -124,7 +127,7 @@ description
     a2, Max transcription rate of HSFB (default: 100)
 
 --foldedProduction,-fpp
-    a7, folded protein production rate (default: 1000)
+    a7, folded protein production rate (default: 300)
 
 -refoldRate,-a6R
     a6, refolding rate from MMP-HSPR (default: 0.2)
@@ -138,7 +141,7 @@ description
 --Bmut,-bmu
     if 1, no HSFB (default: 0)
 
---HSPRmut,hmu
+--HSPRmut,-hmu
     if 1, no HSPR (default: 0)
 
 --outputFormat,-ofm
@@ -189,8 +192,8 @@ def main(opt):
     print("Step3: Simulation begins")
     ## Old version, no multiprocessing
     #listM2, listtime, end_time = gillespie_woA2_mp(param_dict, opt)
-    #listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2(param_dict, opt)
-    listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2_replaceA1(param_dict, opt)
+    listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2(param_dict, opt)
+    #listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2_replaceA1(param_dict, opt)
     listM6 = combine_data(listtime2, listM4, rr_list2, opt)
     #print(Stoich_df)
     #print(time.time()-start)
@@ -243,18 +246,31 @@ def extract_para_from_name(filename, opt):
 #######################################################################
 def param_spec(opt):
     if bool(opt.a1m) == False:
-        init_HSFA1, init_C_HSFA1_HSPR, a1 = int(opt.iaf), int(opt.iah), int(opt.a1A)
-    else: init_HSFA1, init_C_HSFA1_HSPR, a1 = 0,0,0
+        init_HSFA1, a1 = int(opt.iaf), int(opt.a1A)
+    elif bool(opt.a1m) == True: 
+        print("A1 mutant")
+        init_HSFA1, a1 = 0, 0
+
     if bool(opt.bmu) == False: 
         init_HSFB, a5 = int(opt.ibf), int(opt.a5B)
-    else: init_HSFB,a5 = 0,0
+    elif bool(opt.bmu) == True: 
+        print("HSFB mutant")
+        init_HSFB,a5 = 0,0
+
     if bool(opt.hmu) == False:
-        init_C_HSFA1_HSPR, init_C_HSPR_MMP, init_HSPR, a2 = int(opt.iah), int(opt.imh), int(opt.ihf), int(opt.a2H)
-    else: init_C_HSFA1_HSPR, init_C_HSPR_MMP, init_HSPR, a2 = 0,0,0,0
+        init_C_HSPR_MMP, init_HSPR, a2 = int(opt.imh), int(opt.ihf), int(opt.a2H)
+    elif bool(opt.hmu) == True: 
+        print("HSPR mutant")
+        init_C_HSPR_MMP, init_HSPR, a2 = 0,0,0
+
+    if bool(opt.hmu) == True or bool(opt.a1m) == True:
+        init_C_HSFA1_HSPR_val = 0
+    else: init_C_HSFA1_HSPR_val = int(opt.iah)
+
     param_dict = {
         ## initial concentrations
         'init_HSFA1': init_HSFA1,
-        'init_C_HSFA1_HSPR': init_C_HSFA1_HSPR,
+        'init_C_HSFA1_HSPR': init_C_HSFA1_HSPR_val,
         'init_HSPR': init_HSPR,
         'init_MMP': int(opt.imp),
         'init_FMP': int(opt.ifp),
@@ -272,17 +288,14 @@ def param_spec(opt):
         'a7': int(opt.fpp), #folded protein production rate
         #'a8': 50.0,
         ## Ka in Hill equation
-        'h1': int(opt.hhs),
-        'h2': int(opt.hhs),
-        #'h3': int(opt.hhs),
-        #'h4': int(opt.hhs),
-        'h5': int(opt.hhs),
-        #'h6': int(opt.hhs),
-        #'h1': int(opt.hAA),
-        #'h2': int(opt.hAH),
+        #'h1': int(opt.hhs),
+        #'h2': int(opt.hhs),
+        #'h5': int(opt.hhs),
+        'h1': float(opt.hAA),
+        'h2': float(opt.hAH),
         #'h3': int(opt.hBA),
         #'h4': int(opt.hBH),
-        #'h5': int(opt.hAB),
+        'h5': float(opt.hAB),
         #'h6': int(opt.hBB),
         ## association rates
         'c1': float(opt.aah), #between A1 and HSPR
@@ -605,26 +618,18 @@ def gillespie_woA2(param_dict, opt):
     
     a1 = param_dict['a1']
     a2 = param_dict['a2']
-    a3 = param_dict['a3']
-    a4 = param_dict['a4']
     a5 = param_dict['a5']
     a6 = param_dict['a6']
     a7 = param_dict['a7']
-    #a8 = param_dict['a8']
     h1 = param_dict['h1']
     h2 = param_dict['h2']
-    #h3 = param_dict['h3']
-    #h4 = param_dict['h4']
     h5 = param_dict['h5']
-    #h6 = param_dict['h6']
     c1 = param_dict['c1']
-    c2 = param_dict['c2']
     c3 = param_dict['c3']
     d1 = param_dict['d1']
     d3 = param_dict['d3']
     Decay1 = param_dict['Decay1']
     Decay2 = param_dict['Decay2']
-    #Decay3 = param_dict['Decay3']
     Decay4 = param_dict['Decay4']
     Decay6 = param_dict['Decay6']
     Decay7 = param_dict['Decay7']
@@ -671,40 +676,30 @@ def gillespie_woA2(param_dict, opt):
                 print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
             HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
 
-            if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
+            if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): 
+                d4 = param_dict['d4_heat']
+                if float(opt.hda) != float(opt.dah):
+                    d1 = float(opt.hda)
+                    print(f"alternative model, d1 outside HS: {param_dict['d1']}, d1 during HS: {d1} ")
             else: d4 = param_dict['d4_norm']
                 
-            #HSFa1 andHSFA2 may makes complex
-            #increase in HSFA1 by transcription and dessociation from the complex C_HSFA1_HSPR
-            R_HSFA1_inc=leakage+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) # + d1*C_HSFA1_HSPR
-            #decrease in HSFA1 by association to the 1st complex C_HSFA1_HSPR and decay in the protein
+
+            R_HSFA1_inc=leakage+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) 
             R_HSFA1_dec= Decay1*HSFA1
-            #increase in HSPR by transcription and dess
             R_HSPR_inc= leakage+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
-            #decrease in HSPR by transcription and dess **-> should be decay
             R_HSPR_dec= Decay2*HSPR
-            #increase in C_HSFA1_HSPR association to the 1st complex
             R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
-            #decrease in C_HSFA1_HSPR dissociation from the 1st complex and degradation of the complex as a whole (?)
             R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
             R_C_HSFA1_HSPR_dec2=Decay7*C_HSFA1_HSPR
-            #increase in MMP when 2nd complex decreases
             R_MMP_inc= d4*FMP
-            #decrease in MMP by 2nd complex increases (may be we want to change the slope of dexcay later)
             R_MMP_dec= Decay5*MMP
-            #increase in FMP by FMP production and MMP to FMP
-            R_FMP_inc=a7  #how to write the production?
-            #decrease in FMP by decay or
+            R_FMP_inc=a7
             R_FMP_dec= Decay6*FMP
-            #increase in HSPR_MMP by association to the 2nd complex
-            R_C_HSPR_MMP_inc=c3*HSPR*MMP #how to write the production?
-            #decrease in HSPR_MMP by dissociation from the 2nd complex
+            R_C_HSPR_MMP_inc=c3*HSPR*MMP
             R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
             R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
             R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
-            #increase in HSFB by transcription with TF HSFA1 and HSFB
             R_HSFB_inc=leakage+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
-            #decrease in HSFB by transcription and dess
             R_HSFB_dec=Decay4*HSFB
 
 
@@ -755,18 +750,12 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     
     a1 = param_dict['a1']
     a2 = param_dict['a2']
-    a3 = param_dict['a3']
-    a4 = param_dict['a4']
     a5 = param_dict['a5']
     a6 = param_dict['a6']
     a7 = param_dict['a7']
-    #a8 = param_dict['a8']
     h1 = param_dict['h1']
     h2 = param_dict['h2']
-    #h3 = param_dict['h3']
-    #h4 = param_dict['h4']
     h5 = param_dict['h5']
-    #h6 = param_dict['h6']
     c1 = param_dict['c1']
     c2 = param_dict['c2']
     c3 = param_dict['c3']
@@ -775,7 +764,6 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     d3 = param_dict['d3']
     Decay1 = param_dict['Decay1']
     Decay2 = param_dict['Decay2']
-    #Decay3 = param_dict['Decay3']
     Decay4 = param_dict['Decay4']
     Decay6 = param_dict['Decay6']
     Decay7 = param_dict['Decay7']
@@ -783,6 +771,19 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     Decay5 = param_dict['Decay5']
     leakage = param_dict['leakage']
     n = param_dict['hillcoeff']
+
+    if bool(opt.a1m) == False: leakage_A1 = leakage
+    elif bool(opt.a1m) == True: 
+        leakage_A1 = 0
+        print("A1 leakage = 0")
+    if bool(opt.bmu) == False: leakage_B = leakage
+    elif bool(opt.bmu) == True: 
+        leakage_B = 0
+        print("B leakage = 0")
+    if bool(opt.hmu) == False: leakage_HSPR = leakage
+    elif bool(opt.hmu) == True: 
+        leakage_HSPR = 0
+        print("HSPR leakage = 0")
     
     Stoich = [[1,0,0,0,0,0,0], #R_HSFA1_inc
           [-1,0,0,0,0,0,0], #R_HSFA1_dec
@@ -830,48 +831,26 @@ def gillespie_woA2_replaceA1(param_dict, opt):
             if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
             else: d4 = param_dict['d4_norm']
                 
-            #HSFa1 andHSFA2 may makes complex
-            #increase in HSFA1 by transcription and dessociation from the complex C_HSFA1_HSPR
-            R_HSFA1_inc=leakage+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) # + d1*C_HSFA1_HSPR
-            #decrease in HSFA1 by association to the 1st complex C_HSFA1_HSPR and decay in the protein
+
+            R_HSFA1_inc=leakage_A1+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n)
             R_HSFA1_dec= Decay1*HSFA1
-            #increase in HSPR by transcription and dess
-            R_HSPR_inc= leakage+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
-            #decrease in HSPR by transcription and dess **-> should be decay
+            R_HSPR_inc= leakage_HSPR+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
             R_HSPR_dec= Decay2*HSPR
-            #increase in C_HSFA1_HSPR association to the 1st complex
             R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
-            #decrease in C_HSFA1_HSPR dissociation from the 1st complex and degradation of the complex as a whole (?)
             R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
             R_C_HSFA1_HSPR_dec2=Decay7*C_HSFA1_HSPR
-            #increase in MMP when 2nd complex decreases
             R_MMP_inc= d4*FMP
-            #decrease in MMP by 2nd complex increases (may be we want to change the slope of dexcay later)
             R_MMP_dec= Decay5*MMP
-            #increase in FMP by FMP production and MMP to FMP
-            R_FMP_inc=a7  #how to write the production?
-            #decrease in FMP by decay or
+            R_FMP_inc=a7 
             R_FMP_dec= Decay6*FMP
-            #increase in HSPR_MMP by association to the 2nd complex
-            R_C_HSPR_MMP_inc=c3*HSPR*MMP #how to write the production?
-            #decrease in HSPR_MMP by dissociation from the 2nd complex
+            R_C_HSPR_MMP_inc=c3*HSPR*MMP 
             R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
             R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
             R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
-            #increase in HSFB by transcription with TF HSFA1 and HSFB
-            R_HSFB_inc=leakage+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
-            #decrease in HSFB by transcription and dess
+            R_HSFB_inc=leakage_B+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
             R_HSFB_dec=Decay4*HSFB
             MMP_replace_A1HSPR = c2*C_HSFA1_HSPR*MMP
             A1_replace_MMPHSPR = c4*C_HSPR_MMP*HSFA1
-
-
-            if bool(opt.a1m) == True:
-                R_HSFA1_inc, R_HSFA1_dec
-
-
-
-
 
 
             listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3,R_HSFB_inc,R_HSFB_dec,MMP_replace_A1HSPR,A1_replace_MMPHSPR])
@@ -997,7 +976,6 @@ def saveGilData(list, data_dir, numberofiteration, end_time, opt):
 
 def saveParam(param_dict, data_dir, numberofiteration, end_time, opt):
     date = datetime.now().date()
-
     if opt.ofm == "csv":
         param_name = f"{data_dir}/Exp3_Para_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
         param_outfile = get_unique_filename(param_name)
@@ -1009,14 +987,11 @@ def saveParam(param_dict, data_dir, numberofiteration, end_time, opt):
             writer.writeheader()
             # Write the parameter values
             writer.writerow(param_dict)
-    
     if opt.ofm =="pcl":
         param_name = f"{data_dir}/Exp3_Para_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pcl"
         param_outfile = get_unique_filename(param_name)
         saveData(param_dict, param_outfile)
-    
     print(f" Parameters Saved as {opt.ofm}")
-
     return param_outfile
 
 def loadData(fname):

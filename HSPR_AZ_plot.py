@@ -255,14 +255,11 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         'init_MMP': 0,
         'init_FMP': 50,
         'init_C_HSPR_MMP': 50,
-        'init_HSFA2': 1,
         'init_HSFB': 1,
         'Time': 0.0,
         ## Maximum expression level in Hill equation
         'a1': 10.0,
         'a2': 100.0,
-        'a3': 5.0,
-        'a4': 5.0,
         'a5': 5.0,
         'a6': 0.2, # refolding rate from MMP-HSPR
         'a7': 10,

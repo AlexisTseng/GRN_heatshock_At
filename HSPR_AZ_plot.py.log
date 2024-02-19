@@ -982,3 +982,63 @@ Call  : -ids 2024-02-16_numIter5_Time1000.0024233478024_HSstart600_HSduration30.
 Start : 02/16/24 15:10:03
 Script: HSPR_AZ_plot.py
 Call  : -ids 2024-02-16_numIter5_Time1000.0001542265159_HSstart600_HSduration30.csv
+Start : 02/19/24 00:04:09
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.000016008053658_HSstart6_HSduration3.csv
+Start : 02/19/24 00:04:57
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.000016008053658_HSstart6_HSduration3.csv
+Start : 02/19/24 00:05:15
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.000016008053658_HSstart6_HSduration3.csv
+Start : 02/19/24 00:05:45
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.000016008053658_HSstart6_HSduration3.csv
+Start : 02/19/24 00:09:37
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.007006503689176_HSstart6_HSduration3.csv
+Start : 02/19/24 00:11:55
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.000115544910992_HSstart6_HSduration3.csv
+Start : 02/19/24 00:21:11
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.000156636338408_HSstart6_HSduration3.csv
+Start : 02/19/24 00:35:15
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.003559749770426_HSstart6_HSduration3.csv
+Start : 02/19/24 00:48:56
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time1000.0015344857403_HSstart700_HSduration30.csv
+Start : 02/19/24 00:52:31
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time1500.0008156265778_HSstart700_HSduration100.csv
+Start : 02/19/24 01:20:29
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time1000.0000220487353_HSstart700_HSduration30.csv
+Start : 02/19/24 01:55:01
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time1000.0000919734455_HSstart700_HSduration100.csv
+Start : 02/19/24 01:59:26
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time1000.0000919734455_HSstart700_HSduration100.csv -sfg 0
+Start : 02/19/24 02:26:53
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.00071987139633_HSstart6_HSduration3.csv -sfg 0
+Start : 02/19/24 02:29:31
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.001511059107346_HSstart6_HSduration3.csv -sfg 0
+Start : 02/19/24 02:33:17
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time10.001511059107346_HSstart6_HSduration3.csv -shf 0
+Start : 02/19/24 02:35:27
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time800.0002181723247_HSstart500_HSduration100.csv
+Start : 02/19/24 02:40:50
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time800.0000038841911_HSstart500_HSduration100.csv
+Start : 02/19/24 02:50:47
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time800.000070600354_HSstart500_HSduration100.csv
+Start : 02/19/24 03:09:53
+Script: HSPR_AZ_plot.py
+Call  : -ids 2024-02-19_numIter1_Time800.000540716515_HSstart500_HSduration30.csv
