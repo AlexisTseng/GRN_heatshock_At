@@ -27,14 +27,17 @@ description
 --numberInteration,-nit
     The number of interations for Gillespi simulation
 
+--importParamDataset,-ids
+    Dataset name from which parameters are extracted (default: '')
+
 --timeStep,-tsp
-    The time duration for each Gillespi simulation run/iteration (default:1200)
+    The time duration for each Gillespi simulation run/iteration (default:1000)
 
 --heatShockStart,-hss
-    The time point at which a heat shock is introduced (default:700)
+    The time point at which a heat shock is introduced (default:600)
 
 --heatShockDuration,-hsd
-    The duration of heat shock introduced (default: 3)
+    The duration of heat shock introduced (default: 30)
 
 --misfoldRateNormal,-mfn
     The formation rate of misfolded protein from folded protein under normal temperature (default: 0.01)
@@ -94,7 +97,7 @@ description
     h4, K constant for HSFB repressing HSPR (default: 1.0)
 
 --initFMP,-ifp
-    Initial FMP abundance (default: 50)
+    Initial FMP abundance (default: 25000)
 
 --initMMP,-imp
     Initial MMP abundance (default: 0)
@@ -133,7 +136,7 @@ description
     a6, refolding rate from MMP-HSPR (default: 0.2)
 
 --globalDecayRate,-gdr
-    the decay rate of species except for MMP (default:0.01)
+    the decay rate of species except for MMP (default:0.04)
 
 --A1mut,-a1m
     if 1, no HSFA1 (default: 0)
@@ -187,13 +190,15 @@ def main(opt):
     data_dir, plot_dir = dir_gen()
 
     print("Step2: Specify parameters")
-    param_dict = param_spec(opt)
+    if bool(opt.ids) == False: param_dict = param_spec(opt)
+    else: param_dict, numberofiteration, end_time, hss, hsd, date = param_extract(data_dir, opt)
+    
     
     print("Step3: Simulation begins")
     ## Old version, no multiprocessing
     #listM2, listtime, end_time = gillespie_woA2_mp(param_dict, opt)
-    listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2(param_dict, opt)
-    #listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2_replaceA1(param_dict, opt)
+    #listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2(param_dict, opt)
+    listM4, listtime2, numberofiteration, end_time, rr_list2 = gillespie_woA2_replaceA1(param_dict, opt)
     listM6 = combine_data(listtime2, listM4, rr_list2, opt)
     #print(Stoich_df)
     #print(time.time()-start)
@@ -213,21 +218,23 @@ def main(opt):
 ## To Extract From Existing File
 ##################################################################
 
-def extract_para_from_name(filename, opt):
-    data_file = str(filename)
+def extract_para_from_name(opt):
+    param_file = str(opt.ids)
+    filename, extension = os.path.splitext(data_file)
     print(f" {data_file}")
     # Define a pattern to match the relevant parts of the filename
-    pattern = re.compile(r"Exp3_SimuData_\d+-\d+-\d+_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)\.(pcl|csv)")
+    pattern = re.compile(r"(\d+-\d+-\d+)_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)\.(pcl|csv)")
     #pattern = re.compile(r"Exp3_SimuData_\d+-\d+-\d+_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)(?:_decay8-([\d.]+))?\.(pcl|csv)")
     # Use the pattern to extract values
     match = pattern.match(data_file)
     if match:
-        numberofiteration = int(match.group(1))
-        end_time = float(match.group(2))
-        opt.hss = int(match.group(3))
-        opt.hsd = int(match.group(4))
+        date = match.group(1)
+        numberofiteration = int(match.group(2))
+        end_time = float(match.group(3))
+        opt.hss = int(match.group(4))
+        opt.hsd = int(match.group(5))
         #opt.dmh = float(match.group(5))
-        opt.ofm = str(match.group(5))
+        opt.ofm = str(match.group(6))
         print(" Extracted parameters")
         print("     Number of Iteration:", numberofiteration)
         print("     End Time:", end_time)
@@ -239,7 +246,31 @@ def extract_para_from_name(filename, opt):
         print("Filename does not match the expected pattern.")
     return data_file, numberofiteration, end_time, opt
 
+def param_extract(data_dir, opt):
+    para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}"
+    param_dict = {}
+    with open(para_csv_name, 'r') as param_file:
+        csv_reader = csv.reader(param_file)
+        headers = next(csv_reader)
+        data = next(csv_reader)
+        param_dict = dict(zip(headers, data))
 
+    pattern = re.compile(r"(\d+-\d+-\d+)_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)\.(pcl|csv)")
+    match = pattern.match(opt.ids)
+    if match:
+        date = str(match.group(1))
+        numberofiteration = int(match.group(2))
+        end_time = float(match.group(3))
+        hss = int(match.group(4))
+        hsd = int(match.group(5))
+    else:
+        print("Filename does not match the expected pattern.")
+    #parameter = type("parameter", (object,), param_dict)
+    #para = parameter()
+    #print(f"para.h1:{para.h1}")
+    #print(f"para.init_C_HSFA1_HSPR:{para.init_C_HSFA1_HSPR}")
+    #print(f"para.numberofiteration:{para.numberofiteration}")
+    return param_dict, numberofiteration, end_time, hss, hsd, date
 
 #######################################################################
 ## 1. Parameter specification
@@ -824,8 +855,7 @@ def gillespie_woA2_replaceA1(param_dict, opt):
         counter = 0
 
         while Time < int(opt.tsp): 
-            if counter % 5000 ==0 and counter != 0:
-                print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
+
             HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
 
             if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
@@ -857,17 +887,21 @@ def gillespie_woA2_replaceA1(param_dict, opt):
             TotR = sum(listR) #production of the MRNA 
             Rn = random.random() #getting random numbers
             Tau=-math.log(Rn)/TotR #when the next thing happen
-            #Rn2= random.uniform(0,TotR) # for the next random number
-            # HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB
             Outcome = random.choices(Stoich, weights = listR, k=1)
-            #print(f"listM before: {listM}")
-            #print(f"outcome: {Outcome} \n {Outcome[0]}")
-            listM = listM+Outcome[0] ### why does it add term-by-term??? -> because listM is a np.array
-            #print(f"listM after: {listM}")
-            #exit()
+            listM = listM+Outcome[0] 
             last_time = Time
-            Time+=Tau # the new time the time before the step +the time to happen the next step ()
+            Time+=Tau 
             counter += 1
+
+
+            ## Capping Reaction Rates
+            rate_dict ={'R_HSFA1_inc': R_HSFA1_inc,'R_HSFA1_dec': R_HSFA1_dec, 'R_HSPR_inc': R_HSPR_inc, 'R_HSPR_dec':R_HSPR_dec, 'R_C_HSFA1_HSPR_inc': R_C_HSFA1_HSPR_inc, 'R_C_HSFA1_HSPR_dec1': R_C_HSFA1_HSPR_dec1,'R_C_HSFA1_HSPR_dec2': R_C_HSFA1_HSPR_dec2,'R_MMP_inc': R_MMP_inc,'R_MMP_dec': R_MMP_dec,'R_FMP_inc': R_FMP_inc, 'R_FMP_dec': R_FMP_dec,'R_C_HSPR_MMP_inc': R_C_HSPR_MMP_inc,'R_C_HSPR_MMP_dec1': R_C_HSPR_MMP_dec1, 'R_C_HSPR_MMP_dec2': R_C_HSPR_MMP_dec2, 'R_C_HSPR_MMP_dec3': R_C_HSPR_MMP_dec3,'R_HSFB_inc': R_HSFB_inc,'R_HSFB_dec': R_HSFB_dec,'MMP_replace_A1HSPR': MMP_replace_A1HSPR,'A1_replace_MMPHSPR': A1_replace_MMPHSPR}
+
+            max_rate = max(rate_dict, key=rate_dict.get)
+
+            if counter % 5000 ==0 and counter != 0:
+                print(f"  Progress: {int(Time*100/int(opt.tsp))}%, TotR: {TotR}, max_rate: {max_rate} = {rate_dict[max_rate]}", end='\r')
+
 
             if "{:.1f}".format(Time) == "{:.1f}".format(last_time + opt.spf):
                 listtime.append("{:.1f}".format(Time)) #this is to add stuff to the list

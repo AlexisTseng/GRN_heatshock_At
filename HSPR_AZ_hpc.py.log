@@ -922,3 +922,21 @@ Call  : -nit 1 -tsp 800 -hss 500 -hsd 30 -rma 10.0 -ram 0.5 -hAB 20.0 -hAA 4.0 -
 Start : 02/19/24 03:12:05
 Script: HSPR_AZ_hpc.py
 Call  : -nit 1 -tsp 800 -hss 500 -hsd 30 -rma 10.0 -ram 0.5 -hAB 20.0 -hAA 4.0 -hAH 5.0 -ifp 25000 -lkg 0.005
+Start : 02/19/24 06:03:12
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1
+Start : 02/19/24 06:04:52
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1
+Start : 02/19/24 06:05:15
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1
+Start : 02/19/24 06:05:52
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -tsp 800 -hss 500 -hsd 50
+Start : 02/19/24 06:06:22
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -tsp 800 -hss 500 -hsd 50 -ram 1.0
+Start : 02/19/24 06:06:43
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -tsp 800 -hss 500 -hsd 50 -rma 5.0 -ram 0.5
