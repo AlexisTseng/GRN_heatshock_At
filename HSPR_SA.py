@@ -156,6 +156,9 @@ description
 --varAnalysis,-van
     whether to analysis variability by plotting histograms etc. (default: 0)
 
+--plotResult,-prs
+    Set to 0 if running on HPC (default: 1)
+
 ################################################################################
 
 reference
@@ -185,16 +188,10 @@ import sys
 
 
 def main(opt):
-    param_dir, plot_dir, data_dir = dir_gen()
     param_dict = param_spec(opt)
-    #print(param_dict)
+    param_dir, plot_dir, data_dir = dir_gen(opt)
+
     S_record, param_record, end_time = param_explore(param_dir, plot_dir, data_dir, param_dict, opt)
-
-
-    #for (dict, S) in zip(param_record, S_record):
-    #    row = [S] + list(dict.values())
-    #    print(row)
-    #exit()
 
     #S_record, param_record = simuAnneal(param_dict, opt)
     save_S_param(S_record, param_record, opt, end_time, param_dir)
@@ -207,7 +204,6 @@ def param_explore(param_dir, plot_dir, data_dir, param_dict, opt):
     numberofiteration = param_dict['numberofiteration']
     hss = param_dict['hstart']
     hsd = param_dict['hduration']
-    counter = 0
 
     for i in range(opt.ops):
         ## one simulation step
@@ -231,7 +227,7 @@ def param_explore(param_dir, plot_dir, data_dir, param_dict, opt):
         print(f"\n------> STEP {i}, S:{S}, delta_S: {delta_S}\n param_dict: {param_dict}\n")
 
         # Plot Results
-        plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end_time, date, numberofiteration, hss, hsd, opt)
+        if bool(opt.prs) == True and S > 20: plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end_time, date, numberofiteration, hss, hsd, opt)
         #print(f"parameter 2:{param_dict}")
         param_dict = updatePara_unif(param_dict, opt)
         
@@ -258,19 +254,21 @@ def plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end
 ## 1. Specify directory and initial params
 ######################################################
 
-def dir_gen():
+def dir_gen(opt):
     cwd = os.getcwd() #GRN_heatshock_Arabidopsis
     partiii_dir = os.path.dirname(cwd)
     date = datetime.now().date()
+
     data_dir = os.path.join(partiii_dir,"Ritu_simulation_data")
     if not os.path.isdir(data_dir): os.makedirs(data_dir, 0o777)
 
-    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}")
+    plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
+    if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
+
+    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}")
     param_dir = get_unique_filename(param_dir)
     if not os.path.isdir(param_dir): os.makedirs(param_dir, 0o777)
 
-    plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
-    if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
     return param_dir, plot_dir, data_dir
 
 
@@ -953,7 +951,8 @@ def data_to_df(listtime2,listM4):
     return data_df
 
 def df_Processing_HS(data_df, hss,hsd, end_time, opt):
-    ss1_start = 0
+    if opt.tsp < 100: ss1_start = 0
+    else: ss1_start = 400
     ss1_end = int(hss)
     ssHS_start = int(hss)
     ssHS_lh_start = (int(hss) + int(hsd))/2
@@ -1068,11 +1067,10 @@ def updatePara_int(param_dict, opt):
 
 def save_S_param(S_record, param_record, opt, end_time, param_dir):
     date = datetime.now().date()
-    data_file = f"{param_dir}/SimuAnneal_{date}_step{opt.ops}_time{end_time}.csv"
+    data_file = f"{param_dir}/ParamRecord_{date}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}.csv"
     data_file = get_unique_filename(data_file)
     #print(data_file)
     keys = param_record[0].keys()
-
     with open(data_file, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
         header_row = ['S'] + list(keys)
@@ -1080,6 +1078,16 @@ def save_S_param(S_record, param_record, opt, end_time, param_dir):
         for (dict, S) in zip(param_record, S_record):
             row = [S] + list(dict.values())
             csv_writer.writerow(row)
+
+            param_file_name = f"{param_dir}/{S}.csv"
+            param_file_name = get_unique_filename(param_file_name)
+            with open(param_file_name, 'w') as param_record_csv:
+                param_record_writer = csv.writer(param_record_csv)
+                param_record_writer.writerow(header_row)
+                param_record_writer.writerow(row)
+
+
+
 
 
 
