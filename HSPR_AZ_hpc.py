@@ -28,7 +28,7 @@ description
     The number of interations for Gillespi simulation
 
 --importParamDataset,-ids
-    Dataset name from which parameters are extracted. e.g. "2024-02-24_step2_time900_hss600_hsd50\11.792037432365467.csv" (default: '')
+    Dataset name from which parameters are extracted. e.g. "2024-02-24_step2_time900_hss600_hsd50\11.792037432365467.csv" (default: )
 
 --timeStep,-tsp
     The time duration for each Gillespi simulation run/iteration (default:1000)
@@ -72,8 +72,14 @@ description
 --A2positiveAutoReg,-a2p
     Whether HSFA2 positively regulates itself in the model (default: 0)
 
---leakage,-lkg
-    Trancription leakage (default: 0.001)
+--leakage_A1,-lga
+    Trancription leakage for HSFA1 (default: 0.001)
+
+--leakage_B,-lgb
+    Trancription leakage for HSFB (default: 0.001)
+
+--leakage_HSPR,-lgh
+    Trancription leakage for HSPR (default: 0.001)
 
 --hilHalfSaturation,-hhs
     The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
@@ -97,7 +103,7 @@ description
     h4, K constant for HSFB repressing HSPR (default: 1.0)
 
 --initFMP,-ifp
-    Initial FMP abundance (default: 25000)
+    Initial FMP abundance (default: 5000)
 
 --initMMP,-imp
     Initial MMP abundance (default: 0)
@@ -188,13 +194,13 @@ import multiprocessing as mp
 def main(opt):
     print("Step1: Specify output directory")
     data_dir, plot_dir, param_rootdir = dir_gen()
-
+    print(bool(opt.ids))
     print("Step2: Specify parameters")
     if bool(opt.ids) == False: 
         param_dict = param_spec(opt)
     else: 
-        param_dict = SA_param_extract(param_rootdir, opt)
-    
+        try: param_dict = SA_param_extract_csv(param_rootdir, opt)
+        except FileNotFoundError: param_dict = SA_param_extract_pcl(param_rootdir, opt)
     
     print("Step3: Simulation begins")
     ## no multiprocessing
@@ -250,14 +256,27 @@ def extract_para_from_name(opt):
     return data_file, numberofiteration, end_time, opt
 
 
-def SA_param_extract(param_rootdir, opt):
+def SA_param_extract_csv(param_rootdir, opt):
     para_csv_name = f"{param_rootdir}/{opt.ids}"
     param_dict = {}
     with open(para_csv_name, 'r') as param_file:
         csv_reader = csv.reader(param_file)
         headers = next(csv_reader)
         data = next(csv_reader)
-        param_dict = dict(zip(headers, data))
+        numeric_data = [float(val) for val in data]
+        param_dict = dict(zip(headers, numeric_data))
+    #for key, val in param_dict.items():
+    #    print(f"{key} - {type(val)}")
+    print(param_dict)
+    S = param_dict['S']
+    return param_dict
+
+
+def SA_param_extract_pcl(param_rootdir, opt):
+    para_csv_name = f"{param_rootdir}/{opt.ids}"
+    S, param_dict = loadData(para_csv_name)
+    print(f"S: {S}, param_dict: {param_dict}")
+    param_dict['S'] = S
     return param_dict
 
 #######################################################################
@@ -335,7 +354,9 @@ def param_spec(opt):
         'Decay8': float(opt.gdr), # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
         ####
-        'leakage': float(opt.lkg),
+        'leakage_A1': float(opt.lga),
+        'leakage_B': float(opt.lgb),
+        'leakage_HSPR': float(opt.lgh),
         'numberofiteration': int(opt.nit),
         'hillcoeff': int(opt.hco),
         'hstart':int(opt.hss),
@@ -636,29 +657,31 @@ def gillespie_woA2(param_dict, opt):
     listM4=[]
     listtime2=[]
     rr_list2 = []
-    numberofiteration = param_dict["numberofiteration"]
+    numberofiteration = int(opt.nit)
     
-    a1 = param_dict['a1']
-    a2 = param_dict['a2']
-    a5 = param_dict['a5']
-    a6 = param_dict['a6']
-    a7 = param_dict['a7']
-    h1 = param_dict['h1']
-    h2 = param_dict['h2']
-    h5 = param_dict['h5']
-    c1 = param_dict['c1']
-    c3 = param_dict['c3']
-    d1 = param_dict['d1']
-    d3 = param_dict['d3']
-    Decay1 = param_dict['Decay1']
-    Decay2 = param_dict['Decay2']
-    Decay4 = param_dict['Decay4']
-    Decay6 = param_dict['Decay6']
-    Decay7 = param_dict['Decay7']
-    Decay8 = param_dict['Decay8']
-    Decay5 = param_dict['Decay5']
-    leakage = param_dict['leakage']
-    n = param_dict['hillcoeff']
+    a1 = float(param_dict['a1'])
+    a2 = float(param_dict['a2'])
+    a5 = float(param_dict['a5'])
+    a6 = float(param_dict['a6'])
+    a7 = float(param_dict['a7'])
+    h1 = float(param_dict['h1'])
+    h2 = float(param_dict['h2'])
+    h5 = float(param_dict['h5'])
+    c1 = float(param_dict['c1'])
+    c3 = float(param_dict['c3'])
+    d1 = float(param_dict['d1'])
+    d3 = float(param_dict['d3'])
+    Decay1 = float(param_dict['Decay1'])
+    Decay2 = float(param_dict['Decay2'])
+    Decay4 = float(param_dict['Decay4'])
+    Decay6 = float(param_dict['Decay6'])
+    Decay7 = float(param_dict['Decay7'])
+    Decay8 = float(param_dict['Decay8'])
+    Decay5 = float(param_dict['Decay5'])
+    leakage_A1 = float(param_dict['leakage_A1'])
+    leakage_B = float(param_dict['leakage_B'])
+    leakage_HSPR = float(param_dict['leakage_HSPR'])
+    n = int(param_dict['hillcoeff'])
     
     Stoich = [[1,0,0,0,0,0,0], #R_HSFA1_inc
           [-1,0,0,0,0,0,0], #R_HSFA1_dec
@@ -680,13 +703,13 @@ def gillespie_woA2(param_dict, opt):
           ]
     for i in range(numberofiteration):    
         print(f" \n iteration: {i}")
-        listM = np.array([param_dict["init_HSFA1"],
-                      param_dict["init_HSPR"],
-                      param_dict["init_C_HSFA1_HSPR"],
-                      param_dict["init_MMP"],
-                      param_dict["init_FMP"],
-                      param_dict["init_C_HSPR_MMP"],
-                      param_dict["init_HSFB"]])
+        listM = np.array([int(param_dict["init_HSFA1"]),
+                      int(param_dict["init_HSPR"]),
+                      int(param_dict["init_C_HSFA1_HSPR"]),
+                      int(param_dict["init_MMP"]),
+                      int(param_dict["init_FMP"]),
+                      int(param_dict["init_C_HSPR_MMP"]),
+                      int(param_dict["init_HSFB"])])
         listM2 =[listM]
         Time=0
         listtime =[Time]
@@ -703,9 +726,9 @@ def gillespie_woA2(param_dict, opt):
             else: d4 = param_dict['d4_norm']
                 
 
-            R_HSFA1_inc=leakage+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) 
+            R_HSFA1_inc=leakage_A1+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) 
             R_HSFA1_dec= Decay1*HSFA1
-            R_HSPR_inc= leakage+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
+            R_HSPR_inc= leakage_HSPR+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
             R_HSPR_dec= Decay2*HSPR
             R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
             R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
@@ -718,7 +741,7 @@ def gillespie_woA2(param_dict, opt):
             R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
             R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
             R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
-            R_HSFB_inc=leakage+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
+            R_HSFB_inc=leakage_B+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
             R_HSFB_dec=Decay4*HSFB
 
 
@@ -766,35 +789,37 @@ def gillespie_woA2(param_dict, opt):
 
 
 def gillespie_woA2_d1HS(param_dict, opt):
-    model_name = 'd1change_constant'
+    model_name = 'd1changeConstant'
     listM4=[]
     listtime2=[]
     rr_list2 = []
-    numberofiteration = param_dict["numberofiteration"]
+    numberofiteration = int(opt.nit)
     if float(opt.hda) != float(opt.dah):
         print(f"HS-induced d1 change: normal d1: {opt.dah}, d1 during HS: {opt.hda} ")
     
-    a1 = param_dict['a1']
-    a2 = param_dict['a2']
-    a5 = param_dict['a5']
-    a6 = param_dict['a6']
-    a7 = param_dict['a7']
-    h1 = param_dict['h1']
-    h2 = param_dict['h2']
-    h5 = param_dict['h5']
-    c1 = param_dict['c1']
-    c3 = param_dict['c3']
-    d1 = param_dict['d1']
-    d3 = param_dict['d3']
-    Decay1 = param_dict['Decay1']
-    Decay2 = param_dict['Decay2']
-    Decay4 = param_dict['Decay4']
-    Decay6 = param_dict['Decay6']
-    Decay7 = param_dict['Decay7']
-    Decay8 = param_dict['Decay8']
-    Decay5 = param_dict['Decay5']
-    leakage = param_dict['leakage']
-    n = param_dict['hillcoeff']
+    a1 = float(param_dict['a1'])
+    a2 = float(param_dict['a2'])
+    a5 = float(param_dict['a5'])
+    a6 = float(param_dict['a6'])
+    a7 = float(param_dict['a7'])
+    h1 = float(param_dict['h1'])
+    h2 = float(param_dict['h2'])
+    h5 = float(param_dict['h5'])
+    c1 = float(param_dict['c1'])
+    c3 = float(param_dict['c3'])
+    d1 = float(param_dict['d1'])
+    d3 = float(param_dict['d3'])
+    Decay1 = float(param_dict['Decay1'])
+    Decay2 = float(param_dict['Decay2'])
+    Decay4 = float(param_dict['Decay4'])
+    Decay6 = float(param_dict['Decay6'])
+    Decay7 = float(param_dict['Decay7'])
+    Decay8 = float(param_dict['Decay8'])
+    Decay5 = float(param_dict['Decay5'])
+    leakage_A1 = float(param_dict['leakage_A1'])
+    leakage_B = float(param_dict['leakage_B'])
+    leakage_HSPR = float(param_dict['leakage_HSPR'])
+    n = int(param_dict['hillcoeff'])
     
     Stoich = [[1,0,0,0,0,0,0], #R_HSFA1_inc
           [-1,0,0,0,0,0,0], #R_HSFA1_dec
@@ -816,13 +841,13 @@ def gillespie_woA2_d1HS(param_dict, opt):
           ]
     for i in range(numberofiteration):    
         print(f" \n iteration: {i}")
-        listM = np.array([param_dict["init_HSFA1"],
-                      param_dict["init_HSPR"],
-                      param_dict["init_C_HSFA1_HSPR"],
-                      param_dict["init_MMP"],
-                      param_dict["init_FMP"],
-                      param_dict["init_C_HSPR_MMP"],
-                      param_dict["init_HSFB"]])
+        listM = np.array([int(param_dict["init_HSFA1"]),
+                      int(param_dict["init_HSPR"]),
+                      int(param_dict["init_C_HSFA1_HSPR"]),
+                      int(param_dict["init_MMP"]),
+                      int(param_dict["init_FMP"]),
+                      int(param_dict["init_C_HSPR_MMP"]),
+                      int(param_dict["init_HSFB"])])
         listM2 =[listM]
         Time=0
         listtime =[Time]
@@ -841,22 +866,22 @@ def gillespie_woA2_d1HS(param_dict, opt):
             else: d4 = param_dict['d4_norm']
                 
 
-            R_HSFA1_inc=leakage+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) 
+            R_HSFA1_inc=leakage_A1+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n)
             R_HSFA1_dec= Decay1*HSFA1
-            R_HSPR_inc= leakage+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
+            R_HSPR_inc= leakage_HSPR+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
             R_HSPR_dec= Decay2*HSPR
             R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
             R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
             R_C_HSFA1_HSPR_dec2=Decay7*C_HSFA1_HSPR
             R_MMP_inc= d4*FMP
             R_MMP_dec= Decay5*MMP
-            R_FMP_inc=a7
+            R_FMP_inc=a7 
             R_FMP_dec= Decay6*FMP
-            R_C_HSPR_MMP_inc=c3*HSPR*MMP
+            R_C_HSPR_MMP_inc=c3*HSPR*MMP 
             R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
             R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
             R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
-            R_HSFB_inc=leakage+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
+            R_HSFB_inc=leakage_B+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
             R_HSFB_dec=Decay4*HSFB
 
 
@@ -904,42 +929,41 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     listM4=[]
     listtime2=[]
     rr_list2 = []
-    numberofiteration = param_dict["numberofiteration"]
+    numberofiteration = int(opt.nit)
     
-    a1 = param_dict['a1']
-    a2 = param_dict['a2']
-    a5 = param_dict['a5']
-    a6 = param_dict['a6']
-    a7 = param_dict['a7']
-    h1 = param_dict['h1']
-    h2 = param_dict['h2']
-    h5 = param_dict['h5']
-    c1 = param_dict['c1']
-    c2 = param_dict['c2']
-    c3 = param_dict['c3']
-    c4 = param_dict['c4']
-    d1 = param_dict['d1']
-    d3 = param_dict['d3']
-    Decay1 = param_dict['Decay1']
-    Decay2 = param_dict['Decay2']
-    Decay4 = param_dict['Decay4']
-    Decay6 = param_dict['Decay6']
-    Decay7 = param_dict['Decay7']
-    Decay8 = param_dict['Decay8']
-    Decay5 = param_dict['Decay5']
-    leakage = param_dict['leakage']
-    n = param_dict['hillcoeff']
+    a1 = float(param_dict['a1'])
+    a2 = float(param_dict['a2'])
+    a5 = float(param_dict['a5'])
+    a6 = float(param_dict['a6'])
+    a7 = float(param_dict['a7'])
+    h1 = float(param_dict['h1'])
+    h2 = float(param_dict['h2'])
+    h5 = float(param_dict['h5'])
+    c1 = float(param_dict['c1'])
+    c2 = float(param_dict['c2'])
+    c3 = float(param_dict['c3'])
+    c4 = float(param_dict['c4'])
+    d1 = float(param_dict['d1'])
+    d3 = float(param_dict['d3'])
+    Decay1 = float(param_dict['Decay1'])
+    Decay2 = float(param_dict['Decay2'])
+    Decay4 = float(param_dict['Decay4'])
+    Decay6 = float(param_dict['Decay6'])
+    Decay7 = float(param_dict['Decay7'])
+    Decay8 = float(param_dict['Decay8'])
+    Decay5 = float(param_dict['Decay5'])
+    leakage_A1 = float(param_dict['leakage_A1'])
+    leakage_B = float(param_dict['leakage_B'])
+    leakage_HSPR = float(param_dict['leakage_HSPR'])
+    n = int(param_dict['hillcoeff'])
 
-    if bool(opt.a1m) == False: leakage_A1 = leakage
-    elif bool(opt.a1m) == True: 
+    if bool(opt.a1m) == True: 
         leakage_A1 = 0
         print("A1 leakage = 0")
-    if bool(opt.bmu) == False: leakage_B = leakage
-    elif bool(opt.bmu) == True: 
+    if bool(opt.bmu) == True: 
         leakage_B = 0
         print("B leakage = 0")
-    if bool(opt.hmu) == False: leakage_HSPR = leakage
-    elif bool(opt.hmu) == True: 
+    if bool(opt.hmu) == True: 
         leakage_HSPR = 0
         print("HSPR leakage = 0")
     
@@ -968,13 +992,13 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     #exit()
     for i in range(numberofiteration):    
         print(f" \n iteration: {i}")
-        listM = np.array([param_dict["init_HSFA1"],
-                      param_dict["init_HSPR"],
-                      param_dict["init_C_HSFA1_HSPR"],
-                      param_dict["init_MMP"],
-                      param_dict["init_FMP"],
-                      param_dict["init_C_HSPR_MMP"],
-                      param_dict["init_HSFB"]])
+        listM = np.array([int(param_dict["init_HSFA1"]),
+                      int(param_dict["init_HSPR"]),
+                      int(param_dict["init_C_HSFA1_HSPR"]),
+                      int(param_dict["init_MMP"]),
+                      int(param_dict["init_FMP"]),
+                      int(param_dict["init_C_HSPR_MMP"]),
+                      int(param_dict["init_HSFB"])])
         listM2 =[listM]
         Time=0
         listtime =[Time]
@@ -982,7 +1006,7 @@ def gillespie_woA2_replaceA1(param_dict, opt):
         counter = 0
 
         while Time < int(opt.tsp): 
-
+            
             HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
 
             if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
@@ -1011,15 +1035,14 @@ def gillespie_woA2_replaceA1(param_dict, opt):
 
 
             listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3,R_HSFB_inc,R_HSFB_dec,MMP_replace_A1HSPR,A1_replace_MMPHSPR])
-            TotR = sum(listR) #production of the MRNA 
-            Rn = random.random() #getting random numbers
-            Tau=-math.log(Rn)/TotR #when the next thing happen
+            TotR = sum(listR) 
+            Rn = random.random() 
+            Tau=-math.log(Rn)/TotR 
             Outcome = random.choices(Stoich, weights = listR, k=1)
             listM = listM+Outcome[0] 
             last_time = Time
             Time+=Tau 
             counter += 1
-
 
             ## Capping Reaction Rates
             rate_dict ={'R_HSFA1_inc': R_HSFA1_inc,'R_HSFA1_dec': R_HSFA1_dec, 'R_HSPR_inc': R_HSPR_inc, 'R_HSPR_dec':R_HSPR_dec, 'R_C_HSFA1_HSPR_inc': R_C_HSFA1_HSPR_inc, 'R_C_HSFA1_HSPR_dec1': R_C_HSFA1_HSPR_dec1,'R_C_HSFA1_HSPR_dec2': R_C_HSFA1_HSPR_dec2,'R_MMP_inc': R_MMP_inc,'R_MMP_dec': R_MMP_dec,'R_FMP_inc': R_FMP_inc, 'R_FMP_dec': R_FMP_dec,'R_C_HSPR_MMP_inc': R_C_HSPR_MMP_inc,'R_C_HSPR_MMP_dec1': R_C_HSPR_MMP_dec1, 'R_C_HSPR_MMP_dec2': R_C_HSPR_MMP_dec2, 'R_C_HSPR_MMP_dec3': R_C_HSPR_MMP_dec3,'R_HSFB_inc': R_HSFB_inc,'R_HSFB_dec': R_HSFB_dec,'MMP_replace_A1HSPR': MMP_replace_A1HSPR,'A1_replace_MMPHSPR': A1_replace_MMPHSPR}
@@ -1093,7 +1116,7 @@ def saveGilData_2(list, data_dir, numberofiteration, end_time, model_name, opt):
     return data_file
 
 
-def saveGilData_replace(list, data_dir, numberofiteration, end_time, model_name, opt):
+def saveGilData_replace(list, data_dir, numberofiteration, end_time, model_name,opt):
     # Name output file
     date = datetime.now().date()
     if opt.ofm == "csv":

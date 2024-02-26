@@ -69,11 +69,11 @@ def main(opt):
     data_dir, plot_dir = dir_gen()
 
     print("Step2: Extracting Parameter Dictionary")
-    param_dict, numberofiteration, end_time, hss, hsd, date = param_extract(data_dir, opt)
+    param_dict, numberofiteration, end_time, hss, hsd, date, model_name = param_extract(data_dir, opt)
     #print(param_dict)
 
     print("Step3: Import Simulating Results")
-    data_df, grouped_data, Rows, Columns = import_tidy_simuData(data_dir, numberofiteration, opt)
+    data_df, grouped_data, Rows, Columns = import_tidy_simuData(data_dir, numberofiteration, model_name, opt)
     #print(data_df)
     #exit()
 
@@ -136,13 +136,25 @@ def dir_gen():
 ## 2. Parameter specification
 #######################################################################
 def param_extract(data_dir, opt):
-    para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}"
-    param_dict = {}
+    if os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}"
+        model_name = "Exp3"
+    elif os.path.exists(f"{data_dir}/replaceA1_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/replaceA1_Para_{opt.ids}"
+        model_name = "replaceA1"
+    elif os.path.exists(f"{data_dir}/woA2_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/woA2_Para_{opt.ids}"
+        model_name = "woA2"
+    elif os.path.exists(f"{data_dir}/d1changeConstant_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/d1changeConstant_Para_{opt.ids}"
+        model_name = "d1changeConstant"
+
     with open(para_csv_name, 'r') as param_file:
         csv_reader = csv.reader(param_file)
         headers = next(csv_reader)
         data = next(csv_reader)
         param_dict = dict(zip(headers, data))
+            
 
     pattern = re.compile(r"(\d+-\d+-\d+)_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)\.(pcl|csv)")
     match = pattern.match(opt.ids)
@@ -159,15 +171,15 @@ def param_extract(data_dir, opt):
     #print(f"para.h1:{para.h1}")
     #print(f"para.init_C_HSFA1_HSPR:{para.init_C_HSFA1_HSPR}")
     #print(f"para.numberofiteration:{para.numberofiteration}")
-    return param_dict, numberofiteration, end_time, hss, hsd, date
+    return param_dict, numberofiteration, end_time, hss, hsd, date, model_name
 
 
 
 #######################################################################
 ## 3. Import Simulation Data
 #######################################################################
-def import_tidy_simuData(data_dir, numberofiteration, opt):
-    data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
+def import_tidy_simuData(data_dir, numberofiteration, model_name, opt):
+    data_df = pd.read_csv(f"{data_dir}/{model_name}_SimuData_{opt.ids}")
     data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
     #print(data_df)
     #print(data_df.shape)
@@ -290,7 +302,9 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         'Decay8': 0.01, # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
         ####
-        'leakage': 0.001,
+        'leakage_A1': 0.001,
+        'leakage_B': 0.001,
+        'leakage_HSPR': 0.001,
         'hillcoeff': 2,
         'numberofiteration': numberofiteration,
         'hstart':hss,
@@ -338,6 +352,7 @@ def saveFig(plot_dir, name_suffix, opt, prefix):
 
 def plotReactionRate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd):
     rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
+    #rr = ['R_HSFA1_inc','R_HSPR_inc', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_MMP_inc','R_MMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2','R_HSFB_inc']
 
     if numberofiteration == 1:
         fig, ax = plt.subplots(figsize=(15, 5))
