@@ -262,3 +262,69 @@ Call  : -ops 50 -nit 1 -ifp 5000 -ram 0.1 -rma 5.0 -tsp 900 -hss 600 -hsd 50
 Start : 02/25/24 16:00:05
 Script: HSPR_SA.py
 Call  : -ops 5 -nit 1 -ifp 5000 -ram 0.1 -rma 5.0 -tsp 900 -hss 600 -hsd 50
+Start : 02/25/24 18:10:28
+Script: HSPR_SA.py
+Call  : -ops 2
+Start : 02/25/24 18:10:34
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1
+Start : 02/25/24 18:12:07
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1
+Start : 02/25/24 18:22:04
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1
+Start : 02/25/24 18:22:14
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -tsp 10
+Start : 02/25/24 18:42:04
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -tsp 10
+Start : 02/25/24 18:42:31
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1
+Start : 02/25/24 18:47:40
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 1 -ifp 5000 -ram 0.1 -rma 5.0 -tsp 900 -hss 600 -hsd 10
+Start : 02/25/24 18:55:39
+Script: HSPR_SA.py
+Call  : -ops 5 -nit 1 -ifp 5000 -ram 0.1 -rma 5.0 -tsp 900 -hss 600 -hsd 50
+Start : 02/25/24 20:04:06
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/25/24 20:12:19
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/25/24 20:17:19
+Script: HSPR_SA.py
+Call  : -ops 5 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/25/24 20:21:29
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/25/24 22:15:04
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/25/24 22:16:23
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 02:27:26
+Script: HSPR_SA.py
+Call  : -ops 100 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 02:31:13
+Script: HSPR_SA.py
+Call  : -ops 100 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 02:37:37
+Script: HSPR_SA.py
+Call  : -ops 100 -nit 5 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 02:38:21
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 02:53:16
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 02:53:40
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 02:57:15
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50

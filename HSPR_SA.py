@@ -40,13 +40,13 @@ description
     c1, association rate between A1 and HSPR (default:10.0)
 
 --repMMP_A1H,-rma
-    c2, rate at which MMP replaces A1 from A1_HSPR complex, to form MMP_HSPR instead (default: 5.0)
+    c2, rate at which MMP replaces A1 from A1_HSPR complex, to form MMP_HSPR instead (default: 1.0)
 
 --assoMMP_HSPR,-amh
     c3, The association rate between MMP and HSPR (default: 5.0)
 
 --repA1_MMPH,-ram
-    c4, rate at which A1 replaces MMP from MMP_HSPR complex, to form A1_HSPR instead (default: 10.0)
+    c4, rate at which A1 replaces MMP from MMP_HSPR complex, to form A1_HSPR instead (default: 1.0)
 
 --disoA1_HSPR,-dah
     d1, dissociation rate of A1-HSPR (default: 0.1)
@@ -88,7 +88,7 @@ description
     h4, K constant for HSFB repressing HSPR (default: 1.0)
 
 --initFMP,-ifp
-    Initial FMP abundance (default: 25000)
+    Initial FMP abundance (default: 5000)
 
 --initMMP,-imp
     Initial MMP abundance (default: 0)
@@ -162,6 +162,9 @@ description
 --modelName,-mdn
     which model version or Gillespie Function to use (default: replaceA1)
 
+--saveOutput,-sop
+    whether to save param explore results (default: 1)
+
 ################################################################################
 
 reference
@@ -196,22 +199,21 @@ def main(opt):
     S_record, param_record = [], []
 
     for i in range(opt.ops):
-        data_df, grouped_data, numberofiteration, listM6, end_time, hss, hsd = one_gillespie(param_dict, opt)
+        data_df, grouped_data, numberofiteration, listM6, end_time, hss, hsd = one_ops_step(param_dict, opt)
 
         ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df = df_Processing_HS(data_df, hss, hsd, end_time, opt)
 
-        S, S_record, param_record = update_S_param(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_record, param_record, opt)
+        S, cost_func, S_record, param_record = update_S_param(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_record, param_record, opt)
 
-
-        if S > 100: 
+        if S > 0 and bool(opt.sop) == True: 
             data_file, date, data_name = saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt)
-            saveData(zip(S, param_dict), f"{param_dir}/{S}.pcl")
+            saveParam_csv_pcl(param_dict, param_dir, S, cost_func, opt)
             if bool(opt.prs) == True:
                 plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end_time, date, numberofiteration, hss, hsd, opt)
 
         param_dict = updatePara_unif(param_dict, opt)
 
-    save_S_param(S_record, param_record, end_time, param_dir, param_rootdir, opt)
+    if bool(opt.sop) == True: save_S_param(S_record, param_record, param_rootdir, cost_func, opt)
 
 ######################################################
 ## Main Functions
@@ -324,7 +326,7 @@ def param_spec(opt):
     return param_dict
 
 
-def one_gillespie(param_dict, opt):
+def one_ops_step(param_dict, opt):
     numberofiteration = param_dict['numberofiteration']
     hss = param_dict['hstart']
     hsd = param_dict['hduration']
@@ -343,63 +345,59 @@ def update_S_param(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_rec
     ## Objective Function Calculation
     if i == 0: S_old = 0
     else: S_old = S_record[-1]
-    S = obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
+    S, cost_func = obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
     delta_S = S - S_old
     S_record = S_record + [S]
     param_dict_toSave = param_dict.copy()
     param_record.append(param_dict_toSave)
     print(f"\n------> STEP {i}, S:{S}, delta_S: {delta_S}\n param_dict: {param_dict}\n")
-    return S, S_record, param_record
+    return S, cost_func, S_record, param_record
 
 
 def plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end_time, date, numberofiteration, hss, hsd, opt):
 
-    name_suffix = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
+    name_suffix = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
 
     plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt)
     plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, name_suffix, S, opt)
-    plot_FMPMMPvsTime_2_overlayed(data_df, param_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt)
-    plot_FMPMMP_zoom(data_df, hss, hsd, param_dir, numberofiteration, data_name, name_suffix, S, opt)
+    #plot_FMPMMPvsTime_2_overlayed(data_df, param_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt)
+    #plot_FMPMMP_zoom(data_df, hss, hsd, param_dir, numberofiteration, data_name, name_suffix, S, opt)
 
-def save_S_param(S_record, param_record, end_time, param_dir, param_rootdir, opt):
+
+
+def saveParam_csv_pcl(param_dict, param_dir, S, cost_func, opt):
+    param_name = f"{param_dir}/{S}_param.csv"
+    header = param_dict.keys()
+    with open(param_name, 'w', newline='') as csvfile_2:
+        # Create a CSV writer object
+        writer = csv.DictWriter(csvfile_2, fieldnames=header)
+        # Write the header
+        writer.writeheader()
+        # Write the parameter values
+        writer.writerow(param_dict)
+    saveData((S, cost_func, param_dict), f"{param_dir}/{S}_param.pcl")
+
+
+
+
+def save_S_param(S_record, param_record, param_rootdir, cost_func, opt):
     date = datetime.now().date()
-    header_row = ['param_dir'] + ['S'] + list(param_record[0].keys())
+    header_row = ['param_dir'] + ['model_name'] + ['cost_function'] + ['S'] + list(param_record[0].keys())
     param_opt_log = f"{param_rootdir}/Param_optimisation_log.csv"
 
     if os.path.exists(param_opt_log):
         with open(param_opt_log, mode='a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
             for (dict, S) in zip(param_record, S_record):
-                row = [f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}"] + [S] +  list(dict.values())
+                row = [f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}"] + [opt.mdn] + [cost_func] + [S] +  list(dict.values())
                 csv_writer.writerow(row)
     else:
         with open(param_opt_log, 'w') as csvfile:
             csv_writer = csv.writer(csvfile)
             csv_writer.writerow(header_row)
             for (dict, S) in zip(param_record, S_record):
-                row = [f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}"] + [S] +  list(dict.values())
+                row = [f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}"] + [opt.mdn] + [cost_func] + [S] +  list(dict.values())
                 csv_writer.writerow(row)
-
-
-
-
-
-def save_S_param_2(S_record, param_record, opt, end_time, param_dir):
-    date = datetime.now().date()
-
-    data_file = f"{param_dir}/ParamRecord_{date}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}.csv"
-    data_file = get_unique_filename(data_file)
-    #print(data_file)
-    keys = param_record[0].keys()
-    with open(data_file, 'w') as csvfile:
-        csv_writer = csv.writer(csvfile)
-        header_row = ['S'] + list(keys)
-        csv_writer.writerow(header_row)
-        for (dict, S) in zip(param_record, S_record):
-            row = [S] + list(dict.values())
-            csv_writer.writerow(row)
-
-            saveData(zip(S, dict), f"{param_dir}/{S}.pcl")
 
 
 
@@ -812,15 +810,17 @@ def combine_data(listtime2, listM4, rr_list2, opt):
 
 def Gillespie_list_to_df(listM6, opt):
     if opt.mdn == 'replaceA1':
-        data_df = pd.DataFrame(listM6, Columns = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
+        header = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
     else:
-        data_df = pd.DataFrame(listM6, Columns = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec'])
+        header = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec']
+    data_df = pd.DataFrame(listM6, columns = header)
     data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
-    #print(data_df)
-    #print(data_df.shape)
-    ### number of rows and columns for all iterations
-    data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
-    data_df['totalMMP'] = data_df['MMP'] + data_df['C_HSPR_MMP']
+    data_df['totalA1'] = data_df['HSFA1'] + data_df['C_HSFA1_HSPR']
+    conc_list = ['HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','totalHSPR', 'totalA1']
+    for column in header:
+        if column == 'Iteration_Identifier': data_df[column] = data_df[column].astype(str)
+        elif column in conc_list: data_df[column] = data_df[column].astype(int)
+        else: data_df[column] = data_df[column].astype(float)
     grouped_data = data_df.groupby('Iteration_Identifier')
     return data_df, grouped_data
 
@@ -828,9 +828,9 @@ def Gillespie_list_to_df(listM6, opt):
 
 def saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt):
     date = datetime.now().date()
-    data_file = f"{param_dir}/S-{S}_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+    data_file = f"{param_dir}/{S}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
     data_file = get_unique_filename(data_file)
-    data_name = f"S-{S}_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+    data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
     with open(data_file, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
         if opt.mdn == 'replaceA1':
@@ -1173,7 +1173,7 @@ def data_to_df(listtime2,listM4):
 
 
 def df_Processing_HS(data_df, hss,hsd, end_time, opt):
-    if opt.tsp < 100: ss1_start = 0
+    if opt.tsp < 400: ss1_start = 0
     else: ss1_start = 400
     ss1_end = int(hss)
     ssHS_start = int(hss)
@@ -1181,8 +1181,8 @@ def df_Processing_HS(data_df, hss,hsd, end_time, opt):
     ssHS_end = int(hss) + int(hsd)
     ss3_start = ssHS_end
     ss3_end = end_time
-    print(f"hss:{hss}, hsd: {hsd}")
-    print(f"ss1: {ss1_start} - {ss1_end} \nssHS: {ssHS_start} - {ssHS_end} \nss3:{ss3_start} - {ss3_end} ")
+    #print(f"hss:{hss}, hsd: {hsd}")
+    #print(f"ss1: {ss1_start} - {ss1_end} \nssHS: {ssHS_start} - {ssHS_end} \nss3:{ss3_start} - {ss3_end} ")
 
     ssbHS_df = data_df[(data_df['time'] >= ss1_start) & (data_df['time'] <= ss1_end)]
     ssHS_df = data_df[(data_df['time'] >= ssHS_start) & (data_df['time'] <= ssHS_end)]
@@ -1215,9 +1215,10 @@ def obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
     #print(f"large_freeHSPR_pHS: {large_freeHSPR_pHS}")
 
     S = logFC_A1*logFC_totalHSPR*(10*large_freeHSPR_pHS + 5*small_A1_pHS)
+    cost_func = 'logFC_A1*logFC_totalHSPR*(10*large_freeHSPR_pHS + 5*small_A1_pHS)'
     #print(f"S: {S}")
 
-    return S
+    return S, cost_func
 
 
 

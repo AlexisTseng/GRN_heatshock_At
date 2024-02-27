@@ -36,6 +36,9 @@ description
 --heatShockStart,-hss
     The time point at which a heat shock is introduced (default:600)
 
+--heatShockStart2,-hs2
+    The time point at which a second heat shock is introduced (default: 0)
+
 --heatShockDuration,-hsd
     The duration of heat shock introduced (default: 30)
 
@@ -162,6 +165,9 @@ description
 --thread,-thr
     The number of threads used for multiprocessing (default: 4)
 
+--modelName,-mdn
+    which model version or Gillespie Function to use (default: replaceA1)
+
 ################################################################################
 
 reference
@@ -194,12 +200,12 @@ import multiprocessing as mp
 def main(opt):
     print("Step1: Specify output directory")
     data_dir, plot_dir, param_rootdir = dir_gen()
-    print(bool(opt.ids))
+
     print("Step2: Specify parameters")
     if bool(opt.ids) == False: 
         param_dict = param_spec(opt)
     else: 
-        try: param_dict = SA_param_extract_csv(param_rootdir, opt)
+        try: param_dict = SA_param_extract_csv(param_rootdir, data_dir, opt)
         except FileNotFoundError: param_dict = SA_param_extract_pcl(param_rootdir, opt)
     
     print("Step3: Simulation begins")
@@ -213,7 +219,7 @@ def main(opt):
     #listM6, numberofiteration, end_time = parallel_gillespie_woA2(param_dict, opt)
 
     print("Step4: Combine and save data")
-    if model_name == "replaceA1":
+    if opt.mdn == "replaceA1":
         data_file = saveGilData_replace(listM6, data_dir, numberofiteration, end_time, model_name, opt)
     else: 
         data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, model_name, opt)
@@ -256,9 +262,22 @@ def extract_para_from_name(opt):
     return data_file, numberofiteration, end_time, opt
 
 
-def SA_param_extract_csv(param_rootdir, opt):
-    para_csv_name = f"{param_rootdir}/{opt.ids}"
-    param_dict = {}
+def SA_param_extract_csv(param_rootdir, data_dir, opt):
+    if os.path.exists(f"{param_rootdir}/{opt.ids}"):
+        para_csv_name = f"{param_rootdir}/{opt.ids}"
+    elif os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}"
+        model_name = "woA2"
+    elif os.path.exists(f"{data_dir}/replaceA1_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/replaceA1_Para_{opt.ids}"
+        model_name = "replaceA1"
+    elif os.path.exists(f"{data_dir}/woA2_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/woA2_Para_{opt.ids}"
+        model_name = "woA2"
+    elif os.path.exists(f"{data_dir}/d1upCons_Para_{opt.ids}"):
+        para_csv_name = f"{data_dir}/d1upCons_Para_{opt.ids}"
+        model_name = "d1upCons"
+
     with open(para_csv_name, 'r') as param_file:
         csv_reader = csv.reader(param_file)
         headers = next(csv_reader)
@@ -269,12 +288,12 @@ def SA_param_extract_csv(param_rootdir, opt):
     #    print(f"{key} - {type(val)}")
     print(param_dict)
     S = param_dict['S']
-    return param_dict
+    return param_dict, opt
 
 
 def SA_param_extract_pcl(param_rootdir, opt):
     para_csv_name = f"{param_rootdir}/{opt.ids}"
-    S, param_dict = loadData(para_csv_name)
+    S, cost_func, param_dict = loadData(para_csv_name)
     print(f"S: {S}, param_dict: {param_dict}")
     param_dict['S'] = S
     return param_dict
@@ -284,22 +303,22 @@ def SA_param_extract_pcl(param_rootdir, opt):
 #######################################################################
 def param_spec(opt):
     if bool(opt.a1m) == False:
-        init_HSFA1, a1 = int(opt.iaf), int(opt.a1A)
+        init_HSFA1, a1, leakage_A1 = int(opt.iaf), int(opt.a1A), float(opt.lga)
     elif bool(opt.a1m) == True: 
         print("A1 mutant")
-        init_HSFA1, a1 = 0, 0
+        init_HSFA1, a1, leakage_A1 = 0, 0
 
     if bool(opt.bmu) == False: 
-        init_HSFB, a5 = int(opt.ibf), int(opt.a5B)
+        init_HSFB, a5, leakage_B = int(opt.ibf), int(opt.a5B), float(opt.lgb)
     elif bool(opt.bmu) == True: 
         print("HSFB mutant")
-        init_HSFB,a5 = 0,0
+        init_HSFB, a5, leakage_B = 0,0, 0
 
     if bool(opt.hmu) == False:
-        init_C_HSPR_MMP, init_HSPR, a2 = int(opt.imh), int(opt.ihf), int(opt.a2H)
+        init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR = int(opt.imh), int(opt.ihf), int(opt.a2H), float(opt.lgh)
     elif bool(opt.hmu) == True: 
         print("HSPR mutant")
-        init_C_HSPR_MMP, init_HSPR, a2 = 0,0,0
+        init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR = 0,0,0, 0
 
     if bool(opt.hmu) == True or bool(opt.a1m) == True:
         init_C_HSFA1_HSPR_val = 0
@@ -354,13 +373,14 @@ def param_spec(opt):
         'Decay8': float(opt.gdr), # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
         ####
-        'leakage_A1': float(opt.lga),
-        'leakage_B': float(opt.lgb),
-        'leakage_HSPR': float(opt.lgh),
+        'leakage_A1': leakage_A1,
+        'leakage_B': leakage_B,
+        'leakage_HSPR': leakage_HSPR,
         'numberofiteration': int(opt.nit),
         'hillcoeff': int(opt.hco),
         'hstart':int(opt.hss),
-        'hduration':int(opt.hsd)
+        'hstart2':int(opt.hs2),
+        'hduration':int(opt.hsd),
     }
     #print(param_dict['a1'])  # prints the value of a1
     #print(param_dict['init_HSFA1'])  # prints the value of init_HSFA1
@@ -723,6 +743,9 @@ def gillespie_woA2(param_dict, opt):
 
             if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): 
                 d4 = param_dict['d4_heat']
+            elif bool(opt.hs2) == True:
+                if Time >= int(opt.hs2) and Time <= int(opt.hs2) + int(opt.hsd): d4 = param_dict['d4_heat']
+                else: d4 = param_dict['d4_norm']
             else: d4 = param_dict['d4_norm']
                 
 
@@ -785,11 +808,8 @@ def gillespie_woA2(param_dict, opt):
 
 
 
-
-
-
 def gillespie_woA2_d1HS(param_dict, opt):
-    model_name = 'd1changeConstant'
+    model_name = 'd1upCons'
     listM4=[]
     listtime2=[]
     rr_list2 = []
@@ -863,6 +883,9 @@ def gillespie_woA2_d1HS(param_dict, opt):
                 d4 = param_dict['d4_heat']
                 if float(opt.hda) != float(opt.dah):
                     d1 = float(opt.hda)
+            elif bool(opt.hs2) == True:
+                if Time >= int(opt.hs2) and Time <= int(opt.hs2) + int(opt.hsd): d4 = param_dict['d4_heat']
+                else: d4 = param_dict['d4_norm']
             else: d4 = param_dict['d4_norm']
                 
 
@@ -956,16 +979,6 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     leakage_B = float(param_dict['leakage_B'])
     leakage_HSPR = float(param_dict['leakage_HSPR'])
     n = int(param_dict['hillcoeff'])
-
-    if bool(opt.a1m) == True: 
-        leakage_A1 = 0
-        print("A1 leakage = 0")
-    if bool(opt.bmu) == True: 
-        leakage_B = 0
-        print("B leakage = 0")
-    if bool(opt.hmu) == True: 
-        leakage_HSPR = 0
-        print("HSPR leakage = 0")
     
     Stoich = [[1,0,0,0,0,0,0], #R_HSFA1_inc
           [-1,0,0,0,0,0,0], #R_HSFA1_dec
@@ -1010,6 +1023,9 @@ def gillespie_woA2_replaceA1(param_dict, opt):
             HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
 
             if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): d4 = param_dict['d4_heat']
+            elif bool(opt.hs2) == True:
+                if Time >= int(opt.hs2) and Time <= int(opt.hs2) + int(opt.hsd): d4 = param_dict['d4_heat']
+                else: d4 = param_dict['d4_norm']
             else: d4 = param_dict['d4_norm']
                 
 
@@ -1119,16 +1135,19 @@ def saveGilData_2(list, data_dir, numberofiteration, end_time, model_name, opt):
 def saveGilData_replace(list, data_dir, numberofiteration, end_time, model_name,opt):
     # Name output file
     date = datetime.now().date()
-    if opt.ofm == "csv":
+    if bool(opt.hs2) == True:
+        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_hs2-{opt.hs2}_HSduration{opt.hsd}.csv"
+    else:
         data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
-        data_file = get_unique_filename(data_file)
-        print(data_file)
-        # Open the CSV file in write mode with the specified directory and file name
-        with open(data_file, 'w') as csvfile:
-            # Create a CSV writer object
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
-            csv_writer.writerows(list) #how different it is to use .writerow and .writerows
+    data_file = get_unique_filename(data_file)
+    print(data_file)
+    # Open the CSV file in write mode with the specified directory and file name
+    with open(data_file, 'w') as csvfile:
+        # Create a CSV writer object
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
+        csv_writer.writerows(list) #how different it is to use .writerow and .writerows
+
 
 def saveGilData(list, data_dir, numberofiteration, end_time, opt):
     # Name output file
@@ -1160,17 +1179,19 @@ def saveGilData(list, data_dir, numberofiteration, end_time, opt):
 
 def saveParam(param_dict, data_dir, numberofiteration, end_time, model_name, opt):
     date = datetime.now().date()
-    if opt.ofm == "csv":
+    if bool(opt.hs2) == True:
+        param_name = f"{data_dir}/{model_name}_Para_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSstart2{opt.hs2}_HSduration{opt.hsd}.csv"
+    else:
         param_name = f"{data_dir}/{model_name}_Para_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
-        param_outfile = get_unique_filename(param_name)
-        header = param_dict.keys()
-        with open(param_outfile, 'w', newline='') as csvfile_2:
-            # Create a CSV writer object
-            writer = csv.DictWriter(csvfile_2, fieldnames=header)
-            # Write the header
-            writer.writeheader()
-            # Write the parameter values
-            writer.writerow(param_dict)
+    param_outfile = get_unique_filename(param_name)
+    header = param_dict.keys()
+    with open(param_outfile, 'w', newline='') as csvfile_2:
+        # Create a CSV writer object
+        writer = csv.DictWriter(csvfile_2, fieldnames=header)
+        # Write the header
+        writer.writeheader()
+        # Write the parameter values
+        writer.writerow(param_dict)
     #if opt.ofm =="pcl":
     #    param_name = f"{data_dir}/Exp3_Para_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pcl"
     #    param_outfile = get_unique_filename(param_name)

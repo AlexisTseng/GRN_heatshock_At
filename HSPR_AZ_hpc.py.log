@@ -1027,3 +1027,24 @@ Call  : -nit 5 -hAA 6.0 -hAH 5.0 -hAB 10.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.003
 Start : 02/25/24 16:33:33
 Script: HSPR_AZ_hpc.py
 Call  : -nit 30 -hAA 6.0 -hAH 5.0 -hAB 10.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.003 -lgb 0.001 -lgh 0.001
+Start : 02/25/24 19:04:46
+Script: HSPR_AZ_hpc.py
+Call  : -nit 30 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001
+Start : 02/25/24 20:10:16
+Script: HSPR_AZ_hpc.py
+Call  : -nit 30 -hAA 6.0 -hAH 9.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001
+Start : 02/25/24 20:11:15
+Script: HSPR_AZ_hpc.py
+Call  : -nit 30 -hAA 6.0 -hAH 9.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -a1A 30 -a5B 40
+Start : 02/26/24 03:21:39
+Script: HSPR_AZ_hpc.py
+Call  : -nit 15 -hAA 6.0 -hAH 9.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001
+Start : 02/26/24 03:26:18
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -hs2 660
+Start : 02/26/24 03:27:13
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -hs2 660
+Start : 02/26/24 04:12:50
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -hs2 660 -a1m 1
