@@ -352,3 +352,6 @@ Call  : -ops 2 -nit 1 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lg
 Start : 02/26/24 08:32:57
 Script: HSPR_SA.py
 Call  : -ops 2 -nit 1 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0001 -lgb 0.001 -lgh 0.001 -ifp 5000
+Start : 02/28/24 23:08:31
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5

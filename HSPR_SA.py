@@ -33,6 +33,9 @@ description
 --modelName,-mdn
     which model version or Gillespie Function to use (default: replaceA1)
 
+--costFunc,-cof
+    which cost function to use. e.g. 'fctHSPR', 'fcA1tHSPR-pHSA1HSPR' (default: fcA1tHSPR-pHSA1HSPR)
+
 --heatShockStart2,-hs2
     The time point at which a second heat shock is introduced (default: 0)
 
@@ -240,7 +243,7 @@ def dir_gen(opt):
     plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
     if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
 
-    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}")
+    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}_cosFunc{opt.cof}")
     param_dir = get_unique_filename(param_dir)
     if not os.path.isdir(param_dir): os.makedirs(param_dir, 0o777)
 
@@ -357,7 +360,10 @@ def update_S_param(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_rec
     ## Objective Function Calculation
     if i == 0: S_old = 0
     else: S_old = S_record[-1]
-    S, cost_func = obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
+    if opt.cof == 'fcA1tHSPR-pHSA1HSPR':
+        S, cost_func = obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
+    elif opt.cof == 'fctHSPR':
+        S, cost_func = obj_func_fctHSPR(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
     delta_S = S - S_old
     S_record = S_record + [S]
     param_dict_toSave = param_dict.copy()
@@ -1209,8 +1215,6 @@ def df_Processing_HS(data_df, hss,hsd, end_time, opt):
 
 
 def obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
-    print()
-
     preHS_A1_ave = ssbHS_df['HSFA1'].mean()
     preHS_B_ave = ssbHS_df['HSFB'].mean()
     preHS_totalHSPR_ave = ssbHS_df['totalHSPR'].mean()
@@ -1237,7 +1241,15 @@ def obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
 
     return S, cost_func
 
-
+def obj_func_fctHSPR(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
+    preHS_totalHSPR_ave = ssbHS_df['totalHSPR'].mean()
+    HSlh_totalHSPR_ave = ssHS_lh_df['totalHSPR'].mean()
+    if preHS_totalHSPR_ave == 0:
+        S = 0
+    else:
+        S = math.log2(HSlh_totalHSPR_ave/preHS_totalHSPR_ave)
+    cost_func = 'math.log2(HSlh_totalHSPR_ave/preHS_totalHSPR_ave)'
+    return S, cost_func
 
 
 def updatePara_unif(param_dict, opt):
