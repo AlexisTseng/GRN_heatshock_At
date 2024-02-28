@@ -28,7 +28,7 @@ description
     The number of interations for Gillespi simulation
 
 --importParamDataset,-ids
-    Dataset name from which parameters are extracted. e.g. from SA '2024-02-24_step2_time900_hss600_hsd50\11.792037432365467' from simuData 'Exp3_Para_2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000' (default: )
+    Dataset name from which parameters are extracted. e.g. from SA '2024-02-24_step2_time900_hss600_hsd50/11.792037432365467' from simuData 'Exp3_Para_2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000' (default: )
 
 --modelName,-mdn
     which model version or Gillespie Function to use (default: )
@@ -175,7 +175,7 @@ reference
     xxxxxxxxx
 """
 
-
+from pathlib import Path
 import time 
 import re
 import argparse as ap
@@ -198,6 +198,10 @@ import multiprocessing as mp
 
 
 def main(opt):
+    #print(type(sys.argv))
+    #print(sys.argv)
+    #exit()
+
     print("Step1: Specify output directory")
     data_dir, plot_dir, param_rootdir = dir_gen()
 
@@ -243,51 +247,28 @@ def main(opt):
 ## To Extract From Existing File
 ##################################################################
 
-def SA_param_extract_csv(param_rootdir, data_dir, opt):
-    if os.path.exists(f"{param_rootdir}/{opt.ids}"):
-        para_csv_name = f"{param_rootdir}/{opt.ids}"
-    elif os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}"):
-        para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}"
-        model_name = "woA2"
-    elif os.path.exists(f"{data_dir}/replaceA1_Para_{opt.ids}"):
-        para_csv_name = f"{data_dir}/replaceA1_Para_{opt.ids}"
-        model_name = "replaceA1"
-    elif os.path.exists(f"{data_dir}/woA2_Para_{opt.ids}"):
-        para_csv_name = f"{data_dir}/woA2_Para_{opt.ids}"
-        model_name = "woA2"
-    elif os.path.exists(f"{data_dir}/d1upCons_Para_{opt.ids}"):
-        para_csv_name = f"{data_dir}/d1upCons_Para_{opt.ids}"
-        model_name = "d1upCons"
-
-    with open(para_csv_name, 'r') as param_file:
-        csv_reader = csv.reader(param_file)
-        headers = next(csv_reader)
-        data = next(csv_reader)
-        numeric_data = [float(val) for val in data]
-        param_dict = dict(zip(headers, numeric_data))
-    #for key, val in param_dict.items():
-    #    print(f"{key} - {type(val)}")
-    print(param_dict)
-    S = param_dict['S']
-    return param_dict, opt
-
-
-def SA_param_extract_pcl(param_rootdir, opt):
-    para_pcl_name = f"{param_rootdir}/{opt.ids}.pcl"
-    S, cost_func, param_dict = loadData(para_pcl_name)
-    print(f"S: {S}, param_dict: {param_dict}")
-    param_dict['S'] = S
-    return param_dict
 
 def load_Param_fromFile(param_rootdir, data_dir, opt):
     try: 
         S, cost_func, param_dict = loadData(f"{param_rootdir}/{opt.ids}.pcl")
         opt.S = S
         opt.cost_func = cost_func
+        if os.path.getctime(para_csv_name) < datetime(2024,2,28):
+                model_name = "replaceA1"
+        else: model_name = extract_model_name(opt.ids)
     except FileNotFoundError:
-        if os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}.csv"):
+        if os.path.exists(f"{param_rootdir}/{opt.ids}.csv"):
+            para_csv_name = f"{param_rootdir}/{opt.ids}.csv"
+            ctime = datetime.fromtimestamp(os.path.getmtime(para_csv_name))
+            #print(f"{ctime} {datetime(2024,2,28)}")
+            #print(f"{bool(ctime < datetime(2024,2,28))}")
+            #exit()
+            if ctime < datetime(2024,2,28):
+                model_name = "replaceA1"
+            else: model_name = extract_model_name(opt.ids)
+        elif os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}.csv"
-            model_name = "woA2"
+            model_name = model_from_date(para_csv_name)
         elif os.path.exists(f"{data_dir}/replaceA1_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/replaceA1_Para_{opt.ids}.csv"
             model_name = "replaceA1"
@@ -297,16 +278,51 @@ def load_Param_fromFile(param_rootdir, data_dir, opt):
         elif os.path.exists(f"{data_dir}/d1upCons_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/d1upCons_Para_{opt.ids}.csv"
             model_name = "d1upCons"
+
+        param_dict = {}
         with open(para_csv_name, 'r') as param_file:
             csv_reader = csv.reader(param_file)
             headers = next(csv_reader)
             data = next(csv_reader)
-            numeric_data = [float(val) for val in data]
-            param_dict = dict(zip(headers, numeric_data))
+        for key, val in zip(headers, data):
+            if key == 'model_name': 
+                param_dict[key] = str(val)
+            else: param_dict[key] = float(val)
+
     if not 'hstart2' in param_dict: param_dict['hstart2'] = 0
+    if not 'model_name' in locals(): model_name = param_dict['model_name']
     param_dict['model_name'], opt.mdn = model_name, model_name
     param_dict['numberofiteration'] = int(opt.nit)
     return param_dict, opt
+
+
+def model_from_date(file):
+    ctime = datetime.fromtimestamp(os.path.getmtime(file))
+    woA2_start = datetime(2023,12,6,23,30)
+    replaceA1_start = datetime(2024,2,16,15,8)
+    others_start = datetime(2024,2,26)
+    only_d1upCons = datetime(2024,2,19,10,25)
+    if ctime >= woA2_start and ctime < replaceA1_start: model_name = "woA2"
+    elif ctime > replaceA1_start and ctime <= others_start: 
+        if ctime == only_d1upCons: model_name = 'd1upCons'
+        else: model_name = "replaceA1"
+    else: print('model_from_date() receives unexpected param_file creation date')
+    return model_name
+
+
+def extract_model_name(filename):
+    # Define the pattern for extracting the model name
+    pattern = re.compile(r'\(\w+\)_(\w+)_')
+    # Use the pattern to find a match in the filename
+    match = pattern.search(filename)
+    # If a match is found, return the captured group (model name)
+    if match:
+        return match.group(1)
+    else:
+        print('Error, cannot extract model name with extract_model_name()')
+        exit()  # Return None if no match is found
+
+
 
 
 

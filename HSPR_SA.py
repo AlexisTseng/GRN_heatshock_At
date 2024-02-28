@@ -136,7 +136,7 @@ description
     a7, folded protein production rate (default: 300)
 
 -refoldRate,-a6R
-    a6, refolding rate from MMP-HSPR (default: 0.2)
+    a6, refolding rate from MMP-HSPR (default: 2.0)
 
 --globalDecayRate,-gdr
     the decay rate of species except for MMP (default:0.04)
@@ -1246,7 +1246,7 @@ def updatePara_unif(param_dict, opt):
     param_dict['a1'] = random.uniform(5,50) # max A1 transcription rate, default = 10
     param_dict['a2'] = random.uniform(50,250) # max HSPR transcription rate, default = 100
     param_dict['a5'] = random.uniform(5,50) # max HSFB transcription rate, default = 5
-    param_dict['a6'] = random.uniform(0.2,20) # refolding rate from MMP-HSPR, default = 0.2
+    #param_dict['a6'] = random.uniform(0.2,20) # refolding rate from MMP-HSPR, default = 0.2
     param_dict['h1'] = random.uniform(1,10)
     param_dict['h2'] = random.uniform(1,10)
     param_dict['h5'] = random.uniform(1,10)
