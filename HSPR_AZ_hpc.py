@@ -225,12 +225,16 @@ def main(opt):
     #listM6, numberofiteration, end_time = parallel_gillespie_woA2(param_dict, opt)
 
     print("Step4: Combine and save data")
-    if opt.mdn == "replaceA1":
-        data_file = saveGilData_replace(listM6, data_dir, numberofiteration, end_time, model_name, opt)
-    else: 
-        data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, model_name, opt)
+    if bool(opt.ids) == False:
+        if opt.mdn == "replaceA1":
+            data_file = saveGilData_replace(listM6, data_dir, numberofiteration, end_time, model_name, opt)
+        else: 
+            data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, model_name, opt)
+        param_outfile = saveParam(param_dict, data_dir, numberofiteration, end_time, model_name, opt)
+    else:
+        saveData_oneSAstep(listM6, param_rootdir, numberofiteration, end_time, opt)
 
-    param_outfile = saveParam(param_dict, data_dir, numberofiteration, end_time, model_name, opt)
+
 
 
 
@@ -238,35 +242,6 @@ def main(opt):
 ##################################################################
 ## To Extract From Existing File
 ##################################################################
-
-def extract_para_from_name(opt):
-    param_file = str(opt.ids)
-    filename, extension = os.path.splitext(param_file)
-    print(f" {data_file}")
-    # Define a pattern to match the relevant parts of the filename
-    pattern = re.compile(r"(\d+-\d+-\d+)_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)\.(pcl|csv)")
-    #pattern = re.compile(r"Exp3_SimuData_\d+-\d+-\d+_numIter(\d+)_Time([\d.]+)_HSstart(\d+)_HSduration(\d+)(?:_decay8-([\d.]+))?\.(pcl|csv)")
-    # Use the pattern to extract values
-    match = pattern.match(data_file)
-    if match:
-        date = match.group(1)
-        numberofiteration = int(match.group(2))
-        end_time = float(match.group(3))
-        opt.hss = int(match.group(4))
-        opt.hsd = int(match.group(5))
-        #opt.dmh = float(match.group(5))
-        opt.ofm = str(match.group(6))
-        print(" Extracted parameters")
-        print("     Number of Iteration:", numberofiteration)
-        print("     End Time:", end_time)
-        print("     HSstart:", opt.hss)
-        print("     HSduration:", opt.hsd)
-        #print("     decay8:", opt.dmh)
-        print("     File Extension:", opt.ofm)
-    else:
-        print("Filename does not match the expected pattern.")
-    return data_file, numberofiteration, end_time, opt
-
 
 def SA_param_extract_csv(param_rootdir, data_dir, opt):
     if os.path.exists(f"{param_rootdir}/{opt.ids}"):
@@ -307,6 +282,8 @@ def SA_param_extract_pcl(param_rootdir, opt):
 def load_Param_fromFile(param_rootdir, data_dir, opt):
     try: 
         S, cost_func, param_dict = loadData(f"{param_rootdir}/{opt.ids}.pcl")
+        opt.S = S
+        opt.cost_func = cost_func
     except FileNotFoundError:
         if os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}.csv"
@@ -330,10 +307,6 @@ def load_Param_fromFile(param_rootdir, data_dir, opt):
     param_dict['model_name'], opt.mdn = model_name, model_name
     param_dict['numberofiteration'] = int(opt.nit)
     return param_dict, opt
-
-
-
-
 
 
 
@@ -1227,6 +1200,22 @@ def saveParam(param_dict, data_dir, numberofiteration, end_time, model_name, opt
     #    saveData(param_dict, param_outfile)
     print(f" Parameters Saved as {opt.ofm}")
     return param_outfile
+
+
+def saveData_oneSAstep(listM6, param_rootdir, numberofiteration, end_time, opt):
+    date = datetime.now().date()
+    data_file = f"{param_rootdir}/{opt.ids}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+    data_file = get_unique_filename(data_file)
+    data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+    with open(data_file, 'w') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        if opt.mdn == 'replaceA1':
+            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
+        else: 
+            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec'])
+        csv_writer.writerows(listM6) 
+
+
 
 def loadData(fname):
     ## load data with pickle
