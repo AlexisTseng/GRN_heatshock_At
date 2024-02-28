@@ -87,7 +87,7 @@ def main(opt):
 
 
     print("Step4: Plot Temporal Trajectories")
-    plotReactionRate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd)
+    #plotReactionRate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd)
     ## Plot trajectories of all species for all iterations
     #plot_allvsTime_separate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
 
@@ -138,7 +138,7 @@ def dir_gen():
 def param_extract(data_dir, opt):
     if os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}"):
         para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}"
-        model_name = "woA2"
+        model_name = model_from_date(para_csv_name)
     elif os.path.exists(f"{data_dir}/replaceA1_Para_{opt.ids}"):
         para_csv_name = f"{data_dir}/replaceA1_Para_{opt.ids}"
         model_name = "replaceA1"
@@ -157,15 +157,31 @@ def param_extract(data_dir, opt):
 
     numberofiteration = int(param_dict['numberofiteration'])
     end_time = float(param_dict['end_time'])
-    hss = int(param_dict['hstart'])
-    hsd = int(param_dict['hduration'])
-    if 'hstart2' in param_dict:
-        opt.hs2 = int(param_dict['hstart2'])
+    hss = int(float(param_dict['hstart']))
+    hsd = int(float(param_dict['hduration']))
+
+    if 'hstart2' in param_dict: opt.hs2 = int(param_dict['hstart2'])
     else: opt.hs2 = False
 
+    param_dict['model_name'] = model_name
     date = opt.ids[:10]
 
     return param_dict, numberofiteration, end_time, hss, hsd, opt, date, model_name
+
+
+def model_from_date(file):
+    ctime = os.path.getctime(file)
+    woA2_start = datetime(2023,12,6,23,30)
+    replaceA1_start = datetime(2024,2,16,15,8)
+    others_start = datetime(2024,2,26)
+    only_d1upCons = datetime(2024,2,19,10,25)
+    if ctime >= woA2_start and ctime < replaceA1_start: model_name = "woA2"
+    elif ctime > replaceA1_start and ctime <= others_start: 
+        if ctime == only_d1upCons: model_name = 'd1upCons'
+        else: model_name = "replaceA1"
+    else: print('model_from_date() receives unexpected param_file creation date')
+    return model_name
+
 
 
 
@@ -173,7 +189,8 @@ def param_extract(data_dir, opt):
 ## 3. Import Simulation Data
 #######################################################################
 def import_tidy_simuData(data_dir, numberofiteration, model_name, opt):
-    data_df = pd.read_csv(f"{data_dir}/{model_name}_SimuData_{opt.ids}")
+    try: data_df = pd.read_csv(f"{data_dir}/{model_name}_SimuData_{opt.ids}")
+    except FileNotFoundError: data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
     data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
     #print(data_df)
     #print(data_df.shape)
@@ -188,69 +205,6 @@ def import_tidy_simuData(data_dir, numberofiteration, model_name, opt):
 ## 4. Generate Plot Name Suffix
 #######################################################################
 
-def genPlotName_nondefault_2(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
-    default_param_dict = {
-        ## initial concentrations
-        'init_HSFA1': 1,
-        'init_HSPR': 2,
-        'init_C_HSFA1_HSPR': 50,
-        'init_MMP': 0,
-        'init_FMP': 50,
-        'init_C_HSPR_MMP': 50,
-        #'init_HSFA2': 1,
-        'init_HSFB': 1,
-        'Time': 0.0,
-        ## Maximum expression level in Hill equation
-        'a1': 10.0,
-        'a2': 100.0,
-        #'a3': 5.0,
-        #'a4': 5.0,
-        'a5': 5.0,
-        'a6': 0.2, # refolding rate from MMP-HSPR
-        'a7': 10,
-        'a8': 5.0,
-        ## Ka in Hill equation
-        'h1': 1.0,
-        'h2': 1.0,
-        #'h3': 1.0,
-        #'h4': 1.0,
-        'h5': 1.0,
-        #'h6': 1.0,
-        ## association rates
-        'c1': 10.0,
-        'c3': 0.5, #between MMP and HSPR
-        ## decay rates
-        'd1': 0.1, # decay path 1 of A1-HSPR
-        'd3': 0.01, # dissociation rate of MMP-HSPR
-        'd4_heat': 0.05,
-        'd4_norm': 0.01,
-        'Decay1': 0.01,
-        'Decay2': 0.01, # decay of free HSPR
-        #'Decay3': 0.01,
-        'Decay4': 0.01,
-        'Decay6': 0.01,
-        'Decay7': 0.01, # decay path 2 of A1-HSPR
-        'Decay8': 0.01, # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
-        'Decay5': 0.1,
-        ####
-        'leakage': 0.01,
-        'hillcoeff': 1,
-        'numberofiteration': numberofiteration,
-        'hstart':hss,
-        'hduration':hsd,
-        'end_time':end_time
-    }
-    diff_dict = {}
-    for (dk,dv) in default_param_dict.items():
-        if str(param_dict[dk]) != str(dv):
-            print(f"default: {dk}, {dv}")
-            print(f"actual: {dk}, {param_dict[dk]}")
-            diff_dict[dk] = param_dict[dk]
-
-    name_suffix = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
-    for key, val in diff_dict.items():
-        name_suffix += f"_{key}-{val}"
-    return name_suffix
 
 def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
     default_param_dict = {
@@ -302,11 +256,15 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         'hillcoeff': 2,
         'numberofiteration': numberofiteration,
         'hstart':hss,
+        'hstart2':0,
+        'model_name':'undefined',
         'hduration':hsd,
         'end_time':end_time
     }
     diff_dict = {}
     for (dk,dv) in default_param_dict.items():
+        if not 'hstart2' in param_dict: param_dict['hstart2'] = 0
+        #if not 'model_name' in param_dict:  --> this line, not needed, cuz model_name always specified
         if str(param_dict[dk]) != str(dv):
             print(f"default: {dk}, {dv}")
             print(f"actual: {dk}, {param_dict[dk]}")

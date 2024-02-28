@@ -19,7 +19,7 @@ description
     how many steps the simulated annealing algorithm is gonna take (default:10)
 
 --numberInteration,-nit
-    The number of interations for Gillespi simulation
+    The number of interations for Gillespi simulation (default: 2)
 
 --timeStep,-tsp
     The time duration for each Gillespi simulation run/iteration (default:1000)
@@ -29,6 +29,12 @@ description
 
 --heatShockDuration,-hsd
     The duration of heat shock introduced (default: 30)
+
+--modelName,-mdn
+    which model version or Gillespie Function to use (default: replaceA1)
+
+--heatShockStart2,-hs2
+    The time point at which a second heat shock is introduced (default: 0)
 
 --misfoldRateNormal,-mfn
     The formation rate of misfolded protein from folded protein under normal temperature (default: 0.01)
@@ -63,8 +69,14 @@ description
 --A2positiveAutoReg,-a2p
     Whether HSFA2 positively regulates itself in the model (default: 0)
 
---leakage,-lkg
-    Trancription leakage (default: 0.001)
+--leakage_A1,-lga
+    Trancription leakage for HSFA1 (default: 0.001)
+
+--leakage_B,-lgb
+    Trancription leakage for HSFB (default: 0.001)
+
+--leakage_HSPR,-lgh
+    Trancription leakage for HSPR (default: 0.001)
 
 --hilHalfSaturation,-hhs
     The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
@@ -159,9 +171,6 @@ description
 --plotResult,-prs
     Set to 0 if running on HPC (default: 1)
 
---modelName,-mdn
-    which model version or Gillespie Function to use (default: replaceA1)
-
 --saveOutput,-sop
     whether to save param explore results (default: 1)
 
@@ -205,7 +214,8 @@ def main(opt):
 
         S, cost_func, S_record, param_record = update_S_param(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_record, param_record, opt)
 
-        if S > 0 and bool(opt.sop) == True: 
+        #if S > 0 and bool(opt.sop) == True: 
+        if bool(opt.sop) == True: 
             data_file, date, data_name = saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt)
             saveParam_csv_pcl(param_dict, param_dir, S, cost_func, opt)
             if bool(opt.prs) == True:
@@ -213,7 +223,7 @@ def main(opt):
 
         param_dict = updatePara_unif(param_dict, opt)
 
-    if bool(opt.sop) == True: save_S_param(S_record, param_record, param_rootdir, cost_func, opt)
+    if bool(opt.sop) == True: save_S_param(S_record, param_record, param_rootdir, param_dir, cost_func, opt)
 
 ######################################################
 ## Main Functions
@@ -312,13 +322,15 @@ def param_spec(opt):
         'Decay8': float(opt.gdr), # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
         ####
-        'leakage_A1': float(opt.lkg),
-        'leakage_HSPR': float(opt.lkg),
-        'leakage_B': float(opt.lkg),
+        'leakage_A1': float(opt.lga),
+        'leakage_HSPR': float(opt.lgh),
+        'leakage_B': float(opt.lgb),
         'numberofiteration': int(opt.nit),
         'hillcoeff': int(opt.hco),
         'hstart':int(opt.hss),
-        'hduration':int(opt.hsd)
+        'hduration':int(opt.hsd),
+        'hstart2': int(opt.hs2),
+        'model_name': str(opt.mdn),
     }
     #print(param_dict['a1'])  # prints the value of a1
     #print(param_dict['init_HSFA1'])  # prints the value of init_HSFA1
@@ -366,7 +378,7 @@ def plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end
 
 
 def saveParam_csv_pcl(param_dict, param_dir, S, cost_func, opt):
-    param_name = f"{param_dir}/{S}_param.csv"
+    param_name = f"{param_dir}/{S}.csv"
     header = param_dict.keys()
     with open(param_name, 'w', newline='') as csvfile_2:
         # Create a CSV writer object
@@ -375,13 +387,14 @@ def saveParam_csv_pcl(param_dict, param_dir, S, cost_func, opt):
         writer.writeheader()
         # Write the parameter values
         writer.writerow(param_dict)
-    saveData((S, cost_func, param_dict), f"{param_dir}/{S}_param.pcl")
+    saveData((S, cost_func, param_dict), f"{param_dir}/{S}.pcl")
 
 
 
 
-def save_S_param(S_record, param_record, param_rootdir, cost_func, opt):
+def save_S_param(S_record, param_record, param_rootdir, param_dir, cost_func, opt):
     date = datetime.now().date()
+    del param_record[0]['model_name']
     header_row = ['param_dir'] + ['model_name'] + ['cost_function'] + ['S'] + list(param_record[0].keys())
     param_opt_log = f"{param_rootdir}/Param_optimisation_log.csv"
 
@@ -389,13 +402,16 @@ def save_S_param(S_record, param_record, param_rootdir, cost_func, opt):
         with open(param_opt_log, mode='a', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
             for (dict, S) in zip(param_record, S_record):
-                row = [f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}"] + [opt.mdn] + [cost_func] + [S] +  list(dict.values())
+                try: del dict['model_name']
+                except KeyError: pass
+                row = [param_dir] + [opt.mdn] + [cost_func] + [S] +  list(dict.values())
                 csv_writer.writerow(row)
     else:
         with open(param_opt_log, 'w') as csvfile:
             csv_writer = csv.writer(csvfile)
             csv_writer.writerow(header_row)
             for (dict, S) in zip(param_record, S_record):
+                del dict['model_name']
                 row = [f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}"] + [opt.mdn] + [cost_func] + [S] +  list(dict.values())
                 csv_writer.writerow(row)
 
@@ -1195,23 +1211,24 @@ def df_Processing_HS(data_df, hss,hsd, end_time, opt):
 def obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
     print()
 
-    pHS_A1_ave = ssbHS_df['HSFA1'].mean()
-    pHS_B_ave = ssbHS_df['HSFB'].mean()
-    pHS_totalHSPR_ave = ssbHS_df['totalHSPR'].mean()
-    pHS_freeHSPR_ave = ssbHS_df['HSPR'].mean()
+    preHS_A1_ave = ssbHS_df['HSFA1'].mean()
+    preHS_B_ave = ssbHS_df['HSFB'].mean()
+    preHS_totalHSPR_ave = ssbHS_df['totalHSPR'].mean()
+    preHS_freeHSPR_ave = ssbHS_df['HSPR'].mean()
 
     HSlh_A1_ave = ssHS_lh_df['HSFA1'].mean()
     HSlh_B_ave = ssHS_lh_df['HSFB'].mean()
     HSlh_totalHSPR_ave = ssHS_lh_df['totalHSPR'].mean()
 
-    logFC_A1 = math.log2(HSlh_A1_ave/pHS_A1_ave)
+    
+    logFC_A1 = math.log2(HSlh_A1_ave/preHS_A1_ave)
     #print(f"logFC_A1: {logFC_A1}")
-    logFC_totalHSPR = math.log2(HSlh_totalHSPR_ave/pHS_totalHSPR_ave)
+    logFC_totalHSPR = math.log2(HSlh_totalHSPR_ave/preHS_totalHSPR_ave)
     #print(f"logFC_totalHSPR: {logFC_totalHSPR}")
 
-    small_A1_pHS = pHS_A1_ave - 0.5
+    small_A1_pHS = preHS_A1_ave - 0.5
     #print(f"small_A1_pHS: {small_A1_pHS}")
-    large_freeHSPR_pHS = pHS_freeHSPR_ave-2
+    large_freeHSPR_pHS = preHS_freeHSPR_ave-2
     #print(f"large_freeHSPR_pHS: {large_freeHSPR_pHS}")
 
     S = logFC_A1*logFC_totalHSPR*(10*large_freeHSPR_pHS + 5*small_A1_pHS)

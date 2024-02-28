@@ -328,3 +328,27 @@ Call  : -ops 2 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
 Start : 02/26/24 02:57:15
 Script: HSPR_SA.py
 Call  : -ops 50 -nit 5 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 08:06:31
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50 -sop 0
+Start : 02/26/24 08:06:48
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50 -sop 0
+Start : 02/26/24 08:06:53
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 08:08:40
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 1 -ifp 5000 -ram 0.1 -rma 0.1 -tsp 900 -hss 600 -hsd 50
+Start : 02/26/24 08:27:50
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -ifp 5000
+Start : 02/26/24 08:28:56
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -ifp 5000
+Start : 02/26/24 08:32:39
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -ifp 5000
+Start : 02/26/24 08:32:57
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 1 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0001 -lgb 0.001 -lgh 0.001 -ifp 5000

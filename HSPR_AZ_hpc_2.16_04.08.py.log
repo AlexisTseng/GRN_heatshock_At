@@ -1,0 +1,12 @@
+Start : 02/26/24 09:19:22
+Script: HSPR_AZ_hpc_2.16_04.08.py
+Call  : -nit 5 -ram 1.0 -rma 1.0 -ifp 25000
+Start : 02/26/24 09:19:47
+Script: HSPR_AZ_hpc_2.16_04.08.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000
+Start : 02/26/24 09:20:32
+Script: HSPR_AZ_hpc_2.16_04.08.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300
+Start : 02/26/24 09:25:06
+Script: HSPR_AZ_hpc_2.16_04.08.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100

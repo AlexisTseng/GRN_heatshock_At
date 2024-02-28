@@ -1048,3 +1048,87 @@ Call  : -nit 5 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.002
 Start : 02/26/24 04:12:50
 Script: HSPR_AZ_hpc.py
 Call  : -nit 5 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lga 0.0025 -lgb 0.001 -lgh 0.001 -hs2 660 -a1m 1
+Start : 02/26/24 09:56:02
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -a1m 1
+Start : 02/26/24 09:56:27
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -a1m 1
+Start : 02/26/24 10:16:16
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -am1
+Start : 02/26/24 10:16:21
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -a1m 1
+Start : 02/26/24 10:16:32
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -a1m 1 -mdn d1upCons
+Start : 02/26/24 10:18:07
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -a1m 1 -mdn woA2
+Start : 02/26/24 10:25:24
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -mdn woA2
+Start : 02/26/24 10:34:03
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ram 0.5 -rma 0.5 -ifp 5000 -fpp 300 -tsp 800 -hss 500 -hsd 100 -mdn woA2 -a1m 1
+Start : 02/26/24 10:58:07
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30
+Start : 02/26/24 10:58:42
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30
+Start : 02/26/24 11:01:32
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30
+Start : 02/26/24 11:03:57
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30
+Start : 02/26/24 11:05:03
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30
+Start : 02/26/24 11:06:11
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30
+Start : 02/26/24 11:08:46
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30
+Start : 02/26/24 11:11:08
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30 -a1m
+Start : 02/26/24 11:11:13
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30 -a1m 1
+Start : 02/26/24 12:11:02
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 2024-02-25_numIter30_Time1000.0010125397404_HSstart600_HSduration30 -hsd 100
+Start : 02/28/24 19:55:01
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids -mdn woA1 -tsp 800 -hss 500 -hsd 100 -dah 1.0
+Start : 02/28/24 19:55:33
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids -mdn woA1 -tsp 800 -hss 500 -hsd 100 -dah 1.0
+Start : 02/28/24 19:56:02
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids -mdn woA1 -tsp 800 -hss 500 -hsd 100 -dah 1.0
+Start : 02/28/24 19:56:45
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids -mdn woA1 -tsp 800 -hss 500 -hsd 100 -dah 1.0
+Start : 02/28/24 19:58:04
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids -tsp 800 -hss 500 -hsd 100 -dah 1.0
+Start : 02/28/24 19:58:51
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -mdn woA1 -tsp 800 -hss 500 -hsd 100 -dah 1.0
+Start : 02/28/24 19:59:53
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -mdn woA2 -tsp 800 -hss 500 -hsd 100 -dah 1.0
+Start : 02/28/24 20:08:42
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -mdn woA2 -tsp 800 -hss 500 -hsd 100
+Start : 02/28/24 20:54:07
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -rma 10.0 -ram 0.0 -tsp 1000 -hss 600 -hsd 100
+Start : 02/28/24 20:55:02
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -rma 10.0 -ram 0.0 -tsp 1000 -hss 600 -hsd 100 -mdn replaceA1
