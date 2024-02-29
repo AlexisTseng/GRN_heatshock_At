@@ -25,7 +25,7 @@ description
 ################################################################
 
 --importDataSuffix,-ids
-    Suffix in data/parameter file, such as "2023-12-04_numIter2_Time500.00226623247835_HSstart10000_HSduration5000.csv". The file has "Exp3_Para_" or "Exp3_SimuData_" prefix
+    Suffix in data/parameter file, such as from SA '2024-02-24_step2_time900_hss600_hsd50/11.792037432365467' or from simuData '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000'
 
 --saveFig,-sfg
     Whether to save the figures and plots generated. Default = True (default: 1)
@@ -66,19 +66,15 @@ import sys
 
 def main(opt):
     print("Step1: Specify output directory")
-    data_dir= dir_gen()
+    data_dir, plot_dir, param_rootdir = dir_gen()
 
     print("Step2: Extracting Parameter Dictionary")
-    param_dict, numberofiteration, end_time, hss, hsd, opt, date, model_name = param_extract(data_dir, opt)
-    #print(opt.hs2)
+    param_dict, opt = load_Param_fromFile(param_rootdir, data_dir, opt)
+    numberofiteration, end_time, hss, hsd, opt, date, model_name = info_from_param_dict(param_dict, opt)
 
     print("Step3: Import Simulating Results")
-    data_df, grouped_data, Rows, Columns = import_tidy_simuData(data_dir, numberofiteration, model_name, opt)
-    #print(data_df)
-    #exit()
+    data_df, grouped_data = import_tidy_simuData(data_dir, param_rootdir, numberofiteration, end_time, hss, hsd, opt, date, model_name)
 
-    #plot_resTime_vs_preHSHSPR(data_df, hss, param_dict)
-    #exit()
 
     print("Step 4: Generate Plot Name")
     name_suffix, diff_dict, name_suffix_save = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
@@ -90,17 +86,11 @@ def main(opt):
     #plotReactionRate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd)
     ## Plot trajectories of all species for all iterations
     #plot_allvsTime_separate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
-
     #plot_allvsZoomInTime_separate(data_df, hss, hsd, data_dir, numberofiteration,name_suffix, opt)
-
     #plot_FMPMMPvsTime_3(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-
     plot_FMPMMPvsTime_2(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-
     #plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-
     #plot_FMPMMP_zoom(data_df, hss, hsd, data_dir, numberofiteration,name_suffix, opt)
-
     #plot_A1BvsTime_separate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
     #plot_totalHSPRvsTime_subplots(grouped_data, data_df, data_dir, numberofiteration, name_suffix, hss, hsd, opt)
@@ -127,9 +117,11 @@ def dir_gen():
 
     data_dir = os.path.join(partiii_dir,"Ritu_simulation_data")
     if not os.path.isdir(data_dir): os.makedirs(data_dir, 0o777)
-    #plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
-    #if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
-    return data_dir
+    plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
+    if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
+    param_rootdir = os.path.join(partiii_dir,"Param_Optimisation")
+    if not os.path.isdir(param_rootdir): os.makedirs(plot_dir, 0o777)
+    return data_dir, plot_dir, param_rootdir
 
 
 #######################################################################
@@ -169,8 +161,61 @@ def param_extract(data_dir, opt):
     return param_dict, numberofiteration, end_time, hss, hsd, opt, date, model_name
 
 
+
+
+def load_Param_fromFile(param_rootdir, data_dir, opt):
+    try: 
+        S, cost_func, param_dict = loadData(f"{param_rootdir}/{opt.ids}.pcl")
+        para_csv_name = f"{param_rootdir}/{opt.ids}.pcl"
+        opt.S = S
+        opt.cost_func = cost_func
+        if os.path.getctime(para_csv_name) < datetime(2024,2,28):
+                model_name = "replaceA1"
+        else: model_name = extract_model_name(opt.ids)
+    except FileNotFoundError:
+        if os.path.exists(f"{param_rootdir}/{opt.ids}.csv"):
+            para_csv_name = f"{param_rootdir}/{opt.ids}.csv"
+            ctime = datetime.fromtimestamp(os.path.getmtime(para_csv_name))
+            #print(f"{ctime} {datetime(2024,2,28)}")
+            #print(f"{bool(ctime < datetime(2024,2,28))}")
+            #exit()
+            if ctime < datetime(2024,2,28):
+                model_name = "replaceA1"
+            else: model_name = extract_model_name(opt.ids)
+        elif os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}.csv"):
+            para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}.csv"
+            model_name = model_from_date(para_csv_name)
+        elif os.path.exists(f"{data_dir}/replaceA1_Para_{opt.ids}.csv"):
+            para_csv_name = f"{data_dir}/replaceA1_Para_{opt.ids}.csv"
+            model_name = "replaceA1"
+        elif os.path.exists(f"{data_dir}/woA2_Para_{opt.ids}.csv"):
+            para_csv_name = f"{data_dir}/woA2_Para_{opt.ids}.csv"
+            model_name = "woA2"
+        elif os.path.exists(f"{data_dir}/d1upCons_Para_{opt.ids}.csv"):
+            para_csv_name = f"{data_dir}/d1upCons_Para_{opt.ids}.csv"
+            model_name = "d1upCons"
+
+        param_dict = {}
+        with open(para_csv_name, 'r') as param_file:
+            csv_reader = csv.reader(param_file)
+            headers = next(csv_reader)
+            data = next(csv_reader)
+        for key, val in zip(headers, data):
+            if key == 'model_name': 
+                param_dict[key] = str(val)
+            else: param_dict[key] = float(val)
+
+    if not 'hstart2' in param_dict: param_dict['hstart2'] = 0
+    if not 'model_name' in locals(): model_name = param_dict['model_name']
+    param_dict['model_name'], opt.mdn = model_name, model_name
+    param_dict['numberofiteration'] = int(opt.nit)
+    opt.para_csv_name = para_csv_name
+    return param_dict, opt
+
+
+
 def model_from_date(file):
-    ctime = os.path.getctime(file)
+    ctime = datetime.fromtimestamp(os.path.getmtime(file))
     woA2_start = datetime(2023,12,6,23,30)
     replaceA1_start = datetime(2024,2,16,15,8)
     others_start = datetime(2024,2,26)
@@ -183,22 +228,50 @@ def model_from_date(file):
     return model_name
 
 
+def extract_model_name(filename):
+    # Define the pattern for extracting the model name
+    pattern = re.compile(r'\(\w+\)_(\w+)_')
+    # Use the pattern to find a match in the filename
+    match = pattern.search(filename)
+    # If a match is found, return the captured group (model name)
+    if match:
+        return match.group(1)
+    else:
+        print('Error, cannot extract model name with extract_model_name()')
+        exit()  # Return None if no match is found
+
+
+def info_from_param_dict(param_dict, opt):
+    numberofiteration = int(param_dict['numberofiteration'])
+    end_time = float(param_dict['end_time'])
+    hss = int(float(param_dict['hstart']))
+    hsd = int(float(param_dict['hduration']))
+
+    if 'hstart2' in param_dict: opt.hs2 = int(param_dict['hstart2'])
+    else: opt.hs2 = False
+
+    model_name = param_dict['model_name']
+    date = opt.ids[:10]
+
+    return numberofiteration, end_time, hss, hsd, opt, date, model_name
 
 
 #######################################################################
 ## 3. Import Simulation Data
 #######################################################################
-def import_tidy_simuData(data_dir, numberofiteration, model_name, opt):
-    try: data_df = pd.read_csv(f"{data_dir}/{model_name}_SimuData_{opt.ids}")
-    except FileNotFoundError: data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
+def import_tidy_simuData(data_dir, param_rootdir, numberofiteration, end_time, hss, hsd, opt, date, model_name):
+    if bool(re.search(re.compile(r'/'), opt.ids)) == True: #input from SA param
+        data_df = pd.read_csv(f"{param_rootdir}/{opt.ids}_SimuData_{date}_{model_name}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}.csv")
+    else: #input from simuData param
+        try: data_df = pd.read_csv(f"{data_dir}/{model_name}_SimuData_{opt.ids}")
+        except FileNotFoundError: data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
+
     data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
     #print(data_df)
     #print(data_df.shape)
     ### number of rows and columns for all iterations
-    Rows = int(math.sqrt(numberofiteration))
-    Columns = int(math.ceil(numberofiteration/ Rows))
     grouped_data = data_df.groupby('Iteration_Identifier')
-    return data_df, grouped_data, Rows, Columns
+    return data_df, grouped_data
 
 
 #######################################################################

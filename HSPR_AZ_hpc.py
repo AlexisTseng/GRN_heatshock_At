@@ -28,7 +28,7 @@ description
     The number of interations for Gillespi simulation
 
 --importParamDataset,-ids
-    Dataset name from which parameters are extracted. e.g. from SA '2024-02-24_step2_time900_hss600_hsd50/11.792037432365467' from simuData 'Exp3_Para_2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000' (default: )
+    Dataset name from which parameters are extracted. e.g. from SA '2024-02-24_step2_time900_hss600_hsd50/11.792037432365467' from simuData '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000' (default: )
 
 --modelName,-mdn
     which model version or Gillespie Function to use (default: )
