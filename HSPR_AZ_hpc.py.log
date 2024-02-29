@@ -1168,3 +1168,21 @@ Call  : -nit 20 -ids 2024-02-24_step50_time900_hss600_hsd50/159.461275414781
 Start : 02/28/24 22:48:56
 Script: HSPR_AZ_hpc.py
 Call  : -nit 20 -ids 2024-02-24_step50_time900_hss600_hsd50/159.461275414781
+Start : 02/29/24 10:59:33
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -ids 2024-02-28_numIter5_Time800.0003842263286_HSstart500_HSduration100
+Start : 02/29/24 11:22:32
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1
+Start : 02/29/24 11:22:42
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2
+Start : 02/29/24 11:23:49
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2
+Start : 02/29/24 11:24:11
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2
+Start : 02/29/24 11:26:16
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2

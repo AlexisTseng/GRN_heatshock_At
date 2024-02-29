@@ -34,7 +34,7 @@ description
     which model version or Gillespie Function to use (default: replaceA1)
 
 --costFunc,-cof
-    which cost function to use. e.g. 'fctHSPR', 'fcA1tHSPR-pHSA1HSPR' (default: fcA1tHSPR-pHSA1HSPR)
+    which cost function to use. e.g. 'fctHSPR', 'fcA1tHSPR-pHSA1HSPR', 'maxFMP' (default: fcA1tHSPR-pHSA1HSPR)
 
 --heatShockStart2,-hs2
     The time point at which a second heat shock is introduced (default: 0)
@@ -215,7 +215,7 @@ def main(opt):
 
         ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df = df_Processing_HS(data_df, hss, hsd, end_time, opt)
 
-        S, cost_func, S_record, param_record = update_S_param(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_record, param_record, opt)
+        S, cost_func, S_record, param_record = update_S_param(data_df, ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_record, param_record, opt)
 
         #if S > 0 and bool(opt.sop) == True: 
         if bool(opt.sop) == True: 
@@ -243,7 +243,7 @@ def dir_gen(opt):
     plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
     if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
 
-    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}_cosFunc{opt.cof}")
+    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}_cosFunc-{opt.cof}")
     param_dir = get_unique_filename(param_dir)
     if not os.path.isdir(param_dir): os.makedirs(param_dir, 0o777)
 
@@ -349,21 +349,23 @@ def one_ops_step(param_dict, opt):
         listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2_replaceA1(param_dict, opt)
     elif opt.mdn == 'woA2':
         listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2(param_dict, opt)
-    elif opt.mdn == 'd1changeConstant':
+    elif opt.mdn == 'd1upCons':
         listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2_d1HS(param_dict, opt)
     listM6 = combine_data(listtime2, listM4, rr_list2, opt)
     data_df, grouped_data = Gillespie_list_to_df(listM6, opt)
     return data_df, grouped_data, numberofiteration, listM6, end_time, hss, hsd
 
 
-def update_S_param(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_record, param_record, opt):
+def update_S_param(data_df, ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, i, S_record, param_record, opt):
     ## Objective Function Calculation
     if i == 0: S_old = 0
     else: S_old = S_record[-1]
     if opt.cof == 'fcA1tHSPR-pHSA1HSPR':
-        S, cost_func = obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
+        S, cost_func = obj_func_fcA1tHSPRpHSA1HSPR(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
     elif opt.cof == 'fctHSPR':
         S, cost_func = obj_func_fctHSPR(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt)
+    elif opt.cof == 'maxFMP':
+        S, cost_func = obj_func_maxFMP(data_df, opt)
     delta_S = S - S_old
     S_record = S_record + [S]
     param_dict_toSave = param_dict.copy()
@@ -691,7 +693,7 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     return listM4, listtime2, numberofiteration, end_time, rr_list2, model_name
 
 def gillespie_woA2_d1HS(param_dict, opt):
-    model_name = 'd1changeConstant'
+    model_name = 'd1upCons'
     listM4=[]
     listtime2=[]
     rr_list2 = []
@@ -852,7 +854,7 @@ def saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt):
     date = datetime.now().date()
     data_file = f"{param_dir}/{S}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
     data_file = get_unique_filename(data_file)
-    data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+    data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_cosFunc-{opt.cof}"
     with open(data_file, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
         if opt.mdn == 'replaceA1':
@@ -890,7 +892,10 @@ def saveFig(plot_dir, name_suffix, opt, prefix):
 
 
 def plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt):
-    rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
+    if opt.mdn == 'replaceA1':
+        rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
+    else:
+        rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec']
 
     if numberofiteration == 1:
         fig, ax = plt.subplots(figsize=(15, 5))
@@ -1214,7 +1219,7 @@ def df_Processing_HS(data_df, hss,hsd, end_time, opt):
     return ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df
 
 
-def obj_func(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
+def obj_func_fcA1tHSPRpHSA1HSPR(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
     preHS_A1_ave = ssbHS_df['HSFA1'].mean()
     preHS_B_ave = ssbHS_df['HSFB'].mean()
     preHS_totalHSPR_ave = ssbHS_df['totalHSPR'].mean()
@@ -1249,6 +1254,14 @@ def obj_func_fctHSPR(ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict, opt):
     else:
         S = math.log2(HSlh_totalHSPR_ave/preHS_totalHSPR_ave)
     cost_func = 'math.log2(HSlh_totalHSPR_ave/preHS_totalHSPR_ave)'
+    return S, cost_func
+
+
+
+def obj_func_maxFMP(data_df, opt):
+    meanFMP = data_df['FMP'].mean()
+    S = meanFMP/100
+    cost_func = 'meanFMP/100'
     return S, cost_func
 
 

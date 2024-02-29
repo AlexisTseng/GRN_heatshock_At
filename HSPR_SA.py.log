@@ -355,3 +355,30 @@ Call  : -ops 2 -nit 1 -hAA 6.0 -hAH 5.0 -hAB 15.0 -ram 0.5 -rma 0.5 -a6R 4.0 -lg
 Start : 02/28/24 23:08:31
 Script: HSPR_SA.py
 Call  : -ops 50 -nit 5
+Start : 02/28/24 23:24:17
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -cof fctHSPR
+Start : 02/28/24 23:33:03
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -cof maxFMP
+Start : 02/29/24 03:54:30
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -cof maxFMP -mdn d1upCons
+Start : 02/29/24 03:55:57
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -cof maxFMP -mdn d1upCons
+Start : 02/29/24 03:56:12
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -mdn d1upCons
+Start : 02/29/24 03:56:31
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -cof fctHSPR -mdn d1upCons
+Start : 02/29/24 06:21:55
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -cof fctHSPR -mdn d1upCons
+Start : 02/29/24 06:22:00
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -mdn d1upCons
+Start : 02/29/24 06:22:07
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -cof maxFMP -mdn d1upCons

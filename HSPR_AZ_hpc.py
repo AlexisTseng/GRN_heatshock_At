@@ -168,6 +168,15 @@ description
 --thread,-thr
     The number of threads used for multiprocessing (default: 4)
 
+--plotsaveData,-psd
+    whether to plot simulation data (default: 1)
+
+--saveFig,-sfg
+    Whether to save the figures and plots generated. Default = True (default: 1)
+
+--showFig,-shf
+    Whether to show  the figures generated (default: 0)
+
 ################################################################################
 
 reference
@@ -213,6 +222,22 @@ def main(opt):
     
     print("Step3: Simulation begins")
     ## no multiprocessing
+    listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = start_Gillespie(param_dict, opt)
+    ## with multiprocessing
+    #listM2, listtime, end_time = gillespie_woA2_mp(param_dict, opt)
+    #listM6, numberofiteration, end_time = parallel_gillespie_woA2(param_dict, opt)
+
+    print("Step4: Combine and save data")
+    listM6 = combine_data(listtime2, listM4, rr_list2, opt)
+    data_file = save_simuData(listM6, data_dir, param_rootdir, param_dict, numberofiteration, end_time, model_name, opt)
+
+    if bool(opt.psd) == True:
+        print("Step 5: Plot Gillespie Outcome")
+        plot_hpcSimuOutcome(listM6, data_file, param_dict, opt)
+
+
+
+def start_Gillespie(param_dict, opt):
     if opt.mdn == 'woA2':
         listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2(param_dict, opt)
     elif opt.mdn == 'replaceA1':
@@ -222,25 +247,30 @@ def main(opt):
     else: 
         print('unexpected or unspecified model name')
         exit()
-    listM6 = combine_data(listtime2, listM4, rr_list2, opt)
+    return listM4, listtime2, numberofiteration, end_time, rr_list2, model_name
 
-    ## with multiprocessing
-    #listM2, listtime, end_time = gillespie_woA2_mp(param_dict, opt)
-    #listM6, numberofiteration, end_time = parallel_gillespie_woA2(param_dict, opt)
 
-    print("Step4: Combine and save data")
-    if bool(opt.ids) == False:
+def save_simuData(listM6, data_dir, param_rootdir, param_dict, numberofiteration, end_time, model_name, opt):
+    if bool(opt.ids) == False: #de novo data
         if opt.mdn == "replaceA1":
             data_file = saveGilData_replace(listM6, data_dir, numberofiteration, end_time, model_name, opt)
         else: 
             data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, model_name, opt)
         param_outfile = saveParam(param_dict, data_dir, numberofiteration, end_time, model_name, opt)
-    else:
-        saveData_oneSAstep(listM6, param_rootdir, numberofiteration, end_time, opt)
+    elif bool(re.search(re.compile(r'/'), opt.ids)) == True: #input from SA param
+        data_file = saveData_oneSAstep(listM6, param_rootdir, numberofiteration, end_time, opt)
+    else: #input from existing simuData param
+        if opt.mdn == "replaceA1":
+            data_file = saveGilData_replace(listM6, data_dir, numberofiteration, end_time, model_name, opt)
+        else: 
+            data_file = saveGilData_2(listM6, data_dir, numberofiteration, end_time, model_name, opt)
+    return data_file
 
-
-
-
+def plot_hpcSimuOutcome(listM6, data_file, param_dict, opt):
+    data_df, grouped_data = Gillespie_list_to_df(listM6, opt)
+    path, filename = os.path.split(data_file)
+    print(f"plot name suffix = {filename[:-4]}")
+    plot_results(path, filename[:-4], data_df, grouped_data, param_dict, opt)
 
 
 ##################################################################
@@ -251,6 +281,7 @@ def main(opt):
 def load_Param_fromFile(param_rootdir, data_dir, opt):
     try: 
         S, cost_func, param_dict = loadData(f"{param_rootdir}/{opt.ids}.pcl")
+        para_csv_name = f"{param_rootdir}/{opt.ids}.pcl"
         opt.S = S
         opt.cost_func = cost_func
         if os.path.getctime(para_csv_name) < datetime(2024,2,28):
@@ -293,6 +324,7 @@ def load_Param_fromFile(param_rootdir, data_dir, opt):
     if not 'model_name' in locals(): model_name = param_dict['model_name']
     param_dict['model_name'], opt.mdn = model_name, model_name
     param_dict['numberofiteration'] = int(opt.nit)
+    opt.para_csv_name = para_csv_name
     return param_dict, opt
 
 
@@ -321,9 +353,6 @@ def extract_model_name(filename):
     else:
         print('Error, cannot extract model name with extract_model_name()')
         exit()  # Return None if no match is found
-
-
-
 
 
 #######################################################################
@@ -699,7 +728,7 @@ def parallel_gillespie_woA2(param_dict, opt):
     max_end_time = max(all_end_time)
     return listM6, numberofiteration, max_end_time
 
-###### No multiprocessing, original, start
+
 def gillespie_woA2(param_dict, opt):
     model_name = 'woA2'
     listM4=[]
@@ -1101,6 +1130,9 @@ def gillespie_woA2_replaceA1(param_dict, opt):
     return listM4, listtime2, numberofiteration, end_time, rr_list2, model_name
 
 
+###########################################################
+## 4. Combine and save data
+###########################################################
 
 def combine_data(listtime2, listM4, rr_list2, opt):
     #to combine the data 
@@ -1120,32 +1152,26 @@ def combine_data(listtime2, listM4, rr_list2, opt):
             listM6.append(listM7)
     return listM6
 
-###### No multiprocessing, original, end
 
 ## the original function
 def saveGilData_2(list, data_dir, numberofiteration, end_time, model_name, opt):
     # Name output file
     date = datetime.now().date()
-    if opt.ofm == "csv":
-        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
-        data_file = get_unique_filename(data_file)
-        print(data_file)
-        # Open the CSV file in write mode with the specified directory and file name
-        with open(data_file, 'w') as csvfile:
-            # Create a CSV writer object
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec'])
-            csv_writer.writerows(list) #how different it is to use .writerow and .writerows
-    #elif opt.ofm == "pcl":
-    #    headers = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB', 'R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec']
-    #    data_df = pd.DataFrame(list, columns=headers)
-    #    #print(data_df.shape)
-    #    data_df.columns = headers
-    #    #print(data_df)
-    #    data_file = f"{data_dir}/Exp3_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.pcl"
-    #    data_file = get_unique_filename(data_file)
-    #    print(data_file)
-    #    saveData(data_df, data_file)
+    if bool(opt.ids) == False: #de novo
+        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}"
+    else: ## imported param from simuData
+        data_file = f"{opt.para_csv_name[:-4].replace('Para', 'SimuData')}-rerunon{date}_numIter{numberofiteration}"
+    if bool(opt.hs2) == True:
+        data_file = data_file + f"_hs2-{opt.hs2}"
+    data_file = data_file + '.csv'
+    data_file = get_unique_filename(data_file)
+    print(data_file)
+    # Open the CSV file in write mode with the specified directory and file name
+    with open(data_file, 'w') as csvfile:
+        # Create a CSV writer object
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec'])
+        csv_writer.writerows(list) 
     print(f" Gillespi Simulation Output Saved as {opt.ofm}")
     return data_file
 
@@ -1153,24 +1179,29 @@ def saveGilData_2(list, data_dir, numberofiteration, end_time, model_name, opt):
 def saveGilData_replace(list, data_dir, numberofiteration, end_time, model_name,opt):
     # Name output file
     date = datetime.now().date()
+    if bool(opt.ids) == False: #de novo
+        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}"
+    else: ## imported param from simuData
+        data_file = f"{opt.para_csv_name[:-4].replace('Para', 'SimuData')}-rerunon{date}_numIter{numberofiteration}"
     if bool(opt.hs2) == True:
-        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_hs2-{opt.hs2}_HSduration{opt.hsd}.csv"
-    else:
-        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+        data_file = data_file + f"_hs2-{opt.hs2}"
+
+    data_file = data_file + '.csv'
     data_file = get_unique_filename(data_file)
     print(data_file)
+    exit()
     # Open the CSV file in write mode with the specified directory and file name
     with open(data_file, 'w') as csvfile:
         # Create a CSV writer object
         csv_writer = csv.writer(csvfile)
         csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
         csv_writer.writerows(list) #how different it is to use .writerow and .writerows
+    return data_file
 
 
-def saveGilData(list, data_dir, numberofiteration, end_time, opt):
+def saveGilData(list, data_dir, numberofiteration, end_time, opt): ## function not in use
     # Name output file
     date = datetime.now().date()
-
     if opt.ofm == "csv":
         data_file = f"{data_dir}/Exp3_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_decay8{opt.dmh}.csv"
         data_file = get_unique_filename(data_file)
@@ -1222,7 +1253,7 @@ def saveData_oneSAstep(listM6, param_rootdir, numberofiteration, end_time, opt):
     date = datetime.now().date()
     data_file = f"{param_rootdir}/{opt.ids}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
     data_file = get_unique_filename(data_file)
-    data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+    #data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
     with open(data_file, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
         if opt.mdn == 'replaceA1':
@@ -1230,6 +1261,7 @@ def saveData_oneSAstep(listM6, param_rootdir, numberofiteration, end_time, opt):
         else: 
             csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec'])
         csv_writer.writerows(listM6) 
+    return data_file
 
 
 
@@ -1260,14 +1292,110 @@ def get_unique_filename(base_filename):
     return new_filename
 
 
+######################################################################
+## 5. Plot results
+######################################################################
+
+
+def Gillespie_list_to_df(listM6, opt):
+    if opt.mdn == 'replaceA1':
+        header = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
+    else:
+        header = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec']
+    data_df = pd.DataFrame(listM6, columns = header)
+    data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
+    data_df['totalA1'] = data_df['HSFA1'] + data_df['C_HSFA1_HSPR']
+    conc_list = ['HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','totalHSPR', 'totalA1']
+    for column in header:
+        if column == 'Iteration_Identifier': data_df[column] = data_df[column].astype(str)
+        elif column in conc_list: data_df[column] = data_df[column].astype(int)
+        else: data_df[column] = data_df[column].astype(float)
+    grouped_data = data_df.groupby('Iteration_Identifier')
+    return data_df, grouped_data
+
+
+
+def plot_results(param_dir, data_name, data_df, grouped_data, param_dict, opt):
+
+    numberofiteration= param_dict['numberofiteration']
+    hss = param_dict['hstart']
+    hsd = param_dict['hduration']
+
+    plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, opt)
+    plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt)
 
 
 
 
+def plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, opt):
+    if opt.mdn == 'replaceA1':
+        rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
+    else:
+        rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec']
+
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(figsize=(15, 5))
+        plot_trajectory(ax, data_df, 'time', rr, hss, hsd, "iteration 0")
+    else:
+        fig, ax = plt.subplots(nrows= numberofiteration, figsize=(15,5*numberofiteration))
+        ax = ax.flatten() # Flatten the 2D array of subplots to a 1D array
+        for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):
+            plot_trajectory(ax, group_data, 'time', rr, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    #fig.suptitle('Trajectories of Proteins and Regulators')
+    fig.text(0.5, 0.99, data_name, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    plt.tight_layout()
+    saveFig(param_dir, data_name, opt, prefix =f'ReactionRate')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
+
+
+def plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt):
+
+    print(" Plot trajectories of Proteins and Regulators")
+    #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
+    protein = ['FMP','MMP']
+
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
+        plot_trajectory(ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
+        plot_trajectory(ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+    else:
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
+            plot_trajectory(ax[i,0], group_data, 'time', protein, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,1], group_data, 'time', reg, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    #fig.suptitle('Trajectories of Proteins and Regulators')
+    fig.text(0.5, 0.99, data_name, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    plt.tight_layout()
+
+    saveFig(param_dir, data_name, opt, prefix =f'ProReg2')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
 
 
 
+def plot_trajectory(ax, data_df, x_col, y_col_list, hss, hsd, Iteration_Identifier):
+    for y_col in y_col_list:
+        ax.plot(data_df[x_col], data_df[y_col], label=y_col, linewidth=1, alpha=0.8)
+    ax.set_xlabel('Time (hour)')
+    ax.set_ylabel('Protein copy number')
+    ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.2)
+    ax.set_title(f"{Iteration_Identifier}")
+    ax.legend(loc='upper left')
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 
+def saveFig(plot_dir, name_suffix, opt, prefix):
+    if bool(opt.sfg) == True:
+        plot_name = f"{plot_dir}/{prefix}_{name_suffix}.pdf"
+        unique_plot_name = get_unique_filename(plot_name)
+        plt.savefig(f"{unique_plot_name}")
+        #print(f" save figure {opt.sfg == True}")
 
 
 
