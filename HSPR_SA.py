@@ -1266,28 +1266,30 @@ def obj_func_maxFMP(data_df, opt):
 
 
 def updatePara_unif(param_dict, opt):
-    #start_t = time.time()
-    #print(" update param start")
     param_dict['a1'] = random.uniform(5,50) # max A1 transcription rate, default = 10
-    param_dict['a2'] = random.uniform(50,250) # max HSPR transcription rate, default = 100
+    param_dict['a2'] = random.uniform(50,100) # max HSPR transcription rate, default = 100
     param_dict['a5'] = random.uniform(5,50) # max HSFB transcription rate, default = 5
     #param_dict['a6'] = random.uniform(0.2,20) # refolding rate from MMP-HSPR, default = 0.2
-    param_dict['h1'] = random.uniform(1,10)
-    param_dict['h2'] = random.uniform(1,10)
-    param_dict['h5'] = random.uniform(1,10)
+    param_dict['h1'] = random.uniform(1,50)
+    param_dict['h2'] = random.uniform(1,50)
+    param_dict['h5'] = random.uniform(1,50)
     param_dict['c1'] = random.uniform(5,15)
     param_dict['c2'] = random.uniform(0.5,5) # rate of MMP replacing A1 in HSPR complex
     param_dict['c3'] = random.uniform(5,15)
     param_dict['c4'] = random.uniform(0.01,2) # rate of A1 replacing MMP in HSPR complex
-    param_dict['d1'] = random.uniform(0.01, 0.1) #A1_HSPR dissociation
-    param_dict['d3'] = random.uniform(0.01, 0.1) #MMP_HSPR dissociation
+    param_dict['d1'] = random.uniform(0.01, 5.0) #A1_HSPR dissociation
+    param_dict['d3'] = random.uniform(0.01, 5.0) #MMP_HSPR dissociation
 
     param_dict['leakage_A1'] = random.uniform(0.001, 0.01)
     param_dict['leakage_B'] = random.uniform(0.001, 0.01)
     param_dict['leakage_HSPR'] = random.uniform(0.001, 0.01)
-    #time_used = time.time()-start_t
-    #param_sum = sum(param_dict.keys())
-    #print(f" updated param, param_sum = {param_sum}")
+
+    ##default of non-MMP decay rate is 0.04
+    param_dict['Decay1'] = random.uniform(0.01,0.4) # A1
+    param_dict['Decay2'] = random.uniform(0.01,0.4) # free HSPR
+    param_dict['Decay4'] = random.uniform(0.01,0.4) # HSFB
+    param_dict['Decay7'] = random.uniform(0.01,0.4) # A1-HSPR 
+    param_dict['Decay8'] = random.uniform(0.01,0.4) # MMP_HSPR
     return param_dict
 
 

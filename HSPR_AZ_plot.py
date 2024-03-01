@@ -25,7 +25,7 @@ description
 ################################################################
 
 --importDataSuffix,-ids
-    Suffix in data/parameter file, such as from SA '2024-02-24_step2_time900_hss600_hsd50/11.792037432365467' or from simuData '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000'
+    Suffix in data/parameter file, such as from SA '2024-02-24_step50_time900_hss600_hsd50/159.461275414781_SimuData_2024-02-28_replaceA1_numIter20_Time1000.0026486889622_HSstart600_HSduration30.csv' or from simuData '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000'
 
 --saveFig,-sfg
     Whether to save the figures and plots generated. Default = True (default: 1)
@@ -66,15 +66,14 @@ import sys
 
 def main(opt):
     print("Step1: Specify output directory")
-    data_dir, plot_dir, param_rootdir = dir_gen()
+    data_dir, param_rootdir = dir_gen()
 
     print("Step2: Extracting Parameter Dictionary")
-    param_dict, opt = load_Param_fromFile(param_rootdir, data_dir, opt)
-    numberofiteration, end_time, hss, hsd, opt, date, model_name = info_from_param_dict(param_dict, opt)
+    param_dict, plot_dir, opt = load_Param_fromDataFile(param_rootdir, data_dir, opt)
+    end_time, hss, hsd, opt, date, model_name = info_from_param_dict(param_dict, opt)
 
     print("Step3: Import Simulating Results")
-    data_df, grouped_data = import_tidy_simuData(data_dir, param_rootdir, numberofiteration, end_time, hss, hsd, opt, date, model_name)
-
+    data_df, grouped_data, numberofiteration, opt = import_tidy_simuData(data_dir, param_rootdir, opt, model_name)
 
     print("Step 4: Generate Plot Name")
     name_suffix, diff_dict, name_suffix_save = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
@@ -83,19 +82,19 @@ def main(opt):
 
 
     print("Step4: Plot Temporal Trajectories")
-    #plotReactionRate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd)
+    #plotReactionRate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd)
     ## Plot trajectories of all species for all iterations
-    #plot_allvsTime_separate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
-    #plot_allvsZoomInTime_separate(data_df, hss, hsd, data_dir, numberofiteration,name_suffix, opt)
-    #plot_FMPMMPvsTime_3(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-    plot_FMPMMPvsTime_2(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-    #plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-    #plot_FMPMMP_zoom(data_df, hss, hsd, data_dir, numberofiteration,name_suffix, opt)
-    #plot_A1BvsTime_separate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt)
+    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
+    #plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
+    #plot_FMPMMPvsTime_3(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
+    plot_FMPMMPvsTime_2(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
+    #plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
+    #plot_FMPMMP_zoom(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
+    #plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
     ## Plot trajectory of total HSPR for all iterations
-    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, data_dir, numberofiteration, name_suffix, hss, hsd, opt)
+    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, hss, hsd, opt)
     ## Plot overlayed trajectory of A1 concentrations for all trajectory
-    #plot_A1vsTime_asOne(grouped_data, data_dir, numberofiteration, name_suffix, opt)
+    #plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, name_suffix, opt)
 
     print("Step 5: Variability Analysis")
     if bool(opt.van) == True:
@@ -121,7 +120,7 @@ def dir_gen():
     if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
     param_rootdir = os.path.join(partiii_dir,"Param_Optimisation")
     if not os.path.isdir(param_rootdir): os.makedirs(plot_dir, 0o777)
-    return data_dir, plot_dir, param_rootdir
+    return data_dir, param_rootdir
 
 
 #######################################################################
@@ -163,52 +162,58 @@ def param_extract(data_dir, opt):
 
 
 
-def load_Param_fromFile(param_rootdir, data_dir, opt):
-    try: 
-        S, cost_func, param_dict = loadData(f"{param_rootdir}/{opt.ids}.pcl")
-        para_csv_name = f"{param_rootdir}/{opt.ids}.pcl"
-        opt.S = S
-        opt.cost_func = cost_func
-        if os.path.getctime(para_csv_name) < datetime(2024,2,28):
-                model_name = "replaceA1"
-        else: model_name = extract_model_name(opt.ids)
-    except FileNotFoundError:
-        if os.path.exists(f"{param_rootdir}/{opt.ids}.csv"):
-            para_csv_name = f"{param_rootdir}/{opt.ids}.csv"
-            ctime = datetime.fromtimestamp(os.path.getmtime(para_csv_name))
-            #print(f"{ctime} {datetime(2024,2,28)}")
-            #print(f"{bool(ctime < datetime(2024,2,28))}")
-            #exit()
-            if ctime < datetime(2024,2,28):
-                model_name = "replaceA1"
-            else: model_name = extract_model_name(opt.ids)
-        elif os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}.csv"):
+def load_Param_fromDataFile(param_rootdir, data_dir, opt):
+    if bool(re.search(re.compile(r'/'), opt.ids)) == True:
+        ## import from SA data
+        param_dir, data_filename = os.path.split(f"{param_rootdir}/{opt.ids}.csv")
+        plot_dir = param_dir
+        S_val = float(re.match(r'^([\d.]+)_', data_filename).group(1))
+        print(param_dir)
+        try: 
+            S, cost_func, param_dict = loadData(f"{param_rootdir}/{S_val}.pcl")
+            para_csv_name = f"{param_dir}/{S_val}.pcl"
+            opt.S = S
+            opt.cost_func = cost_func
+            model_name = extract_model_name(para_csv_name)
+        except FileNotFoundError:
+            if os.path.exists(f"{param_dir}/{S_val}.csv"):
+                para_csv_name = f"{param_dir}/{S_val}.csv"
+                model_name = extract_model_name(para_csv_name)
+                param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
+    
+    else: ## else import from simuData
+        plot_dir = data_dir
+        if os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}.csv"
             model_name = model_from_date(para_csv_name)
+            param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
         elif os.path.exists(f"{data_dir}/replaceA1_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/replaceA1_Para_{opt.ids}.csv"
             model_name = "replaceA1"
+            param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
         elif os.path.exists(f"{data_dir}/woA2_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/woA2_Para_{opt.ids}.csv"
             model_name = "woA2"
+            param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
         elif os.path.exists(f"{data_dir}/d1upCons_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/d1upCons_Para_{opt.ids}.csv"
             model_name = "d1upCons"
+            param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
+    return param_dict, plot_dir, opt
 
-        param_dict = {}
-        with open(para_csv_name, 'r') as param_file:
-            csv_reader = csv.reader(param_file)
-            headers = next(csv_reader)
-            data = next(csv_reader)
-        for key, val in zip(headers, data):
-            if key == 'model_name': 
-                param_dict[key] = str(val)
-            else: param_dict[key] = float(val)
-
+def param_dict_import_impute(para_csv_name, model_name, opt):
+    param_dict = {}
+    with open(para_csv_name, 'r') as param_file:
+        csv_reader = csv.reader(param_file)
+        headers = next(csv_reader)
+        data = next(csv_reader)
+    for key, val in zip(headers, data):
+        if key == 'model_name': 
+            param_dict[key] = str(val)
+        else: param_dict[key] = float(val)
     if not 'hstart2' in param_dict: param_dict['hstart2'] = 0
-    if not 'model_name' in locals(): model_name = param_dict['model_name']
-    param_dict['model_name'], opt.mdn = model_name, model_name
-    param_dict['numberofiteration'] = int(opt.nit)
+    if not 'model_name' in param_dict: 
+        param_dict['model_name'] = model_name
     opt.para_csv_name = para_csv_name
     return param_dict, opt
 
@@ -229,20 +234,18 @@ def model_from_date(file):
 
 
 def extract_model_name(filename):
-    # Define the pattern for extracting the model name
-    pattern = re.compile(r'\(\w+\)_(\w+)_')
-    # Use the pattern to find a match in the filename
-    match = pattern.search(filename)
-    # If a match is found, return the captured group (model name)
-    if match:
-        return match.group(1)
+    ctime = datetime.fromtimestamp(os.path.getmtime(filename))
+    if ctime < datetime(2024,2,28): model_name = "replaceA1"
     else:
-        print('Error, cannot extract model name with extract_model_name()')
-        exit()  # Return None if no match is found
+        pattern = re.compile(r'\(\w+\)_(\w+)_')
+        match = pattern.search(filename)
+        model_name = match.group(1)
+    return model_name
+
 
 
 def info_from_param_dict(param_dict, opt):
-    numberofiteration = int(param_dict['numberofiteration'])
+    #numberofiteration = int(param_dict['numberofiteration'])
     end_time = float(param_dict['end_time'])
     hss = int(float(param_dict['hstart']))
     hsd = int(float(param_dict['hduration']))
@@ -253,25 +256,31 @@ def info_from_param_dict(param_dict, opt):
     model_name = param_dict['model_name']
     date = opt.ids[:10]
 
-    return numberofiteration, end_time, hss, hsd, opt, date, model_name
+    return end_time, hss, hsd, opt, date, model_name
 
 
 #######################################################################
 ## 3. Import Simulation Data
 #######################################################################
-def import_tidy_simuData(data_dir, param_rootdir, numberofiteration, end_time, hss, hsd, opt, date, model_name):
+def import_tidy_simuData(data_dir, param_rootdir, opt, model_name):
     if bool(re.search(re.compile(r'/'), opt.ids)) == True: #input from SA param
-        data_df = pd.read_csv(f"{param_rootdir}/{opt.ids}_SimuData_{date}_{model_name}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}.csv")
+        data_df = pd.read_csv(f"{param_rootdir}/{opt.ids}.csv")
+        path, filename = os.path.split(f"{param_rootdir}/{opt.ids}.csv")
+        opt.name_suffix = filename[:-4]
+        numberofiteration = int(re.search(r'_numIter(\d+)_', opt.name_suffix).group(1))
     else: #input from simuData param
         try: data_df = pd.read_csv(f"{data_dir}/{model_name}_SimuData_{opt.ids}")
         except FileNotFoundError: data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
+        opt.name_suffix = opt.ids
+        numberofiteration = int(re.search(r'_numIter(\d+)_', opt.name_suffix).group(1))
 
     data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
+    data_df['totalHSFA1'] = data_df['C_HSFA1_HSPR'] + data_df['HSFA1']
     #print(data_df)
     #print(data_df.shape)
     ### number of rows and columns for all iterations
     grouped_data = data_df.groupby('Iteration_Identifier')
-    return data_df, grouped_data
+    return data_df, grouped_data, numberofiteration, opt
 
 
 #######################################################################
@@ -294,7 +303,7 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         'a1': 10.0,
         'a2': 100.0,
         'a5': 5.0,
-        'a6': 0.2, # refolding rate from MMP-HSPR
+        'a6': 2.0, # refolding rate from MMP-HSPR
         'a7': 10,
         #'a8': 5.0,
         ## Ka in Hill equation
@@ -314,13 +323,12 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         'd3': 0.01, # dissociation rate of MMP-HSPR
         'd4_heat': 0.05,
         'd4_norm': 0.01,
-        'Decay1': 0.01,
-        'Decay2': 0.01, # decay of free HSPR
-        #'Decay3': 0.01,
-        'Decay4': 0.01,
-        'Decay6': 0.01,
-        'Decay7': 0.01, # decay path 2 of A1-HSPR
-        'Decay8': 0.01, # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
+        'Decay1': 0.04,
+        'Decay2': 0.04, # decay of free HSPR
+        'Decay4': 0.04,
+        'Decay6': 0.04,
+        'Decay7': 0.04, # decay path 2 of A1-HSPR
+        'Decay8': 0.04, # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
         ####
         'leakage_A1': 0.001,
@@ -368,7 +376,7 @@ def plot_trajectory(opt, ax, data_df, x_col, y_col_list, hss, hsd, Iteration_Ide
 
 def saveFig(data_dir, name_suffix, opt, prefix):
     if bool(opt.sfg) == True:
-        plot_name = f"{data_dir}/{prefix}_{name_suffix}.pdf"
+        plot_name = f"{data_dir}/{name_suffix}_{prefix}.pdf"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
         #plot_name = f"{data_dir}/{prefix}_{name_suffix}.svg"
@@ -390,7 +398,7 @@ def plotReactionRate(data_df, grouped_data, data_dir, numberofiteration,name_suf
             plot_trajectory(opt, ax, group_data, 'time', rr, hss, hsd, Iteration_Identifier = Iteration_Identifier)
 
     plt.tight_layout()
-    saveFig(data_dir, str(opt.ids), opt, prefix ='ReactionRate')
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ReactionRate')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
@@ -414,7 +422,7 @@ def plot_allvsTime_separate(data_df, grouped_data, data_dir, numberofiteration,n
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    saveFig(data_dir, str(opt.ids), opt, prefix ='allConcTraj')
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='allConcTraj')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
@@ -439,7 +447,7 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, data_dir, numberofiteration
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    saveFig(data_dir, name_suffix, opt, prefix = "Zoom_allConcTraj")
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix = "Zoom_allConcTraj")
 
     if bool(opt.shf) == True: plt.show()
     plt.close()
@@ -469,7 +477,7 @@ def plot_FMPMMPvsTime_3(data_df, grouped_data, data_dir, numberofiteration,name_
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    saveFig(data_dir, name_suffix_save, opt, prefix ='ProReg3')
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg3')
 
     if bool(opt.shf) == True: plt.show()
     plt.close()
@@ -479,7 +487,7 @@ def plot_FMPMMPvsTime_2(data_df, grouped_data, data_dir, numberofiteration,name_
 
     print(" Plot trajectories of Proteins and Regulators")
     #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
-    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB','totalHSFA1']
     protein = ['FMP','MMP']
 
     if numberofiteration == 1:
@@ -498,7 +506,7 @@ def plot_FMPMMPvsTime_2(data_df, grouped_data, data_dir, numberofiteration,name_
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    saveFig(data_dir, str(opt.ids), opt, prefix ='ProReg2')
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg2')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
@@ -520,7 +528,7 @@ def plot_FMPMMPvsTime_2_overlayed_2(data_df, grouped_data, data_dir, numberofite
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    saveFig(data_dir, name_suffix_save, opt, prefix ='ProReg2overlay')
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg2overlay')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
@@ -534,8 +542,8 @@ def plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, data_dir, numberofitera
 
     if numberofiteration == 1:
         fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
-        plot_trajectoryopt, (ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
-        plot_trajectoryopt, (ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+        plot_trajectory(opt, ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
+        plot_trajectory(opt, ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
 
     else:
         fig, ax = plt.subplots(ncols = 2, figsize=(20,10))
@@ -547,7 +555,7 @@ def plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, data_dir, numberofitera
     fig.suptitle(' ', fontsize=16, y = 1)
     plt.tight_layout()
 
-    saveFig(data_dir, name_suffix_save, opt, prefix ='ProReg2overlay')
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg2overlay')
     if bool(opt.shf) == True: plt.show()
     plt.close()
     
@@ -572,7 +580,7 @@ def plot_FMPMMP_zoom(data_df, hss, hsd, data_dir, numberofiteration,name_suffix,
     #fig.suptitle('Zoomed In Trajectories, Around HeatShock')
     plt.tight_layout()
 
-    saveFig(data_dir, str(opt.ids)[0:-4], opt, prefix ='ProRegZoom')
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProRegZoom')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
