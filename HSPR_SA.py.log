@@ -382,3 +382,45 @@ Call  : -ops 50 -nit 5 -mdn d1upCons
 Start : 02/29/24 06:22:07
 Script: HSPR_SA.py
 Call  : -ops 50 -nit 5 -cof maxFMP -mdn d1upCons
+Start : 03/01/24 15:29:55
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 2 -mdn woA2 -hsd 1
+Start : 03/01/24 15:31:16
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 2 -mdn woA2 -hsd 1
+Start : 03/01/24 15:33:07
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 2 -mdn woA2 -hsd 1 -sop0
+Start : 03/01/24 15:33:10
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 2 -mdn woA2 -hsd 1 -sop 0
+Start : 03/01/24 15:33:18
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 2 -mdn woA2 -hsd 1 -sop 0
+Start : 03/01/24 15:35:11
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 2 -mdn woA2 -hsd 1
+Start : 03/01/24 15:36:14
+Script: HSPR_SA.py
+Call  : -ops 2 -nit 2 -mdn woA2 -hsd 1
+Start : 03/01/24 15:40:10
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 1 -mdn woA2 -hsd 1
+Start : 03/01/24 15:47:10
+Script: HSPR_SA.py
+Call  : -ops 5 -nit 5 -mdn woA2 -hsd 1 -cof fctHSPR
+Start : 03/01/24 15:51:42
+Script: HSPR_SA.py
+Call  : -ops 50 -nit 5 -mdn woA2 -hsd 1 -cof fctHSPR
+Start : 03/01/24 16:04:54
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 5 -mdn d1upCons
+Start : 03/01/24 16:06:51
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 5 -mdn d1upCons
+Start : 03/01/24 16:15:05
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 5 -mdn d1upCons -hAA 2.0 -hAH 4.0 -hAB 10.0
+Start : 03/01/24 16:20:41
+Script: HSPR_SA.py
+Call  : -ops 1 -nit 5 -mdn d1upCons -hAA 3.0 -hAH 4.0 -hAB 10.0

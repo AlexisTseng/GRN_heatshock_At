@@ -440,7 +440,7 @@ def param_spec(opt):
         param_dict['c2'] = float(opt.rma) # MMP replace A1 in complex with HSPR
         param_dict['c4'] = float(opt.ram) # A1 replace MMP in complex with HSPR
     elif opt.mdn == 'd1upCons':
-        param_dict['d1_HS'] == float(opt.hda)
+        param_dict['d1_HS'] = float(opt.hda)
     print(param_dict)
     return param_dict
 
@@ -1323,6 +1323,7 @@ def plot_results(param_dir, data_name, data_df, grouped_data, param_dict, opt):
 
     plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, opt)
     plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt)
+    plot_FMPMMP_zoom(data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt)
 
 
 
@@ -1379,6 +1380,30 @@ def plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration,data
     plt.close()
 
 
+def plot_FMPMMP_zoom(data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt):
+    print(" Zoomed In Protein & Regulator Trajectory Around HeatShock")
+    cut_data_df = data_df[(data_df['time'] >= hss -50) & (data_df['time'] <= hss + hsd + 100)]
+    reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
+    
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=3, figsize=(20, 5))
+        plot_trajectory(opt, ax[0], cut_data_df, 'time', ['FMP','MMP'], hss, hsd, "iteration 0")
+        plot_trajectory(opt, ax[1], cut_data_df, 'time', reg_conc_col, hss, hsd, "iteration 0")
+    else:
+        grouped_data = cut_data_df.groupby('Iteration_Identifier')
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
+            plot_trajectory(opt, ax[i,0], group_data, 'time', ['FMP','MMP'], hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(opt, ax[i,1], group_data, 'time', reg_conc_col, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    fig.text(0.5, 0.99, data_name, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    #fig.suptitle('Zoomed In Trajectories, Around HeatShock')
+    plt.tight_layout()
+
+    saveFig(param_dir, data_name, opt, prefix ='ProRegZoom')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
 
 def plot_trajectory(ax, data_df, x_col, y_col_list, hss, hsd, Iteration_Identifier):
     for y_col in y_col_list:

@@ -28,7 +28,7 @@ description
     The time point at which a heat shock is introduced (default:600)
 
 --heatShockDuration,-hsd
-    The duration of heat shock introduced (default: 30)
+    The duration of heat shock introduced (default: 3)
 
 --modelName,-mdn
     which model version or Gillespie Function to use (default: replaceA1)
@@ -207,7 +207,8 @@ import sys
 
 def main(opt):
     param_dict = param_spec(opt)
-    param_dir, param_rootdir, plot_dir, data_dir = dir_gen(opt)
+    if bool(opt.sop) == True:
+        param_dir, param_rootdir, plot_dir, data_dir = dir_gen(opt)
     S_record, param_record = [], []
 
     for i in range(opt.ops):
@@ -219,10 +220,10 @@ def main(opt):
 
         #if S > 0 and bool(opt.sop) == True: 
         if bool(opt.sop) == True: 
-            data_file, date, data_name = saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt)
+            data_file, date, data_name, plot_title_to_show = saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt)
             saveParam_csv_pcl(param_dict, param_dir, S, cost_func, opt)
             if bool(opt.prs) == True:
-                plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end_time, date, numberofiteration, hss, hsd, opt)
+                plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, numberofiteration, hss, hsd, plot_title_to_show, opt)
 
         param_dict = updatePara_unif(param_dict, opt)
 
@@ -252,25 +253,24 @@ def dir_gen(opt):
 
     return param_dir, param_rootdir, plot_dir, data_dir
 
-
 def param_spec(opt):
     if bool(opt.a1m) == False:
-        init_HSFA1, a1 = int(opt.iaf), int(opt.a1A)
+        init_HSFA1, a1, leakage_A1 = int(opt.iaf), int(opt.a1A), float(opt.lga)
     elif bool(opt.a1m) == True: 
         print("A1 mutant")
-        init_HSFA1, a1 = 0, 0
+        init_HSFA1, a1, leakage_A1 = 0, 0,0
 
     if bool(opt.bmu) == False: 
-        init_HSFB, a5 = int(opt.ibf), int(opt.a5B)
+        init_HSFB, a5, leakage_B = int(opt.ibf), int(opt.a5B), float(opt.lgb)
     elif bool(opt.bmu) == True: 
         print("HSFB mutant")
-        init_HSFB,a5 = 0,0
+        init_HSFB, a5, leakage_B = 0,0, 0
 
     if bool(opt.hmu) == False:
-        init_C_HSPR_MMP, init_HSPR, a2 = int(opt.imh), int(opt.ihf), int(opt.a2H)
+        init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR = int(opt.imh), int(opt.ihf), int(opt.a2H), float(opt.lgh)
     elif bool(opt.hmu) == True: 
         print("HSPR mutant")
-        init_C_HSPR_MMP, init_HSPR, a2 = 0,0,0
+        init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR = 0,0,0, 0
 
     if bool(opt.hmu) == True or bool(opt.a1m) == True:
         init_C_HSFA1_HSPR_val = 0
@@ -290,8 +290,6 @@ def param_spec(opt):
         ## Maximum expression level in Hill equation
         'a1': a1,
         'a2': a2,
-        #'a3': 5.0,
-        #'a4': 5.0,
         'a5': a5,
         'a6': float(opt.a6R), # refolding rate from MMP-HSPR
         'a7': int(opt.fpp), #folded protein production rate
@@ -307,10 +305,8 @@ def param_spec(opt):
         'h5': float(opt.hAB),
         #'h6': int(opt.hBB),
         ## association rates
-        'c1': float(opt.aah), #between A1 and HSPR
-        'c2': float(opt.rma), # MMP replace A1 in complex with HSPR
-        'c3': float(opt.amh), #between MMP and HSPR
-        'c4': float(opt.ram), # A1 replace MMP in complex with HSPR
+        'c1': float(opt.aah), # binding rate between A1 and HSPR
+        'c3': float(opt.amh), # binding rate between MMP and HSPR
         ## decay rates
         'd1': float(opt.dah), # decay path 1 of A1-HSPR
         'd3': float(opt.dmh), # dissociation rate of MMP-HSPR
@@ -325,19 +321,22 @@ def param_spec(opt):
         'Decay8': float(opt.gdr), # decay of MMP-HSPR. Make sense for it to be higher than normal complexes/proteins
         'Decay5': 0.1,
         ####
-        'leakage_A1': float(opt.lga),
-        'leakage_HSPR': float(opt.lgh),
-        'leakage_B': float(opt.lgb),
+        'leakage_A1': leakage_A1,
+        'leakage_B': leakage_B,
+        'leakage_HSPR': leakage_HSPR,
         'numberofiteration': int(opt.nit),
         'hillcoeff': int(opt.hco),
         'hstart':int(opt.hss),
+        'hstart2':int(opt.hs2),
         'hduration':int(opt.hsd),
-        'hstart2': int(opt.hs2),
-        'model_name': str(opt.mdn),
+        'model_name': str(opt.mdn)
     }
-    #print(param_dict['a1'])  # prints the value of a1
-    #print(param_dict['init_HSFA1'])  # prints the value of init_HSFA1
-    #print(param_dict)
+    if opt.mdn == 'replaceA1':
+        param_dict['c2'] = float(opt.rma) # MMP replace A1 in complex with HSPR
+        param_dict['c4'] = float(opt.ram) # A1 replace MMP in complex with HSPR
+    elif opt.mdn == 'd1upCons':
+        param_dict['d1_HS'] = float(opt.hda)
+    print(param_dict)
     return param_dict
 
 
@@ -374,14 +373,16 @@ def update_S_param(data_df, ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df, param_dict,
     return S, cost_func, S_record, param_record
 
 
-def plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, end_time, date, numberofiteration, hss, hsd, opt):
+def plot_results(param_dir, data_name, data_df, grouped_data, param_dict, S, numberofiteration, hss, hsd, plot_title_to_show, opt):
 
-    name_suffix = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
+    param_dict_text = param_dict_toText(param_dict, opt)
 
-    plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt)
-    plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, name_suffix, S, opt)
-    #plot_FMPMMPvsTime_2_overlayed(data_df, param_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt)
-    #plot_FMPMMP_zoom(data_df, hss, hsd, param_dir, numberofiteration, data_name, name_suffix, S, opt)
+    plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt)
+    plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt)
+    #plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt)
+    plot_FMPMMP_zoom(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt)
+
+
 
 
 
@@ -839,7 +840,7 @@ def Gillespie_list_to_df(listM6, opt):
         header = ['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec']
     data_df = pd.DataFrame(listM6, columns = header)
     data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
-    data_df['totalA1'] = data_df['HSFA1'] + data_df['C_HSFA1_HSPR']
+    data_df['totalHSFA1'] = data_df['HSFA1'] + data_df['C_HSFA1_HSPR']
     conc_list = ['HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','totalHSPR', 'totalA1']
     for column in header:
         if column == 'Iteration_Identifier': data_df[column] = data_df[column].astype(str)
@@ -855,6 +856,7 @@ def saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt):
     data_file = f"{param_dir}/{S}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
     data_file = get_unique_filename(data_file)
     data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_cosFunc-{opt.cof}"
+    plot_title_to_show = f"{opt.mdn}_cosFunc-{opt.cof}_{S}_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}"
     with open(data_file, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
         if opt.mdn == 'replaceA1':
@@ -862,7 +864,7 @@ def saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt):
         else: 
             csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec'])
         csv_writer.writerows(listM6) 
-    return data_file, date, data_name
+    return data_file, date, data_name, plot_title_to_show
 
 
 
@@ -873,7 +875,7 @@ def saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt):
 #####################################################
 
 
-def plot_trajectory(ax, data_df, x_col, y_col_list, hss, hsd, Iteration_Identifier):
+def plot_trajectory(ax, fig, data_df, x_col, y_col_list, hss, hsd, plot_title_to_show, param_dict_text, Iteration_Identifier):
     for y_col in y_col_list:
         ax.plot(data_df[x_col], data_df[y_col], label=y_col, linewidth=1, alpha=0.8)
     ax.set_xlabel('Time (hour)')
@@ -883,6 +885,13 @@ def plot_trajectory(ax, data_df, x_col, y_col_list, hss, hsd, Iteration_Identifi
     ax.legend(loc='upper left')
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 
+    plt.subplots_adjust(right=0.8) 
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9)
+    fig.text(0.5, 0.95, f'{plot_title_to_show}\n{param_dict_text}', ha = 'center', va='center', fontsize = int(plt.rcParams['font.size']), linespacing=2,  wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+
+
 def saveFig(plot_dir, name_suffix, opt, prefix):
     if bool(opt.sfg) == True:
         plot_name = f"{plot_dir}/{prefix}_{name_suffix}.pdf"
@@ -891,108 +900,101 @@ def saveFig(plot_dir, name_suffix, opt, prefix):
         #print(f" save figure {opt.sfg == True}")
 
 
-def plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt):
+def param_dict_toText(param_dict, opt):
+    param_dict_text = ''
+    for i, (key, val) in enumerate(param_dict.items(),1):
+        if type(val) == float:
+            to_add = f"  {key}-{round(val,3)}"
+        else:
+            to_add = f"  {key}-{val}"
+        param_dict_text += to_add
+        if i % 8 ==0:
+            param_dict_text += f'\n'
+    return param_dict_text
+
+
+def plotReactionRate(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt):
     if opt.mdn == 'replaceA1':
         rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
     else:
         rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec']
-
     if numberofiteration == 1:
         fig, ax = plt.subplots(figsize=(15, 5))
-        plot_trajectory(ax, data_df, 'time', rr, hss, hsd, "iteration 0")
+        #plot_trajectory(ax, data_df, 'time', rr, hss, hsd, "iteration 0")
+        plot_trajectory(ax, fig, data_df,'time', rr, hss, hsd, plot_title_to_show, param_dict_text, "iteration 0")
     else:
         fig, ax = plt.subplots(nrows= numberofiteration, figsize=(15,5*numberofiteration))
         ax = ax.flatten() # Flatten the 2D array of subplots to a 1D array
         for (Iteration_Identifier, group_data), ax in zip(grouped_data, ax):
-            plot_trajectory(ax, group_data, 'time', rr, hss, hsd, Iteration_Identifier = Iteration_Identifier)
-
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    #fig.suptitle('Trajectories of Proteins and Regulators')
-    fig.text(0.5, 0.99, data_name, ha = 'center', va='center', wrap=True)
-    fig.suptitle(' ', fontsize=16, y = 1)
-    plt.tight_layout()
+            #plot_trajectory(ax, group_data, 'time', rr, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax, fig, data_df,'time', rr, hss, hsd, plot_title_to_show, param_dict_text, Iteration_Identifier = Iteration_Identifier)
     saveFig(param_dir, data_name, opt, prefix =f'{S}_ReactionRate')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
-def plot_FMPMMPvsTime_2(data_df, grouped_data, plot_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt):
+def plot_FMPMMPvsTime_2(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt):
 
     print(" Plot trajectories of Proteins and Regulators")
     #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
-    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB', 'totalHSFA1']
     protein = ['FMP','MMP']
 
     if numberofiteration == 1:
         fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
-        plot_trajectory(ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
-        plot_trajectory(ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+        plot_trajectory(ax[0], fig, data_df, 'time', protein, hss, hsd,plot_title_to_show, param_dict_text, "iteration 0")
+        plot_trajectory(ax[1], fig, data_df, 'time', reg, hss, hsd, plot_title_to_show, param_dict_text,"iteration 0")
+        
     else:
         fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
         for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
-            plot_trajectory(ax[i,0], group_data, 'time', protein, hss, hsd, Iteration_Identifier = Iteration_Identifier)
-            plot_trajectory(ax[i,1], group_data, 'time', reg, hss, hsd, Iteration_Identifier = Iteration_Identifier)
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    #fig.suptitle('Trajectories of Proteins and Regulators')
-    fig.text(0.5, 0.99, data_name, ha = 'center', va='center', wrap=True)
-    fig.suptitle(' ', fontsize=16, y = 1)
-    plt.tight_layout()
-
-    saveFig(plot_dir, data_name, opt, prefix =f'{S}_ProReg2')
+            plot_trajectory(ax[i,0], fig, group_data, 'time', protein, hss, hsd,plot_title_to_show, param_dict_text, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,1], fig, group_data, 'time', reg, hss, hsd, plot_title_to_show, param_dict_text,Iteration_Identifier = Iteration_Identifier)
+    saveFig(param_dir, data_name, opt, prefix =f'{S}_ProReg2')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
-def plot_FMPMMPvsTime_2_overlayed(data_df, plot_dir, numberofiteration, data_name, hss, hsd, name_suffix, S, opt):
+def plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt):
 
     print(" Plot trajectories of Proteins and Regulators")
     #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
-    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB', 'totalHSFA1']
     protein = ['FMP','MMP']
 
     if numberofiteration == 1:
         fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
-        plot_trajectory(ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
-        plot_trajectory(ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+        plot_trajectory(ax[0],fig, data_df, 'time', protein, hss, hsd,plot_title_to_show, param_dict_text, "iteration 0")
+        plot_trajectory(ax[1],fig, data_df, 'time', reg, hss, hsd,plot_title_to_show, param_dict_text, "iteration 0")
 
     else:
         fig, ax = plt.subplots(ncols = 2, figsize=(20,10))
-        plot_trajectory(ax[0], data_df, 'time', protein, hss, hsd, Iteration_Identifier = "all iter")
-        plot_trajectory(ax[1], data_df, 'time', reg, hss, hsd, Iteration_Identifier = "all iter")
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    #fig.suptitle('Trajectories of Proteins and Regulators')
-    fig.text(0.5, 0.99, data_name, ha = 'center', va='center', wrap=True)
-    fig.suptitle(' ', fontsize=16, y = 1)
-    plt.tight_layout()
+        plot_trajectory(ax[0],fig, data_df, 'time', protein, hss, hsd, plot_title_to_show, param_dict_text,Iteration_Identifier = "all iter")
+        plot_trajectory(ax[1],fig, data_df, 'time', reg, hss, hsd, plot_title_to_show, param_dict_text,Iteration_Identifier = "all iter")
 
-    saveFig(plot_dir, data_name, opt, prefix =f'{S}_ProReg2overlay')
+    saveFig(param_dir, data_name, opt, prefix =f'{S}_ProReg2overlay')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
 
 
-def plot_FMPMMP_zoom(data_df, hss, hsd, plot_dir, numberofiteration, data_name, name_suffix, S, opt):
+def plot_FMPMMP_zoom(data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, S, plot_title_to_show, param_dict_text, opt):
     print(" Zoomed In Protein & Regulator Trajectory Around HeatShock")
     cut_data_df = data_df[(data_df['time'] >= hss -50) & (data_df['time'] <= hss + hsd + 100)]
-    reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB', 'totalHSFA1']
     
     if numberofiteration == 1:
         fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
-        plot_trajectory(ax[0], cut_data_df, 'time', ['FMP','MMP'], hss, hsd, "iteration 0")
-        plot_trajectory(ax[1], cut_data_df, 'time', reg_conc_col, hss, hsd, "iteration 0")
+        plot_trajectory(ax[0], fig, cut_data_df, 'time', ['FMP','MMP'], hss, hsd, plot_title_to_show, param_dict_text,"iteration 0")
+        plot_trajectory(ax[1], fig, cut_data_df, 'time', reg, hss, hsd,plot_title_to_show, param_dict_text, "iteration 0")
     else:
         grouped_data = cut_data_df.groupby('Iteration_Identifier')
         fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
         for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
-            plot_trajectory(ax[i,0], group_data, 'time', ['FMP','MMP'], hss, hsd, Iteration_Identifier = Iteration_Identifier)
-            plot_trajectory(ax[i,1], group_data, 'time', reg_conc_col, hss, hsd, Iteration_Identifier = Iteration_Identifier)
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    fig.text(0.5, 0.99, data_name, ha = 'center', va='center', wrap=True)
-    fig.suptitle(' ', fontsize=16, y = 1)
-    #fig.suptitle('Zoomed In Trajectories, Around HeatShock')
-    plt.tight_layout()
+            plot_trajectory(ax[i,0], fig, group_data, 'time', ['FMP','MMP'], hss, hsd, plot_title_to_show, param_dict_text, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(ax[i,1], fig, group_data, 'time', reg, hss, hsd, plot_title_to_show, param_dict_text, Iteration_Identifier = Iteration_Identifier)
 
-    saveFig(plot_dir, data_name, opt, prefix =f'{S}_ProRegZoom')
+    saveFig(param_dir, data_name, opt, prefix =f'{S}_ProRegZoom')
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
