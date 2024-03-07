@@ -1186,3 +1186,33 @@ Call  : -nit 1 -mdn woA2
 Start : 02/29/24 11:26:16
 Script: HSPR_AZ_hpc.py
 Call  : -nit 1 -mdn woA2
+Start : 03/07/24 21:09:58
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20
+Start : 03/07/24 21:11:16
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20
+Start : 03/07/24 21:15:29
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn d1upCons
+Start : 03/07/24 21:16:00
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn d1upCons
+Start : 03/07/24 21:16:42
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn d1upCons -wa2 0
+Start : 03/07/24 21:16:54
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn d1upCons -wa2 1
+Start : 03/07/24 21:19:56
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn d1upCons -wa2 1
+Start : 03/07/24 21:20:27
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn replaceA1 -wa2 1
+Start : 03/07/24 21:20:38
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn replaceA1 -wa2 1
+Start : 03/07/24 21:21:22
+Script: HSPR_AZ_hpc.py
+Call  : -nit 20 -mdn replaceA1 -wa2 0
