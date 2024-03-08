@@ -229,7 +229,10 @@ def main(opt):
     
     print("Step3: Simulation begins")
     ## no multiprocessing
-    listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = start_Gillespie(param_dict, opt)
+    #listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = start_Gillespie(param_dict, opt)
+
+    listM4, listtime2, numberofiteration, end_time, rr_list2, model_name  = gillespie(param_dict, opt)
+
     ## with multiprocessing
     #listM2, listtime, end_time = gillespie_woA2_mp(param_dict, opt)
     #listM6, numberofiteration, end_time = parallel_gillespie_woA2(param_dict, opt)
@@ -720,12 +723,12 @@ def start_Gillespie(param_dict, opt):
 def gillespie(param_dict, opt):
     model_name = opt.mdn
     listM4, listtime2, rr_list2, numberofiteration =[], [], [], int(opt.nit)
+    Stoich, Stoich_df = get_stoich(opt)
     a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d3, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n = unpack_param_dict(param_dict)
     if (opt.wa2) == True:
         Decay3, a4, h4, leakage_A2 = param_dict['Decay3'], param_dict['a4'], param_dict['h4'], param_dict['leakage_A2']
     if opt.mdn == 'replaceA1':
         c2, c4 = float(param_dict['c2']), float(param_dict['c4'])
-    Stoich, Stoich_df = get_stoich(opt)
 
     for i in range(numberofiteration):    
         print(f" \n iteration: {i}")
@@ -740,17 +743,18 @@ def gillespie(param_dict, opt):
 
             d1, d4 = get_d1_d4(param_dict, Time, opt)
             listR = cal_basic_rate(a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d1, d3, d4, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n, HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB)
-
             if (opt.wa2) == True:
                 R_HSFA2_dec=Decay3*HSFA2
-                R_HSFA2_inc=leakage_A2+a4*HSFA1/(h4+HSFA1+HSFB)
-                np.append(listR, R_HSFA2_dec, R_HSFA2_inc)
+                R_HSFA2_inc=leakage_A2+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n)
+                #print(f'leakage_A2 = {leakage_A2}, a4 = {a4}, HSFA1 = {HSFA1}, HSFB = {HSFB}, R_HSFA2_inc = {R_HSFA2_inc}')
+                #exit()
+                listR = np.append(listR, [R_HSFA2_dec, R_HSFA2_inc])
             if opt.mdn == 'replaceA1':
                 MMP_replace_A1HSPR = c2*C_HSFA1_HSPR*MMP
                 A1_replace_MMPHSPR = c4*C_HSPR_MMP*HSFA1
-                np.append(listR, MMP_replace_A1HSPR, A1_replace_MMPHSPR)
+                listR = np.append(listR, [MMP_replace_A1HSPR, A1_replace_MMPHSPR])
 
-            listM, Time, counter, listtime, listM2, rr_list = update_save_tsp(listR, Stoich, listM, Time, counter, listtime, listM2, rr_list)
+            listM, Time, counter, listtime, listM2, rr_list = update_save_tsp(listR, Stoich, listM, Time, counter, listtime, listM2, rr_list, opt)
 
         listM4, listtime2, rr_list2, end_time, param_dict = save_iter(listM2, listtime, rr_list, listM4, listtime2, rr_list2, Time, param_dict)
     return listM4, listtime2, numberofiteration, end_time, rr_list2, model_name
@@ -1279,8 +1283,11 @@ def cal_basic_rate(a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d1, d3, d4, Decay1, D
     return listR
 
 
-def update_save_tsp(listR, Stoich, listM, Time, counter, listtime, listM2, rr_list):
+def update_save_tsp(listR, Stoich, listM, Time, counter, listtime, listM2, rr_list, opt):
     Tau = -math.log(random.random())/sum(listR) 
+    #print(f'Stoich length = {len(Stoich)}, {Stoich}')
+    #print(f'listR length = {len(listR)}, {listR}')
+
     Outcome = random.choices(Stoich, weights = listR, k=1)
     listM = listM+Outcome[0] 
     last_time = Time
@@ -1347,7 +1354,7 @@ def saveGilData_2(list, data_dir, numberofiteration, end_time, model_name, opt):
     # Name output file
     date = datetime.now().date()
     if bool(opt.ids) == False: #de novo
-        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}"
+        data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_withA2-{bool(opt.wa2)}"
     else: ## imported param from simuData
         data_file = f"{opt.para_csv_name[:-4].replace('Para', 'SimuData')}-rerunon{date}_numIter{numberofiteration}"
     if bool(opt.hs2) == True:

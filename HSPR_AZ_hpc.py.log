@@ -1216,3 +1216,39 @@ Call  : -nit 20 -mdn replaceA1 -wa2 1
 Start : 03/07/24 21:21:22
 Script: HSPR_AZ_hpc.py
 Call  : -nit 20 -mdn replaceA1 -wa2 0
+Start : 03/07/24 23:30:37
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:32:07
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:34:09
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:35:49
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:36:00
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:36:43
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:37:52
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:40:47
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:41:00
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:41:21
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:41:37
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/07/24 23:52:34
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -mdn replaceA1 -wa2 1
