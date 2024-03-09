@@ -1261,3 +1261,45 @@ Call  : -nit 2 -mdn replaceA1 -wa2 1
 Start : 03/09/24 23:04:44
 Script: HSPR_AZ_hpc.py
 Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:13:41
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:14:13
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:14:54
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:18:43
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:19:00
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:26:18
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:35:08
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:39:23
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:43:07
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:53:38
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:53:56
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn replaceA1 -wa2 0 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:54:08
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn d1upCons -wa2 0 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:54:55
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn d1upCons -wa2 0 -ram 0.5 -rma 0.5
+Start : 03/09/24 23:56:22
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -mdn replaceA1 -wa2 1 -ram 0.2 -rma 0.2
