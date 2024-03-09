@@ -1252,3 +1252,12 @@ Call  : -nit 2 -mdn replaceA1 -wa2 1
 Start : 03/07/24 23:52:34
 Script: HSPR_AZ_hpc.py
 Call  : -nit 5 -mdn replaceA1 -wa2 1
+Start : 03/09/24 23:04:18
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -mdn replaceA1 -wa2 1
+Start : 03/09/24 23:04:25
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1
+Start : 03/09/24 23:04:44
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -mdn replaceA1 -wa2 1 -ram 0.5 -rma 0.5

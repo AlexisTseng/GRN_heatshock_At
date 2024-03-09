@@ -59,10 +59,10 @@ description
     c2, rate at which MMP replaces A1 from A1_HSPR complex, to form MMP_HSPR instead (default: 5.0)
 
 --assoMMP_HSPR,-amh
-    c3, The association rate between MMP and HSPR (default: 5.0)
+    c3, The association rate between MMP and HSPR (default: 0.5)
 
 --repA1_MMPH,-ram
-    c4, rate at which A1 replaces MMP from MMP_HSPR complex, to form A1_HSPR instead (default: 10.0)
+    c4, rate at which A1 replaces MMP from MMP_HSPR complex, to form A1_HSPR instead (default: 0.5)
 
 --disoA1_HSPR,-dah
     d1, dissociation rate of A1-HSPR (default: 0.1)
