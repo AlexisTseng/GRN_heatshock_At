@@ -18,8 +18,16 @@ description
 --optSteps,-ops
     how many steps the simulated annealing algorithm is gonna take (default:10)
 
+--costFunc,-cof
+    which cost function to use. e.g. 'fctHSPR', 'fcA1tHSPR-pHSA1HSPR', 'maxFMP' (default: fcA1tHSPR-pHSA1HSPR)
+
+#################################################################
+
 --numberInteration,-nit
     The number of interations for Gillespi simulation (default: 2)
+
+--modelName,-mdn
+    which model version or Gillespie Function to use (default: replaceA1)
 
 --timeStep,-tsp
     The time duration for each Gillespi simulation run/iteration (default:1000)
@@ -30,14 +38,16 @@ description
 --heatShockDuration,-hsd
     The duration of heat shock introduced (default: 3)
 
---modelName,-mdn
-    which model version or Gillespie Function to use (default: replaceA1)
-
---costFunc,-cof
-    which cost function to use. e.g. 'fctHSPR', 'fcA1tHSPR-pHSA1HSPR', 'maxFMP' (default: fcA1tHSPR-pHSA1HSPR)
-
 --heatShockStart2,-hs2
     The time point at which a second heat shock is introduced (default: 0)
+
+--withA2,-wa2
+    whether HSFA2 is present in the model (default: 0)
+
+--A2positiveAutoReg,-a2p
+    Whether HSFA2 positively regulates itself in the model (default: 0)
+
+####################################################################
 
 --misfoldRateNormal,-mfn
     The formation rate of misfolded protein from folded protein under normal temperature (default: 0.01)
@@ -49,13 +59,13 @@ description
     c1, association rate between A1 and HSPR (default:10.0)
 
 --repMMP_A1H,-rma
-    c2, rate at which MMP replaces A1 from A1_HSPR complex, to form MMP_HSPR instead (default: 1.0)
+    c2, rate at which MMP replaces A1 from A1_HSPR complex, to form MMP_HSPR instead (default: 5.0)
 
 --assoMMP_HSPR,-amh
-    c3, The association rate between MMP and HSPR (default: 5.0)
+    c3, The association rate between MMP and HSPR (default: 0.5)
 
 --repA1_MMPH,-ram
-    c4, rate at which A1 replaces MMP from MMP_HSPR complex, to form A1_HSPR instead (default: 1.0)
+    c4, rate at which A1 replaces MMP from MMP_HSPR complex, to form A1_HSPR instead (default: 0.5)
 
 --disoA1_HSPR,-dah
     d1, dissociation rate of A1-HSPR (default: 0.1)
@@ -69,8 +79,7 @@ description
 --hillCoeff,-hco
     The Hill Coefficient (default: 2)
 
---A2positiveAutoReg,-a2p
-    Whether HSFA2 positively regulates itself in the model (default: 0)
+##################################################################################
 
 --leakage_A1,-lga
     Trancription leakage for HSFA1 (default: 0.001)
@@ -81,26 +90,27 @@ description
 --leakage_HSPR,-lgh
     Trancription leakage for HSPR (default: 0.001)
 
+--leakage_A2,-la2
+    Trancription leakage for HSFA2 (default: 0.001)
+
+################################################################################
+
 --hilHalfSaturation,-hhs
     The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
 
 --KA1actA1,-hAA
-    h1, K constant for activating A1 (default: 1.0)
+    h1, K constant for A1 (default: 1.0)
 
 --KA1actHSPR,-hAH
-    h2, K constant for activating HSPR (default: 1.0)
+    h2, K constant for HSPR (default: 1.0)
+
+--KA2actHSPR,-hA2
+    h4, K constant for HSFA2 (default: 1.0)
 
 --KA1actB,-hAB
-    h5, K constant for activating HSFB (default: 1.0)
+    h5, K constant for HSFB (default: 1.0)
 
---KBrepA1,-hBA
-    h3, K constant for HSFB repressing A1 (default: 1.0)
-
---KBrepB,-hBB
-    h6, K constant for HSFB repressing HSFB (default: 1.0)
-
---KBrepHSPR,-hBH
-    h4, K constant for HSFB repressing HSPR (default: 1.0)
+##################################################################################
 
 --initFMP,-ifp
     Initial FMP abundance (default: 5000)
@@ -123,8 +133,10 @@ description
 --initMMP_HSPR,-imh
     initial C_MMP_HSPR abundance (default: 50)
 
---decayA1,-da1
-    decay1, decay rate of free A1 (default: 0.01)
+##################################################################################
+
+
+######################################################
 
 --maxRateB,-a5B
     a5, Max transcription rate of HSFB (default: 10)
@@ -135,6 +147,9 @@ description
 --maxRateHSPR,-a2H
     a2, Max transcription rate of HSFB (default: 100)
 
+--maxRateA2,-a4A
+    a4, max transcription rate of HSFA2 (default: 10)
+
 --foldedProduction,-fpp
     a7, folded protein production rate (default: 300)
 
@@ -143,6 +158,8 @@ description
 
 --globalDecayRate,-gdr
     the decay rate of species except for MMP (default:0.04)
+
+#############################################################
 
 --A1mut,-a1m
     if 1, no HSFA1 (default: 0)
@@ -153,6 +170,8 @@ description
 --HSPRmut,-hmu
     if 1, no HSPR (default: 0)
 
+######################################################################
+
 --outputFormat,-ofm
     Whether to save Gillespi simulation output as csv or picklefile (default: csv)
 
@@ -161,6 +180,8 @@ description
 
 --thread,-thr
     The number of threads used for multiprocessing (default: 4)
+
+##############################################################
 
 --saveFig,-sfg
     Whether to save the figures and plots generated. Default = True (default: 1)
@@ -213,6 +234,7 @@ def main(opt):
 
     for i in range(opt.ops):
         data_df, grouped_data, numberofiteration, listM6, end_time, hss, hsd = one_ops_step(param_dict, opt)
+        
 
         ssbHS_df, ssHS_df, ssHS_lh_df, sspHS_df = df_Processing_HS(data_df, hss, hsd, end_time, opt)
 
@@ -244,7 +266,7 @@ def dir_gen(opt):
     plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
     if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
 
-    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}_cosFunc-{opt.cof}")
+    param_dir = os.path.join(partiii_dir,"Param_Optimisation", f"{date}_{opt.mdn}_step{opt.ops}_time{opt.tsp}_hss{opt.hss}_hsd{opt.hsd}_withA2-{bool(opt.wa2)}_cosFunc-{opt.cof}")
     param_dir = get_unique_filename(param_dir)
     if not os.path.isdir(param_dir): os.makedirs(param_dir, 0o777)
 
@@ -284,7 +306,6 @@ def param_spec(opt):
         'init_MMP': int(opt.imp),
         'init_FMP': int(opt.ifp),
         'init_C_HSPR_MMP': init_C_HSPR_MMP,
-        #'init_HSFA2': 1,
         'init_HSFB': init_HSFB,
         'Time': 0.0,
         ## Maximum expression level in Hill equation
@@ -295,9 +316,6 @@ def param_spec(opt):
         'a7': int(opt.fpp), #folded protein production rate
         #'a8': 50.0,
         ## Ka in Hill equation
-        #'h1': int(opt.hhs),
-        #'h2': int(opt.hhs),
-        #'h5': int(opt.hhs),
         'h1': float(opt.hAA),
         'h2': float(opt.hAH),
         #'h3': int(opt.hBA),
@@ -314,7 +332,6 @@ def param_spec(opt):
         'd4_norm': float(opt.mfn),
         'Decay1': float(opt.gdr),
         'Decay2': float(opt.gdr), # decay of free HSPR
-        #'Decay3': float(opt.gdr),
         'Decay4': float(opt.gdr),
         'Decay6': float(opt.gdr),
         'Decay7': float(opt.gdr), # decay path 2 of A1-HSPR
@@ -331,11 +348,18 @@ def param_spec(opt):
         'hduration':int(opt.hsd),
         'model_name': str(opt.mdn)
     }
+    if bool(opt.wa2) == True:
+        param_dict['leakage_A2'] = float(opt.la2)
+        param_dict['a4'] = int(opt.a4A)
+        param_dict['h4'] = float(opt.hA2)
+        param_dict['Decay3'] = float(opt.gdr)
+        param_dict["init_HSFA2"] = 1
     if opt.mdn == 'replaceA1':
         param_dict['c2'] = float(opt.rma) # MMP replace A1 in complex with HSPR
         param_dict['c4'] = float(opt.ram) # A1 replace MMP in complex with HSPR
     elif opt.mdn == 'd1upCons':
         param_dict['d1_HS'] = float(opt.hda)
+    
     print(param_dict)
     return param_dict
 
@@ -344,12 +368,13 @@ def one_ops_step(param_dict, opt):
     numberofiteration = param_dict['numberofiteration']
     hss = param_dict['hstart']
     hsd = param_dict['hduration']
-    if opt.mdn == 'replaceA1':
-        listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2_replaceA1(param_dict, opt)
-    elif opt.mdn == 'woA2':
-        listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2(param_dict, opt)
-    elif opt.mdn == 'd1upCons':
-        listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2_d1HS(param_dict, opt)
+    listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie(param_dict, opt)
+    #if opt.mdn == 'replaceA1':
+    #    listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2_replaceA1(param_dict, opt)
+    #elif opt.mdn == 'woA2':
+    #    listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2(param_dict, opt)
+    #elif opt.mdn == 'd1upCons':
+    #    listM4, listtime2, numberofiteration, end_time, rr_list2, model_name = gillespie_woA2_d1HS(param_dict, opt)
     listM6 = combine_data(listtime2, listM4, rr_list2, opt)
     data_df, grouped_data = Gillespie_list_to_df(listM6, opt)
     return data_df, grouped_data, numberofiteration, listM6, end_time, hss, hsd
@@ -819,6 +844,269 @@ def gillespie_woA2_d1HS(param_dict, opt):
     return listM4, listtime2, numberofiteration, end_time, rr_list2, model_name
 
 
+def gillespie(param_dict, opt):
+    model_name = opt.mdn
+    listM4, listtime2, rr_list2, numberofiteration =[], [], [], int(opt.nit)
+    Stoich, Stoich_df, header = get_stoich(opt)
+    a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d3, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n = unpack_param_dict(param_dict)
+    if (opt.wa2) == True:
+        Decay3, a4, h4, leakage_A2 = param_dict['Decay3'], param_dict['a4'], param_dict['h4'], param_dict['leakage_A2']
+    if opt.mdn == 'replaceA1':
+        c2, c4 = float(param_dict['c2']), float(param_dict['c4'])
+
+    for i in range(numberofiteration):    
+        print(f" \n iteration: {i}")
+        listM = get_listM(opt, param_dict)
+        listM2, Time, listtime, rr_list, counter = init_iter()
+
+        while Time < int(opt.tsp): 
+            if counter % 5000 ==0 and counter != 0:
+                print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
+            if bool(opt.wa2) == False: 
+                HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
+            else: 
+                HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB = listM
+
+            d1, d4 = get_d1_d4(param_dict, Time, opt)
+            listR = cal_basic_rate(a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d1, d3, d4, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n, HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB)
+            if (opt.wa2) == True:
+                R_HSFA2_dec=Decay3*HSFA2
+                R_HSFA2_inc=leakage_A2+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n)
+                #print(f'leakage_A2 = {leakage_A2}, a4 = {a4}, HSFA1 = {HSFA1}, HSFB = {HSFB}, R_HSFA2_inc = {R_HSFA2_inc}')
+                #exit()
+                listR = np.append(listR, [R_HSFA2_dec, R_HSFA2_inc])
+            if opt.mdn == 'replaceA1':
+                MMP_replace_A1HSPR = c2*C_HSFA1_HSPR*MMP
+                A1_replace_MMPHSPR = c4*C_HSPR_MMP*HSFA1
+                listR = np.append(listR, [MMP_replace_A1HSPR, A1_replace_MMPHSPR])
+
+            listM, Time, counter, listtime, listM2, rr_list = update_save_tsp(listR, Stoich, listM, Time, counter, listtime, listM2, rr_list, opt)
+
+        listM4, listtime2, rr_list2, end_time, param_dict = save_iter(listM2, listtime, rr_list, listM4, listtime2, rr_list2, Time, param_dict)
+    return listM4, listtime2, numberofiteration, end_time, rr_list2, model_name
+
+
+def unpack_param_dict(param_dict):
+    a1 = float(param_dict['a1'])
+    a2 = float(param_dict['a2'])
+    a5 = float(param_dict['a5'])
+    a6 = float(param_dict['a6'])
+    a7 = float(param_dict['a7'])
+    h1 = float(param_dict['h1'])
+    h2 = float(param_dict['h2'])
+    h5 = float(param_dict['h5'])
+    c1 = float(param_dict['c1'])
+    c3 = float(param_dict['c3'])
+    #d1 = float(param_dict['d1'])
+    d3 = float(param_dict['d3'])
+    Decay1 = float(param_dict['Decay1'])
+    Decay2 = float(param_dict['Decay2'])
+    Decay4 = float(param_dict['Decay4'])
+    Decay6 = float(param_dict['Decay6'])
+    Decay7 = float(param_dict['Decay7'])
+    Decay8 = float(param_dict['Decay8'])
+    Decay5 = float(param_dict['Decay5'])
+    leakage_A1 = float(param_dict['leakage_A1'])
+    leakage_B = float(param_dict['leakage_B'])
+    leakage_HSPR = float(param_dict['leakage_HSPR'])
+    n = int(param_dict['hillcoeff'])
+    return a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d3, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n
+
+def get_stoich(opt):
+    if bool(opt.wa2) == False:
+        if opt.mdn == 'woA2' or opt.mdn == 'd1upCons':
+            Stoich = [[1,0,0,0,0,0,0], #R_HSFA1_inc
+              [-1,0,0,0,0,0,0], #R_HSFA1_dec
+              [0,1,0,0,0,0,0], #R_HSPR_inc
+              [0,-1,0,0,0,0,0], #R_HSPR_dec
+              [-1,-1,1,0,0,0,0], #R_C_HSFA1_HSPR_inc
+              [1,1,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec1
+              [0,0,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec2
+              [0,0,0,1,-1,0,0], #R_MMP_inc
+              [0,0,0,-1,0,0,0], #R_MMP_dec
+              [0,0,0,0,1,0,0], #R_FMP_inc
+              [0,0,0,0,-1,0,0], #R_FMP_dec
+              [0,-1,0,-1,0,1,0], #R_C_HSPR_MMP_inc
+              [0,1,0,1,0,-1,0], #R_C_HSPR_MMP_dec1 = dissociation of the complex to form free HSPR and MMP
+              [0,1,0,0,1,-1,0], #R_C_HSPR_MMP_dec2 = refolding step, dissociation of the complex to form free HSPR and FMP 
+              [0,0,0,0,0,-1,0], #R_C_HSPR_MMP_dec3, complex decrease by 1, decay 8
+              [0,0,0,0,0,0,1], #R_HSFB_inc
+              [0,0,0,0,0,0,-1] #R_HSFB_dec
+              ]
+            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3', 'R_HSFB_inc', 'R_HSFB_dec'])
+        elif opt.mdn == 'replaceA1':
+            Stoich = [[1,0,0,0,0,0,0], #R_HSFA1_inc
+              [-1,0,0,0,0,0,0], #R_HSFA1_dec
+              [0,1,0,0,0,0,0], #R_HSPR_inc
+              [0,-1,0,0,0,0,0], #R_HSPR_dec
+              [-1,-1,1,0,0,0,0], #R_C_HSFA1_HSPR_inc
+              [1,1,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec1
+              [0,0,-1,0,0,0,0], #R_C_HSFA1_HSPR_dec2
+              [0,0,0,1,-1,0,0], #R_MMP_inc
+              [0,0,0,-1,0,0,0], #R_MMP_dec
+              [0,0,0,0,1,0,0], #R_FMP_inc
+              [0,0,0,0,-1,0,0], #R_FMP_dec
+              [0,-1,0,-1,0,1,0], #R_C_HSPR_MMP_inc
+              [0,1,0,1,0,-1,0], #R_C_HSPR_MMP_dec1 = dissociation of the complex to form free HSPR and MMP
+              [0,1,0,0,1,-1,0], #R_C_HSPR_MMP_dec2 = refolding step, dissociation of the complex to form free HSPR and FMP 
+              [0,0,0,0,0,-1,0], #R_C_HSPR_MMP_dec3, complex decrease by 1, decay 8
+              [0,0,0,0,0,0,1], #R_HSFB_inc
+              [0,0,0,0,0,0,-1], #R_HSFB_dec
+              [1,0,-1,-1,0,1,0], #MMP_replace_A1HSPR
+              [-1,0,1,1,0,-1,0] #A1_replace_MMPHSPR
+              ]
+            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3', 'R_HSFB_inc', 'R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
+        else: print('opt.mdn empty or unexpected')
+    elif bool(opt.wa2) == True:
+        if opt.mdn == 'woA2' or opt.mdn == 'd1upCons':
+            Stoich = [[1,0,0,0,0,0,0,0], 
+                      [-1,0,0,0,0,0,0,0], 
+                      [0,1,0,0,0,0,0,0], 
+                      [0,-1,0,0,0,0,0,0], 
+                      [-1,-1,1,0,0,0,0,0], 
+                      [1,1,-1,0,0,0,0,0], 
+                      [0,0,-1,0,0,0,0,0], 
+                      [0,0,0,1,-1,0,0,0], 
+                      [0,0,0,-1,0,0,0,0], 
+                      [0,0,0,0,1,0,0,0], 
+                      [0,0,0,0,-1,0,0,0], 
+                      [0,-1,0,-1,0,1,0,0], 
+                      [0,1,0,1,0,-1,0,0], 
+                      [0,1,0,0,1,-1,0,0], 
+                      [0,0,0,0,0,-1,0,0], 
+                      [0,0,0,0,0,0,0,1], 
+                      [0,0,0,0,0,0,0,-1],
+                      [0,0,0,0,0,0,1,0], 
+                      [0,0,0,0,0,0,-1,0],]
+            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFA2', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3',  'R_HSFB_inc', 'R_HSFB_dec', 'R_HSFA2_inc', 'R_HSFA2_dec'])
+        elif opt.mdn == 'replaceA1':
+            Stoich = [[1,0,0,0,0,0,0,0], 
+                      [-1,0,0,0,0,0,0,0], 
+                      [0,1,0,0,0,0,0,0], 
+                      [0,-1,0,0,0,0,0,0], 
+                      [-1,-1,1,0,0,0,0,0], 
+                      [1,1,-1,0,0,0,0,0], 
+                      [0,0,-1,0,0,0,0,0], 
+                      [0,0,0,1,-1,0,0,0], 
+                      [0,0,0,-1,0,0,0,0], 
+                      [0,0,0,0,1,0,0,0], 
+                      [0,0,0,0,-1,0,0,0], 
+                      [0,-1,0,-1,0,1,0,0], 
+                      [0,1,0,1,0,-1,0,0], 
+                      [0,1,0,0,1,-1,0,0], 
+                      [0,0,0,0,0,-1,0,0], 
+                      [0,0,0,0,0,0,0,1], 
+                      [0,0,0,0,0,0,0,-1],
+                      [1,0,-1,-1,0,1,0,0], #MMP_replace_A1HSPR
+                      [-1,0,1,1,0,-1,0,0], #A1_replace_MMPHSPR
+                      [0,0,0,0,0,0,1,0], 
+                      [0,0,0,0,0,0,-1,0], 
+                      ]
+            Stoich_df = pd.DataFrame(Stoich, columns= ['HSFA1', 'HSPR', 'C_HSFA1_HSPR', 'MMP', 'FMP', 'C_HSPR_MMP', 'HSFA2', 'HSFB'], index=['R_HSFA1_inc', 'R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc','R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3',  'R_HSFB_inc', 'R_HSFB_dec','R_HSFA2_inc', 'R_HSFA2_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
+        else: print('opt.mdn empty or unexpected')
+    header = ['Iteration_Identifier', 'time'] + Stoich_df.columns.to_list() + Stoich_df.index.to_list()
+    return Stoich, Stoich_df, header
+
+def get_listM(opt, param_dict):
+    if bool(opt.wa2) == False:
+        listM = np.array([int(param_dict["init_HSFA1"]),
+                      int(param_dict["init_HSPR"]),
+                      int(param_dict["init_C_HSFA1_HSPR"]),
+                      int(param_dict["init_MMP"]),
+                      int(param_dict["init_FMP"]),
+                      int(param_dict["init_C_HSPR_MMP"]),
+                      int(param_dict["init_HSFB"])])
+    else:
+        listM = np.array([param_dict["init_HSFA1"],
+                          param_dict["init_HSPR"],
+                          param_dict["init_C_HSFA1_HSPR"],
+                          param_dict["init_MMP"],
+                          param_dict["init_FMP"],
+                          param_dict["init_C_HSPR_MMP"],
+                          param_dict["init_HSFA2"],
+                          param_dict["init_HSFB"]])
+    return listM
+
+def init_iter():
+    listM2 =[]
+    Time=0
+    listtime =[]
+    rr_list = []
+    counter = 0
+    return listM2, Time, listtime, rr_list, counter
+
+def get_d1_d4(param_dict, Time, opt):
+    if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): 
+        d4 = param_dict['d4_heat']
+        if opt.mdn == 'd1upCons': 
+            d1 = param_dict['d1_HS']
+        else:
+            d1 = param_dict['d1']
+    elif bool(opt.hs2) == True:
+        if Time >= int(opt.hs2) and Time <= int(opt.hs2) + int(opt.hsd): 
+            d4 = param_dict['d4_heat']
+            if opt.mdn == 'd1upCons': 
+                d1 = param_dict['d1_HS']
+            else:
+                d1 = param_dict['d1']
+        else: 
+            d4 = param_dict['d4_norm']
+            d1 = param_dict['d1']
+    else: 
+        d4 = param_dict['d4_norm']
+        d1 = param_dict['d1']
+    return d1, d4
+
+
+def cal_basic_rate(a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d1, d3, d4, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n, HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB):
+    R_HSFA1_inc=leakage_A1+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) 
+    R_HSFA1_dec= Decay1*HSFA1
+    R_HSPR_inc= leakage_HSPR+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n)
+    R_HSPR_dec= Decay2*HSPR
+    R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
+    R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
+    R_C_HSFA1_HSPR_dec2=Decay7*C_HSFA1_HSPR
+    R_MMP_inc= d4*FMP
+    R_MMP_dec= Decay5*MMP
+    R_FMP_inc=a7
+    R_FMP_dec= Decay6*FMP
+    R_C_HSPR_MMP_inc=c3*HSPR*MMP
+    R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
+    R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
+    R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
+    R_HSFB_inc=leakage_B+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
+    R_HSFB_dec=Decay4*HSFB
+
+    listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3,R_HSFB_inc,R_HSFB_dec])
+    return listR
+
+
+def update_save_tsp(listR, Stoich, listM, Time, counter, listtime, listM2, rr_list, opt):
+    Tau = -math.log(random.random())/sum(listR) 
+    #print(f'Stoich length = {len(Stoich)}, {Stoich}')
+    #print(f'listR length = {len(listR)}, {listR}')
+
+    Outcome = random.choices(Stoich, weights = listR, k=1)
+    listM = listM+Outcome[0] 
+    last_time = Time
+    Time += Tau 
+    counter += 1
+
+    if "{:.1f}".format(Time) == "{:.1f}".format(last_time + opt.spf) or Time == 0:
+        listtime.append("{:.1f}".format(Time)) #this is to add stuff to the list
+        listM2.append(listM)
+        rr_list.append(listR)
+    return listM, Time, counter, listtime, listM2, rr_list
+
+def save_iter(listM2, listtime, rr_list, listM4, listtime2, rr_list2, Time, param_dict):
+    listM4.append(listM2)
+    listtime2.append(listtime)
+    rr_list2.append(rr_list)
+    end_time = Time
+    param_dict['end_time'] = end_time
+    return listM4, listtime2, rr_list2, end_time, param_dict
+
+
 #####################################################
 ## Process Gillespie Output
 #####################################################
@@ -852,17 +1140,19 @@ def Gillespie_list_to_df(listM6, opt):
 
 
 def saveData_oneSAstep(listM6, param_dir, numberofiteration, end_time, S, opt):
+
     date = datetime.now().date()
-    data_file = f"{param_dir}/{S}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
+    data_file = f"{param_dir}/{S}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_withA2-{bool(opt.wa2)}.csv"
     data_file = get_unique_filename(data_file)
-    data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_cosFunc-{opt.cof}"
-    plot_title_to_show = f"{opt.mdn}_cosFunc-{opt.cof}_{S}_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}"
+
+    data_name = f"{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_withA2-{bool(opt.wa2)}_cosFunc-{opt.cof}"
+
+    plot_title_to_show = f"{opt.mdn}_cosFunc-{opt.cof}_{S}_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_withA2-{bool(opt.wa2)}"
+
+    Stoich, Stoich_df, header = get_stoich(opt)
     with open(data_file, 'w') as csvfile:
         csv_writer = csv.writer(csvfile)
-        if opt.mdn == 'replaceA1':
-            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR'])
-        else: 
-            csv_writer.writerow(['Iteration_Identifier', 'time','HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec'])
+        csv_writer.writerow(header)
         csv_writer.writerows(listM6) 
     return data_file, date, data_name, plot_title_to_show
 
@@ -1279,7 +1569,7 @@ def updatePara_unif(param_dict, opt):
     param_dict['c2'] = random.uniform(0.5,5) # rate of MMP replacing A1 in HSPR complex
     param_dict['c3'] = random.uniform(5,15)
     param_dict['c4'] = random.uniform(0.01,2) # rate of A1 replacing MMP in HSPR complex
-    param_dict['d1'] = random.uniform(0.01, 5.0) #A1_HSPR dissociation
+    param_dict['d1'] = random.uniform(0.01, 10.0) #A1_HSPR dissociation
     param_dict['d3'] = random.uniform(0.01, 5.0) #MMP_HSPR dissociation
 
     param_dict['leakage_A1'] = random.uniform(0.001, 0.01)

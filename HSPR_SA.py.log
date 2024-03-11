@@ -424,3 +424,12 @@ Call  : -ops 1 -nit 5 -mdn d1upCons -hAA 2.0 -hAH 4.0 -hAB 10.0
 Start : 03/01/24 16:20:41
 Script: HSPR_SA.py
 Call  : -ops 1 -nit 5 -mdn d1upCons -hAA 3.0 -hAH 4.0 -hAB 10.0
+Start : 03/11/24 12:14:00
+Script: HSPR_SA.py
+Call  : -ops 5 -mdn woA2 -nit 1
+Start : 03/11/24 12:17:13
+Script: HSPR_SA.py
+Call  : -ops 5 -mdn woA2 -nit 1 -hsd 30
+Start : 03/11/24 12:20:46
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -nit 5 -hsd 5
