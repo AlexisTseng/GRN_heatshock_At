@@ -1318,3 +1318,24 @@ Call  : -nit 1 -mdn replaceA1 -wa2 1 -ram 0.2 -rma 0.2 -tsp 10
 Start : 03/10/24 00:25:02
 Script: HSPR_AZ_hpc.py
 Call  : -nit 1 -mdn replaceA1 -wa2 1 -ram 0.2 -rma 0.2 -tsp 10
+Start : 03/13/24 11:50:59
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2 -wa2 1
+Start : 03/13/24 11:53:54
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2 -wa2 1
+Start : 03/13/24 12:04:17
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2 -wa2 0
+Start : 03/13/24 12:21:22
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2 -wa2 1
+Start : 03/13/24 12:24:35
+Script: HSPR_AZ_hpc.py
+Call  : -nit 1 -mdn woA2 -wa2 1
+Start : 03/14/24 23:20:42
+Script: HSPR_AZ_hpc.py
+Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -nit 5
+Start : 03/14/24 23:22:59
+Script: HSPR_AZ_hpc.py
+Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -nit 5

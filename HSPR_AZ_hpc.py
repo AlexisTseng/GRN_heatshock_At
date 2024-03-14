@@ -736,7 +736,7 @@ def gillespie(param_dict, opt):
                 R_HSFA2_inc=leakage_A2+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n)
                 #print(f'leakage_A2 = {leakage_A2}, a4 = {a4}, HSFA1 = {HSFA1}, HSFB = {HSFB}, R_HSFA2_inc = {R_HSFA2_inc}')
                 #exit()
-                listR = np.append(listR, [R_HSFA2_dec, R_HSFA2_inc])
+                listR = np.append(listR, [R_HSFA2_inc,R_HSFA2_dec ])
             if opt.mdn == 'replaceA1':
                 MMP_replace_A1HSPR = c2*C_HSFA1_HSPR*MMP
                 A1_replace_MMPHSPR = c4*C_HSPR_MMP*HSFA1
@@ -768,9 +768,12 @@ def unpack_param_dict(param_dict):
     Decay7 = float(param_dict['Decay7'])
     Decay8 = float(param_dict['Decay8'])
     Decay5 = float(param_dict['Decay5'])
-    leakage_A1 = float(param_dict['leakage_A1'])
-    leakage_B = float(param_dict['leakage_B'])
-    leakage_HSPR = float(param_dict['leakage_HSPR'])
+    try: 
+        leakage_A1 = float(param_dict['leakage_A1'])
+        leakage_B = float(param_dict['leakage_B'])
+        leakage_HSPR = float(param_dict['leakage_HSPR'])
+    except KeyError:
+        leakage_A1, leakage_B, leakage_HSPR = float(param_dict['leakage']), float(param_dict['leakage']), float(param_dict['leakage'])
     n = int(param_dict['hillcoeff'])
     return a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d3, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n
 
@@ -1098,8 +1101,8 @@ def plot_results(Stoich_df, param_dir, data_name, data_df, grouped_data, param_d
     hss = param_dict['hstart']
     hsd = param_dict['hduration']
 
-    rates = Stoich_df.columns.to_list()
-    conc = Stoich_df.index.to_list()
+    conc = Stoich_df.columns.to_list()
+    rates = Stoich_df.index.to_list()
 
     plotReactionRate(rates, data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, opt)
     plot_FMPMMPvsTime_2(conc, data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt)
@@ -1160,7 +1163,7 @@ def plot_FMPMMP_zoom(conc, data_df, grouped_data, param_dir, numberofiteration,d
     reg_conc_col = list(set(conc) - set(['FMP','MMP']))
     
     if numberofiteration == 1:
-        fig, ax = plt.subplots(ncols=3, figsize=(20, 5))
+        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
         plot_trajectory(ax[0], cut_data_df, 'time', ['FMP','MMP'], hss, hsd, "iteration 0")
         plot_trajectory(ax[1], cut_data_df, 'time', reg_conc_col, hss, hsd, "iteration 0")
     else:

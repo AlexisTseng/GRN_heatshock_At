@@ -433,3 +433,141 @@ Call  : -ops 5 -mdn woA2 -nit 1 -hsd 30
 Start : 03/11/24 12:20:46
 Script: HSPR_SA.py
 Call  : -ops 50 -mdn woA2 -nit 5 -hsd 5
+Start : 03/12/24 13:08:08
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -nit 5 -hsd 5
+Start : 03/12/24 21:36:19
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn d1upCons -nit 5 -hsd 5
+Start : 03/12/24 23:03:21
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -nit 5 -hsd 5 -wa2 1
+Start : 03/12/24 23:04:05
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -ram 0.1 -rma 0.1 -nit 5 -hsd 5 -wa2 1
+Start : 03/12/24 23:04:41
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn d1upCons -ram 0.1 -rma 0.1 -nit 5 -hsd 5 -wa2 1
+Start : 03/12/24 23:17:05
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -ram 0.1 -rma 0.1 -nit 5 -hsd 5 -wa2 1
+Start : 03/12/24 23:17:27
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn d1upCons -nit 5 -hsd 5 -wa2 1
+Start : 03/12/24 23:17:37
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -nit 5 -hsd 5 -wa2 1
+Start : 03/13/24 10:16:34
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn d1upCons -nit 5 -hsd 5 -wa2 1
+Start : 03/13/24 10:31:25
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -nit 5 -hsd 5 -wa2 1
+Start : 03/13/24 10:34:44
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 10:36:16
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 10:38:24
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 12:26:11
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 12:27:31
+Script: HSPR_SA.py
+Call  : -ops 5 -mdn woA2 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 12:46:41
+Script: HSPR_SA.py
+Call  : -ops 5 -mdn replaceA1 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 12:47:30
+Script: HSPR_SA.py
+Call  : -ops 5 -mdn woA1 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 12:48:10
+Script: HSPR_SA.py
+Call  : -ops 5 -mdn woA2 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 12:59:20
+Script: HSPR_SA.py
+Call  : -ops 5 -mdn woA2 -nit 5 -hsd 5 -wa2 1
+Start : 03/13/24 13:10:11
+Script: HSPR_SA.py
+Call  : -ops 2 -mdn woA2 -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 13:18:17
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -nit 5 -hsd 5 -wa2 1
+Start : 03/13/24 13:19:20
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA1 -nit 5 -hsd 5 -wa2 1
+Start : 03/13/24 13:19:27
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -nit 5 -hsd 5 -wa2 1
+Start : 03/13/24 13:20:04
+Script: HSPR_SA.py
+Call  : -ops 2 -mdn d1upCons -wa2 1 -nit 1 -hsd 5
+Start : 03/13/24 13:21:42
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn d1upCons -wa2 1 -nit 5 -hsd 5
+Start : 03/13/24 13:23:21
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn replaceA1 -nit 5 -hsd 5
+Start : 03/13/24 17:12:51
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -hsd 5
+Start : 03/13/24 17:13:26
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -hsd 5
+Start : 03/13/24 17:19:17
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -hsd 5
+Start : 03/13/24 17:19:40
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:22:17
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:23:52
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:24:49
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:28:11
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:36:10
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:38:45
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:43:10
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn d1upCons -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 17:43:21
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn woA2 -nit 1 -tsp 300 -hss 200 -hsd 20
+Start : 03/13/24 18:18:37
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn woA2 -nit 1 -tsp 300 -hss 200 -hsd 20 -cof maxFMP_lowleak
+Start : 03/13/24 18:19:21
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -nit 5 -tsp 300 -hss 200 -hsd 20 -cof maxFMP_lowleak
+Start : 03/13/24 18:23:49
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -nit 5 -ifp 6500 -hsd 5 -cof maxFMP_lowleak
+Start : 03/13/24 22:31:57
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -nit 5 -ifp 6500 -hsd 5 -cof maxFMP_lowleak
+Start : 03/13/24 23:06:38
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -nit 5 -ifp 6500 -hsd 5 -cof maxFMP_lowleak
+Start : 03/13/24 23:07:12
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -nit 5 -ifp 6500 -hsd 5 -cof maxFMP_lowleak
+Start : 03/14/24 00:09:57
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -nit 5 -hsd 5 -cof maxFMP_lowleak_a1HFC
+Start : 03/14/24 17:42:53
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn woA2 -nit 5 -hsd 5 -cof maxFMP_lowleak_a1HFC
