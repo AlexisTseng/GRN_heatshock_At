@@ -96,13 +96,16 @@ description
     The conc of inducer/repressor at half-max transcriptional rate (default: 1.0)
 
 --KA1actA1,-hAA
-    h1, K constant for A1 (default: 1.0)
+    h1, K constant for A1, activate by A1, repress by B (default: 1.0)
 
 --KA1actHSPR,-hAH
-    h2, K constant for HSPR (default: 1.0)
+    h2, K constant for HSPR synthesis, activate by A1, repress by B (default: 1.0)
 
---KA2actHSPR,-hA2
-    h4, K constant for HSFA2 (default: 1.0)
+--KA2,-hA2
+    h4, K constant for HSFA2, activate by A1, repress by B (default: 1.0)
+
+--KA2act,-h3A
+    'h3', A2 activating A1 and HSPR, on top of HSFB repression (default: 5.0)
 
 --KA1actB,-hAB
     h5, K constant for HSFB (default: 1.0)
@@ -140,6 +143,9 @@ description
 
 --maxRateHSPR,-a2H
     a2, Max transcription rate of HSFB (default: 100)
+
+--maxRateA2act,-a3A
+    'a3', by how much A2 activate A1 and HSPR (default: 50)
 
 --maxRateA2,-a4A
     a4, max transcription rate of HSFA2 (default: 10)
@@ -297,8 +303,11 @@ def load_Param_fromFile(param_rootdir, data_dir, opt):
     if not 'hstart2' in param_dict: param_dict['hstart2'] = 0
     if not 'model_name' in locals(): model_name = param_dict['model_name']
     param_dict['model_name'], opt.mdn = model_name, model_name
-    param_dict['numberofiteration'] = int(opt.nit)
     opt.para_csv_name = para_csv_name
+
+    param_dict['numberofiteration'] = int(opt.nit)
+    init_HSFA1, a1, leakage_A1, init_HSFB, a5, leakage_B, init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR, init_C_HSFA1_HSPR_val = gen_mutant(opt)
+    param_dict = reAssign_paramVal(param_dict, init_HSFA1, a1, leakage_A1, init_HSFB, a5, leakage_B, init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR, init_C_HSFA1_HSPR_val)
     return param_dict, opt
 
 
@@ -328,11 +337,21 @@ def extract_model_name(filename):
         print('Error, cannot extract model name with extract_model_name()')
         exit()  # Return None if no match is found
 
+def reAssign_paramVal(param_dict, init_HSFA1, a1, leakage_A1, init_HSFB, a5, leakage_B, init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR, init_C_HSFA1_HSPR_val):
+    param_dict['init_HSFA1'] = init_HSFA1
+    param_dict['a1'] = a1
+    param_dict['leakage_A1'] = leakage_A1
+    param_dict['init_HSFB'] = init_HSFB
+    param_dict['a5'] = a5
+    param_dict['leakage_B'] = leakage_B
+    param_dict['init_C_HSPR_MMP'] = init_C_HSPR_MMP
+    param_dict['init_HSPR'] = init_HSPR
+    param_dict['a2'] = a2
+    param_dict['leakage_HSPR'] = leakage_HSPR
+    param_dict['init_C_HSFA1_HSPR'] = init_C_HSFA1_HSPR_val
+    return param_dict
 
-#######################################################################
-## 1. Parameter specification
-#######################################################################
-def param_spec(opt):
+def gen_mutant(opt):
     if bool(opt.a1m) == False:
         init_HSFA1, a1, leakage_A1 = int(opt.iaf), int(opt.a1A), float(opt.lga)
     elif bool(opt.a1m) == True: 
@@ -354,7 +373,13 @@ def param_spec(opt):
     if bool(opt.hmu) == True or bool(opt.a1m) == True:
         init_C_HSFA1_HSPR_val = 0
     else: init_C_HSFA1_HSPR_val = int(opt.iah)
+    return init_HSFA1, a1, leakage_A1, init_HSFB, a5, leakage_B, init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR, init_C_HSFA1_HSPR_val
 
+#######################################################################
+## 1. Parameter specification
+#######################################################################
+def param_spec(opt):
+    init_HSFA1, a1, leakage_A1, init_HSFB, a5, leakage_B, init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR, init_C_HSFA1_HSPR_val = gen_mutant(opt)
     param_dict = {
         ## initial concentrations
         'init_HSFA1': init_HSFA1,
@@ -407,8 +432,10 @@ def param_spec(opt):
     }
     if bool(opt.wa2) == True:
         param_dict['leakage_A2'] = float(opt.la2)
-        param_dict['a4'] = int(opt.a4A)
-        param_dict['h4'] = float(opt.hA2)
+        param_dict['a4'] = int(opt.a4A) # A1 activate A2
+        param_dict['h4'] = float(opt.hA2) # A1 activate A2
+        param_dict['a3'] = int(opt.a3A) # A2 activate A1 and HSPR
+        param_dict['h3'] = int(opt.h3A) # A2 activate A1 and HSPR
         param_dict['Decay3'] = float(opt.gdr)
         param_dict["init_HSFA2"] = 1
     if opt.mdn == 'replaceA1':
@@ -712,7 +739,7 @@ def gillespie(param_dict, opt):
     Stoich, Stoich_df, header = get_stoich(opt)
     a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d3, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n = unpack_param_dict(param_dict)
     if (opt.wa2) == True:
-        Decay3, a4, h4, leakage_A2 = param_dict['Decay3'], param_dict['a4'], param_dict['h4'], param_dict['leakage_A2']
+        Decay3, a4, h4, leakage_A2, a3, h3 = param_dict['Decay3'], param_dict['a4'], param_dict['h4'], param_dict['leakage_A2'], param_dict['a3'], param_dict['h3']
     if opt.mdn == 'replaceA1':
         c2, c4 = float(param_dict['c2']), float(param_dict['c4'])
 
@@ -724,19 +751,16 @@ def gillespie(param_dict, opt):
         while Time < int(opt.tsp): 
             if counter % 5000 ==0 and counter != 0:
                 print(f"  Progress: {int(Time*100/int(opt.tsp))}%", end='\r')
-            if bool(opt.wa2) == False: 
-                HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
-            else: 
-                HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB = listM
 
             d1, d4 = get_d1_d4(param_dict, Time, opt)
-            listR = cal_basic_rate(a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d1, d3, d4, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n, HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB)
-            if (opt.wa2) == True:
-                R_HSFA2_dec=Decay3*HSFA2
-                R_HSFA2_inc=leakage_A2+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n)
-                #print(f'leakage_A2 = {leakage_A2}, a4 = {a4}, HSFA1 = {HSFA1}, HSFB = {HSFB}, R_HSFA2_inc = {R_HSFA2_inc}')
-                #exit()
-                listR = np.append(listR, [R_HSFA2_inc,R_HSFA2_dec ])
+            if bool(opt.wa2) == False: 
+                HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB = listM
+                listR = cal_basic_rate(a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d1, d3, d4, Decay1, Decay2, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_B, leakage_HSPR, n, HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFB)
+            else: ## with A2 = true
+                HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB = listM
+                listR = cal_basic_rate_withA2(a1, a2, a3, a4, a5, a6, a7, h1, h2, h3, h4, h5, c1, c3, d1, d3, d4, Decay1, Decay2, Decay3, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_A2, leakage_B, leakage_HSPR, n, HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB, opt)
+
+
             if opt.mdn == 'replaceA1':
                 MMP_replace_A1HSPR = c2*C_HSFA1_HSPR*MMP
                 A1_replace_MMPHSPR = c4*C_HSPR_MMP*HSFA1
@@ -901,14 +925,16 @@ def init_iter():
     return listM2, Time, listtime, rr_list, counter
 
 def get_d1_d4(param_dict, Time, opt):
-    if Time >= int(opt.hss) and Time <= int(opt.hss) + int(opt.hsd): 
+    hss, hsd = param_dict['hstart'], param_dict['hduration']
+    if Time >= int(hss) and Time <= int(hss) + int(hsd): 
         d4 = param_dict['d4_heat']
         if opt.mdn == 'd1upCons': 
             d1 = param_dict['d1_HS']
         else:
             d1 = param_dict['d1']
     elif bool(opt.hs2) == True:
-        if Time >= int(opt.hs2) and Time <= int(opt.hs2) + int(opt.hsd): 
+        hs2 = param_dict['hstart2']
+        if Time >= int(hs2) and Time <= int(hs2) + int(hsd): 
             d4 = param_dict['d4_heat']
             if opt.mdn == 'd1upCons': 
                 d1 = param_dict['d1_HS']
@@ -945,6 +971,30 @@ def cal_basic_rate(a1, a2, a5, a6, a7, h1, h2, h5, c1, c3, d1, d3, d4, Decay1, D
     listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3,R_HSFB_inc,R_HSFB_dec])
     return listR
 
+def cal_basic_rate_withA2(a1, a2, a3, a4, a5, a6, a7, h1, h2, h3, h4, h5, c1, c3, d1, d3, d4, Decay1, Decay2, Decay3, Decay4, Decay6, Decay7, Decay8, Decay5, leakage_A1, leakage_A2, leakage_B, leakage_HSPR, n, HSFA1, HSPR, C_HSFA1_HSPR, MMP, FMP, C_HSPR_MMP, HSFA2, HSFB, opt):
+
+    R_HSFA1_inc=leakage_A1+a1*HSFA1**n/(h1**n+HSFA1**n+HSFB**n) + a3*HSFA2**n/(h3**n+HSFA2**n+HSFB**n)
+    R_HSFA1_dec= Decay1*HSFA1
+    R_HSPR_inc= leakage_HSPR+a2*HSFA1**n/(h2**n+HSFA1**n+HSFB**n) + a3*HSFA2**n/(h3**n+HSFA2**n+HSFB**n)
+    R_HSPR_dec= Decay2*HSPR
+    R_C_HSFA1_HSPR_inc=c1*HSFA1*HSPR
+    R_C_HSFA1_HSPR_dec1=d1*C_HSFA1_HSPR
+    R_C_HSFA1_HSPR_dec2=Decay7*C_HSFA1_HSPR
+    R_MMP_inc= d4*FMP
+    R_MMP_dec= Decay5*MMP
+    R_FMP_inc=a7
+    R_FMP_dec= Decay6*FMP
+    R_C_HSPR_MMP_inc=c3*HSPR*MMP
+    R_C_HSPR_MMP_dec1=d3*C_HSPR_MMP
+    R_C_HSPR_MMP_dec2=a6*C_HSPR_MMP
+    R_C_HSPR_MMP_dec3=Decay8*C_HSPR_MMP
+    R_HSFB_inc=leakage_B+a5*HSFA1**n/(h5**n+HSFA1**n+HSFB**n)
+    R_HSFB_dec=Decay4*HSFB
+    R_HSFA2_inc=leakage_A2+a4*HSFA1**n/(h4**n+HSFA1**n+HSFB**n)
+    R_HSFA2_dec=Decay3*HSFA2
+
+    listR = np.array([R_HSFA1_inc, R_HSFA1_dec, R_HSPR_inc, R_HSPR_dec, R_C_HSFA1_HSPR_inc, R_C_HSFA1_HSPR_dec1,R_C_HSFA1_HSPR_dec2,R_MMP_inc,R_MMP_dec,R_FMP_inc,R_FMP_dec,R_C_HSPR_MMP_inc,R_C_HSPR_MMP_dec1, R_C_HSPR_MMP_dec2, R_C_HSPR_MMP_dec3,R_HSFB_inc,R_HSFB_dec,R_HSFA2_inc,R_HSFA2_dec])
+    return listR
 
 def update_save_tsp(listR, Stoich, listM, Time, counter, listtime, listM2, rr_list, opt):
     Tau = -math.log(random.random())/sum(listR) 

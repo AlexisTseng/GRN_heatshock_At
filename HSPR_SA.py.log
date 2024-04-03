@@ -571,3 +571,27 @@ Call  : -ops 100 -mdn woA2 -nit 5 -hsd 5 -cof maxFMP_lowleak_a1HFC
 Start : 03/14/24 17:42:53
 Script: HSPR_SA.py
 Call  : -ops 20 -mdn woA2 -nit 5 -hsd 5 -cof maxFMP_lowleak_a1HFC
+Start : 03/15/24 00:28:15
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn woA2 -wa2 1 -nit 5 -hsd 50 -cof fcA1tHSPR-pHSA1HSPR
+Start : 03/15/24 00:28:52
+Script: HSPR_SA.py
+Call  : -ops 20 -mdn woA2 -wa2 1 -nit 5 -hsd 50 -cof fcA1tHSPR-pHSA1HSPR
+Start : 03/15/24 08:11:40
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -wa2 1 -nit 5 -hsd 50 -cof fcA1tHSPR-pHSA1HSPR
+Start : 03/15/24 08:27:36
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -wa2 1 -nit 5 -hsd 50 -cof logfcA1tHSPR-pHSA1HSPR
+Start : 03/15/24 08:27:58
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -wa2 1 -nit 5 -hsd 50 -cof logfcA1tHSPR-pHSA1HSPR
+Start : 03/15/24 09:21:24
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -cof maxFMP -nit 4 -hsd 5
+Start : 03/15/24 09:22:50
+Script: HSPR_SA.py
+Call  : -ops 50 -mdn woA2 -cof maxFMP -nit 4 -hsd 5
+Start : 03/15/24 12:11:58
+Script: HSPR_SA.py
+Call  : -ops 100 -mdn woA2 -wa2 1 -nit 5 -hsd 50 -cof logfcA1tHSPR-pHSA1HSPR

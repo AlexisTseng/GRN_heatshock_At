@@ -1339,3 +1339,15 @@ Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -
 Start : 03/14/24 23:22:59
 Script: HSPR_AZ_hpc.py
 Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -nit 5
+Start : 03/15/24 00:35:43
+Script: HSPR_AZ_hpc.py
+Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -nit 5
+Start : 03/15/24 08:30:17
+Script: HSPR_AZ_hpc.py
+Call  : -ids 2024-02-25_numIter30_Time1000.0000556574369_HSstart600_HSduration30 -nit 50
+Start : 03/15/24 08:50:11
+Script: HSPR_AZ_hpc.py
+Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -nit 5 -a1m 1
+Start : 03/15/24 11:54:47
+Script: HSPR_AZ_hpc.py
+Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -nit 5 -bmu 1
