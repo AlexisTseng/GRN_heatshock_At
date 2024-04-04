@@ -25,7 +25,7 @@ description
 ################################################################
 
 --importDataSuffix,-ids
-    Suffix in data/parameter file, such as from SA '2024-02-24_step50_time900_hss600_hsd50/159.461275414781_SimuData_2024-02-28_replaceA1_numIter20_Time1000.0026486889622_HSstart600_HSduration30.csv' or from simuData '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000'
+    Suffix in data/parameter file, such as from SA: '2024-02-24_step50_time900_hss600_hsd50/159.461275414781_SimuData_2024-02-28_replaceA1_numIter20_Time1000.0026486889622_HSstart600_HSduration30' // or from simuData: '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000' // or from variance analysis 'simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1'..... All without .csv
 
 --saveFig,-sfg
     Whether to save the figures and plots generated. Default = True (default: 1)
@@ -63,47 +63,41 @@ import pandas as pd
 import sys
 
 
-
 def main(opt):
     print("Step1: Specify output directory")
-    data_dir, param_rootdir = dir_gen()
+    data_dir, param_rootdir, varPara_dir, varData_dir, partiii_dir = dir_gen()
 
     print("Step2: Extracting Parameter Dictionary")
-    param_dict, plot_dir, opt = load_Param_fromDataFile(param_rootdir, data_dir, opt)
-    end_time, hss, hsd, opt, date, model_name = info_from_param_dict(param_dict, opt)
+    param_dict, plot_dir, model_name, opt = load_Param_fromDataFile(param_rootdir, data_dir, partiii_dir, varPara_dir, varData_dir, opt)
+    #end_time, hss, hsd, opt, date, model_name = info_from_param_dict(param_dict, opt)
 
     print("Step3: Import Simulating Results")
-    data_df, grouped_data, numberofiteration, opt = import_tidy_simuData(data_dir, param_rootdir, opt, model_name)
+    data_df, grouped_data, numberofiteration, hss, hsd, end_time, opt = import_tidy_simuData(data_dir, partiii_dir, param_rootdir, opt, model_name)
 
     print("Step 4: Generate Plot Name")
-    name_suffix, diff_dict, name_suffix_save = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt)
+    name_suffix, diff_dict = genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, opt)
     #print(diff_dict)
     #print(name_suffix)
 
 
     print("Step4: Plot Temporal Trajectories")
     #plotReactionRate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd)
-    ## Plot trajectories of all species for all iterations
-    #plot_allvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict)
-    #plot_allvsZoomInTime_separate(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
-    #plot_FMPMMPvsTime_3(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-    plot_FMPMMPvsTime_2(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
-    #plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt)
+    #plot_FMPMMPvsTime_2(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
+    #plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, hss, hsd, opt)
     #plot_FMPMMP_zoom(data_df, hss, hsd, plot_dir, numberofiteration,name_suffix, opt)
-    #plot_A1BvsTime_separate(data_df, grouped_data, plot_dir, numberofiteration,name_suffix, opt)
-    ## Plot trajectory of total HSPR for all iterations
-    #plot_totalHSPRvsTime_subplots(grouped_data, data_df, plot_dir, numberofiteration, name_suffix, hss, hsd, opt)
-    ## Plot overlayed trajectory of A1 concentrations for all trajectory
-    #plot_A1vsTime_asOne(grouped_data, plot_dir, numberofiteration, name_suffix, opt)
+
+
 
     print("Step 5: Variability Analysis")
     if bool(opt.van) == True:
-        df_list = df_Processing_HS(data_df, data_dir,hss,hsd, end_time, opt)
-        bootstrap_HSPR_hist_overlap(df_list, data_dir, name_suffix, opt)
-        bootstrap_HSPR_hist_subplot(df_list, data_dir, name_suffix, opt)
+        df_list = df_Processing_HS(data_df, hss,hsd, end_time, opt)
+        maxVal = data_df['totalHSPR'].max()
+        bootstrap_HSPR_hist_overlap(df_list, plot_dir, maxVal, opt)
+        exit()
+        bootstrap_HSPR_hist_subplot(df_list, plot_dir, maxVal, opt)
         totalHSPR_df_outlist = df_HSPR_stats(df_list, opt)
-        plot_HSPR_hist(totalHSPR_df_outlist, data_dir, name_suffix, opt)
-        plot_CVsq_mean(totalHSPR_df_outlist, data_dir, name_suffix, opt)
+        plot_HSPR_hist(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
+        plot_CVsq_mean(totalHSPR_df_outlist, plot_dir, name_suffix, opt)
 
 
 
@@ -116,12 +110,16 @@ def dir_gen():
 
     data_dir = os.path.join(partiii_dir,"Ritu_simulation_data")
     if not os.path.isdir(data_dir): os.makedirs(data_dir, 0o777)
-    plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
-    if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
+    #plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
+    #if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
     param_rootdir = os.path.join(partiii_dir,"Param_Optimisation")
-    if not os.path.isdir(param_rootdir): os.makedirs(plot_dir, 0o777)
-    return data_dir, param_rootdir
+    if not os.path.isdir(param_rootdir): os.makedirs(param_rootdir, 0o777)
 
+    varPara_dir = os.path.join(partiii_dir,"param_for_varAna")
+    if not os.path.isdir(varPara_dir): os.makedirs(varPara_dir, 0o777)
+    varData_dir = os.path.join(partiii_dir,"simuData_for_varAna")
+    if not os.path.isdir(varData_dir): os.makedirs(varData_dir, 0o777)
+    return data_dir, param_rootdir, varPara_dir, varData_dir, partiii_dir
 
 #######################################################################
 ## 2. Parameter specification
@@ -162,8 +160,8 @@ def param_extract(data_dir, opt):
 
 
 
-def load_Param_fromDataFile(param_rootdir, data_dir, opt):
-    if bool(re.search(re.compile(r'/'), opt.ids)) == True:
+def load_Param_fromDataFile(param_rootdir, data_dir, partiii_dir, varPara_dir, varData_dir, opt):
+    if bool(re.search(re.compile(r'/'), opt.ids)) == False:
         ## import from SA data
         param_dir, data_filename = os.path.split(f"{param_rootdir}/{opt.ids}.csv")
         plot_dir = param_dir
@@ -180,8 +178,7 @@ def load_Param_fromDataFile(param_rootdir, data_dir, opt):
                 para_csv_name = f"{param_dir}/{S_val}.csv"
                 model_name = extract_model_name(para_csv_name)
                 param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
-    
-    else: ## else import from simuData
+    elif bool(re.search(re.compile(r'Para'), opt.ids)) == True: ## imported param from simuData
         plot_dir = data_dir
         if os.path.exists(f"{data_dir}/Exp3_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/Exp3_Para_{opt.ids}.csv"
@@ -199,7 +196,17 @@ def load_Param_fromDataFile(param_rootdir, data_dir, opt):
             para_csv_name = f"{data_dir}/d1upCons_Para_{opt.ids}.csv"
             model_name = "d1upCons"
             param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
-    return param_dict, plot_dir, opt
+    else: ## from variance analysis
+        print('var')
+        plot_dir = varData_dir
+        path, filename = os.path.split(f"{partiii_dir}/{opt.ids}.csv") # this is simuData name
+        S_val = re.search(r'^(\d+\.\d+)_', filename).group(1)
+        para_csv_name = f"{varPara_dir}/{S_val}.csv"
+        model_name = "replaceA1"
+        param_dict, opt = param_dict_import_impute(para_csv_name, model_name, opt)
+    if 'hstart2' in param_dict: opt.hs2 = int(param_dict['hstart2'])
+    else: opt.hs2 = False
+    return param_dict, plot_dir, model_name, opt
 
 def param_dict_import_impute(para_csv_name, model_name, opt):
     param_dict = {}
@@ -262,17 +269,25 @@ def info_from_param_dict(param_dict, opt):
 #######################################################################
 ## 3. Import Simulation Data
 #######################################################################
-def import_tidy_simuData(data_dir, param_rootdir, opt, model_name):
-    if bool(re.search(re.compile(r'/'), opt.ids)) == True: #input from SA param
+def import_tidy_simuData(data_dir, partiii_dir, param_rootdir, opt, model_name):
+    if bool(re.search(r'simuData_for_varAna', opt.ids)) == True:## from variance analysis
+        data_df = pd.read_csv(f"{partiii_dir}/{opt.ids}.csv")
+        path, filename = os.path.split(f"{partiii_dir}/{opt.ids}.csv")
+        opt.name_suffix = filename[:-4]
+    elif bool(re.search(re.compile(r'/'), opt.ids)) == True: #input from SA param
         data_df = pd.read_csv(f"{param_rootdir}/{opt.ids}.csv")
         path, filename = os.path.split(f"{param_rootdir}/{opt.ids}.csv")
         opt.name_suffix = filename[:-4]
-        numberofiteration = int(re.search(r'_numIter(\d+)_', opt.name_suffix).group(1))
     else: #input from simuData param
         try: data_df = pd.read_csv(f"{data_dir}/{model_name}_SimuData_{opt.ids}")
         except FileNotFoundError: data_df = pd.read_csv(f"{data_dir}/Exp3_SimuData_{opt.ids}")
         opt.name_suffix = opt.ids
-        numberofiteration = int(re.search(r'_numIter(\d+)_', opt.name_suffix).group(1))
+    
+    numberofiteration = int(re.search(r'_numIter(\d+)_', opt.name_suffix).group(1))
+    hss = int(re.search(r'_HSstart(\d+)_', opt.name_suffix).group(1))
+    hsd = int(re.search(r'_HSduration(\d+)', opt.name_suffix).group(1))
+    end_time = re.search(r'_Time(\d+\.\d+)_', opt.name_suffix).group(1)
+
 
     data_df['totalHSPR'] = data_df['HSPR'] + data_df['C_HSFA1_HSPR'] + data_df['C_HSPR_MMP']
     data_df['totalHSFA1'] = data_df['C_HSFA1_HSPR'] + data_df['HSFA1']
@@ -280,7 +295,7 @@ def import_tidy_simuData(data_dir, param_rootdir, opt, model_name):
     #print(data_df.shape)
     ### number of rows and columns for all iterations
     grouped_data = data_df.groupby('Iteration_Identifier')
-    return data_df, grouped_data, numberofiteration, opt
+    return data_df, grouped_data, numberofiteration, hss, hsd, end_time, opt
 
 
 #######################################################################
@@ -288,7 +303,7 @@ def import_tidy_simuData(data_dir, param_rootdir, opt, model_name):
 #######################################################################
 
 
-def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, date, opt):
+def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, opt):
     default_param_dict = {
         ## initial concentrations
         'init_HSFA1': 1,
@@ -347,16 +362,28 @@ def genPlotName_nondefault(param_dict, numberofiteration, end_time, hss, hsd, da
         if not 'hstart2' in param_dict: param_dict['hstart2'] = 0
         #if not 'model_name' in param_dict:  --> this line, not needed, cuz model_name always specified
         if str(param_dict[dk]) != str(dv):
-            print(f"default: {dk}, {dv}")
-            print(f"actual: {dk}, {param_dict[dk]}")
+            #print(f"default: {dk}, {dv}")
+            #print(f"actual: {dk}, {param_dict[dk]}")
             diff_dict[dk] = param_dict[dk]
-    name_suffix_save = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
-    name_suffix = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}\n"
+    #name_suffix_save = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}"
+    #name_suffix = f"{date}_numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}\n"
+    name_suffix = f"numIter{numberofiteration}_Time{end_time}_HSstart{hss}_HSduration{hsd}\n"
     for key, val in diff_dict.items():
         name_suffix += f"_{key}-{val}"
-        name_suffix_save += f"_{key}-{val}"
-    return name_suffix, diff_dict, name_suffix_save
+        #name_suffix_save += f"_{key}-{val}"
+    return name_suffix, diff_dict
 
+def param_dict_toText(param_dict, opt):
+    param_dict_text = ''
+    for i, (key, val) in enumerate(param_dict.items(),1):
+        if type(val) == float:
+            to_add = f"  {key}-{round(val,3)}"
+        else:
+            to_add = f"  {key}-{val}"
+        param_dict_text += to_add
+        if i % 8 ==0:
+            param_dict_text += f'\n'
+    return param_dict_text
 
 
 #######################################################################
@@ -374,6 +401,23 @@ def plot_trajectory(opt, ax, data_df, x_col, y_col_list, hss, hsd, Iteration_Ide
     ax.legend(loc='upper left')
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 
+def plot_trajectory(ax, fig, data_df, x_col, y_col_list, hss, hsd, plot_title_to_show, param_dict_text, Iteration_Identifier):
+    for y_col in y_col_list:
+        ax.plot(data_df[x_col], data_df[y_col], label=y_col, linewidth=1, alpha=0.8)
+    ax.set_xlabel('Time (hour)')
+    ax.set_ylabel('Protein copy number')
+    ax.axvspan(hss, hss+hsd, facecolor='r', alpha=0.2)
+    ax.set_title(f"{Iteration_Identifier}")
+    ax.legend(loc='upper left')
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+
+    plt.subplots_adjust(right=0.8) 
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9)
+    fig.text(0.5, 0.95, f'{plot_title_to_show}\n{param_dict_text}', ha = 'center', va='center', fontsize = int(plt.rcParams['font.size']), linespacing=2,  wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+
+
 def saveFig(data_dir, name_suffix, opt, prefix):
     if bool(opt.sfg) == True:
         plot_name = f"{data_dir}/{name_suffix}_{prefix}.pdf"
@@ -384,7 +428,7 @@ def saveFig(data_dir, name_suffix, opt, prefix):
         #plt.savefig(f"{unique_plot_name}")
         print(f" save figure {opt.sfg == True}")
 
-def plotReactionRate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd):
+def plotReactionRate(data_df, grouped_data, data_dir, numberofiteration, name_suffix, opt, hss, hsd):
     rr = ['R_HSFA1_inc','R_HSFA1_dec', 'R_HSPR_inc', 'R_HSPR_dec', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_C_HSFA1_HSPR_dec2','R_MMP_inc','R_MMP_dec','R_FMP_inc', 'R_FMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2', 'R_C_HSPR_MMP_dec3','R_HSFB_inc','R_HSFB_dec','MMP_replace_A1HSPR','A1_replace_MMPHSPR']
     #rr = ['R_HSFA1_inc','R_HSPR_inc', 'R_C_HSFA1_HSPR_inc', 'R_C_HSFA1_HSPR_dec1','R_MMP_inc','R_MMP_dec','R_C_HSPR_MMP_inc','R_C_HSPR_MMP_dec1', 'R_C_HSPR_MMP_dec2','R_HSFB_inc']
 
@@ -403,7 +447,93 @@ def plotReactionRate(data_df, grouped_data, data_dir, numberofiteration,name_suf
     plt.close()
 
 
-def plot_allvsTime_separate(data_df, grouped_data, data_dir, numberofiteration,name_suffix, opt, hss, hsd, diff_dict):
+def plot_FMPMMPvsTime_2(data_df, grouped_data, data_dir, numberofiteration,name_suffix, hss, hsd, opt):
+
+    print(" Plot trajectories of Proteins and Regulators")
+    #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB','totalHSFA1']
+    protein = ['FMP','MMP']
+
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
+        plot_trajectory(opt, ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
+        plot_trajectory(opt, ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+
+    else:
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
+            plot_trajectory(opt, ax[i,0], group_data, 'time', protein, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(opt, ax[i,1], group_data, 'time', reg, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    #fig.suptitle('Trajectories of Proteins and Regulators')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    plt.tight_layout()
+
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg2')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
+
+
+def plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, data_dir, numberofiteration,name_suffix, hss, hsd, opt):
+
+    print(" Plot trajectories of Proteins and Regulators")
+    #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB','totalA1']
+    protein = ['FMP','MMP']
+
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
+        plot_trajectory(opt, ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
+        plot_trajectory(opt, ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
+
+    else:
+        fig, ax = plt.subplots(ncols = 2, figsize=(20,10))
+        plot_trajectory(opt, ax[0], data_df, 'time', protein, hss, hsd, Iteration_Identifier = "all iter")
+        plot_trajectory(opt, ax[1], data_df, 'time', reg, hss, hsd, Iteration_Identifier = "all iter")
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    #fig.suptitle('Trajectories of Proteins and Regulators')
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    plt.tight_layout()
+
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg2overlay')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
+
+
+def plot_FMPMMP_zoom(data_df, hss, hsd, data_dir, numberofiteration,name_suffix, opt):
+    print(" Zoomed In Protein & Regulator Trajectory Around HeatShock")
+    cut_data_df = data_df[(data_df['time'] >= hss -50) & (data_df['time'] <= hss + hsd + 100)]
+    reg_conc_col = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB','totalHSFA1']
+    
+    if numberofiteration == 1:
+        fig, ax = plt.subplots(ncols=3, figsize=(20, 5))
+        plot_trajectory(opt, ax[0], cut_data_df, 'time', ['FMP','MMP'], hss, hsd, "iteration 0")
+        plot_trajectory(opt, ax[1], cut_data_df, 'time', reg_conc_col, hss, hsd, "iteration 0")
+    else:
+        grouped_data = cut_data_df.groupby('Iteration_Identifier')
+        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
+        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
+            plot_trajectory(opt, ax[i,0], group_data, 'time', ['FMP','MMP'], hss, hsd, Iteration_Identifier = Iteration_Identifier)
+            plot_trajectory(opt, ax[i,1], group_data, 'time', reg_conc_col, hss, hsd, Iteration_Identifier = Iteration_Identifier)
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
+    fig.suptitle(' ', fontsize=16, y = 1)
+    #fig.suptitle('Zoomed In Trajectories, Around HeatShock')
+    plt.tight_layout()
+
+    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProRegZoom')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
+
+
+
+########################################
+#########################################
+    
+
+def plot_allvsTime_separate(data_df, grouped_data, data_dir, numberofiteration, name_suffix, opt, hss, hsd, diff_dict):
 
     print(" Plot trajectories of all species for all iterations")
     conc_col = ['HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB']
@@ -452,7 +582,7 @@ def plot_allvsZoomInTime_separate(data_df, hss, hsd, data_dir, numberofiteration
     if bool(opt.shf) == True: plt.show()
     plt.close()
 
-def plot_FMPMMPvsTime_3(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt):
+def plot_FMPMMPvsTime_3(data_df, grouped_data, data_dir, numberofiteration,name_suffix, hss, hsd, opt):
 
     print(" Plot trajectories of Proteins and Regulators")
     HSPR_complex = ['C_HSPR_MMP','totalHSPR']
@@ -483,38 +613,11 @@ def plot_FMPMMPvsTime_3(data_df, grouped_data, data_dir, numberofiteration,name_
     plt.close()
 
 
-def plot_FMPMMPvsTime_2(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt):
-
-    print(" Plot trajectories of Proteins and Regulators")
-    #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
-    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB','totalHSFA1']
-    protein = ['FMP','MMP']
-
-    if numberofiteration == 1:
-        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
-        plot_trajectory(opt, ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
-        plot_trajectory(opt, ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
-
-    else:
-        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
-        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
-            plot_trajectory(opt, ax[i,0], group_data, 'time', protein, hss, hsd, Iteration_Identifier = Iteration_Identifier)
-            plot_trajectory(opt, ax[i,1], group_data, 'time', reg, hss, hsd, Iteration_Identifier = Iteration_Identifier)
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    #fig.suptitle('Trajectories of Proteins and Regulators')
-    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
-    fig.suptitle(' ', fontsize=16, y = 1)
-    plt.tight_layout()
-
-    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg2')
-    if bool(opt.shf) == True: plt.show()
-    plt.close()
-
 def plot_FMPMMPvsTime_2_overlayed_2(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt):
 
     print(" Plot trajectories of Proteins and Regulators")
     #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
-    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
+    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB', 'totalA1']
     protein = ['FMP','MMP']
 
     fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
@@ -533,56 +636,6 @@ def plot_FMPMMPvsTime_2_overlayed_2(data_df, grouped_data, data_dir, numberofite
     plt.close()
 
 
-def plot_FMPMMPvsTime_2_overlayed(data_df, grouped_data, data_dir, numberofiteration,name_suffix, name_suffix_save, hss, hsd, opt):
-
-    print(" Plot trajectories of Proteins and Regulators")
-    #HSPR_complex = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR']
-    reg = ['C_HSPR_MMP','C_HSFA1_HSPR','totalHSPR','HSPR','HSFA1','HSFB']
-    protein = ['FMP','MMP']
-
-    if numberofiteration == 1:
-        fig, ax = plt.subplots(ncols=2, figsize=(20, 5))
-        plot_trajectory(opt, ax[0], data_df, 'time', protein, hss, hsd, "iteration 0")
-        plot_trajectory(opt, ax[1], data_df, 'time', reg, hss, hsd, "iteration 0")
-
-    else:
-        fig, ax = plt.subplots(ncols = 2, figsize=(20,10))
-        plot_trajectory(opt, ax[0], data_df, 'time', protein, hss, hsd, Iteration_Identifier = "all iter")
-        plot_trajectory(opt, ax[1], data_df, 'time', reg, hss, hsd, Iteration_Identifier = "all iter")
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    #fig.suptitle('Trajectories of Proteins and Regulators')
-    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
-    fig.suptitle(' ', fontsize=16, y = 1)
-    plt.tight_layout()
-
-    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProReg2overlay')
-    if bool(opt.shf) == True: plt.show()
-    plt.close()
-    
-def plot_FMPMMP_zoom(data_df, hss, hsd, data_dir, numberofiteration,name_suffix, opt):
-    print(" Zoomed In Protein & Regulator Trajectory Around HeatShock")
-    cut_data_df = data_df[(data_df['time'] >= hss -50) & (data_df['time'] <= hss + hsd + 100)]
-    reg_conc_col = data_df.drop(columns = ["time", "Iteration_Identifier",'FMP','MMP'])
-    
-    if numberofiteration == 1:
-        fig, ax = plt.subplots(ncols=3, figsize=(20, 5))
-        plot_trajectory(opt, ax[0], cut_data_df, 'time', ['FMP','MMP'], hss, hsd, "iteration 0")
-        plot_trajectory(opt, ax[1], cut_data_df, 'time', reg_conc_col, hss, hsd, "iteration 0")
-    else:
-        grouped_data = cut_data_df.groupby('Iteration_Identifier')
-        fig, ax = plt.subplots(nrows= numberofiteration, ncols = 2, figsize=(20,5*numberofiteration))
-        for i, (Iteration_Identifier, group_data) in enumerate(grouped_data):# Now 'ax' is a 1D array, and you can iterate over it
-            plot_trajectory(opt, ax[i,0], group_data, 'time', ['FMP','MMP'], hss, hsd, Iteration_Identifier = Iteration_Identifier)
-            plot_trajectory(opt, ax[i,1], group_data, 'time', reg_conc_col, hss, hsd, Iteration_Identifier = Iteration_Identifier)
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    fig.text(0.5, 0.99, name_suffix, ha = 'center', va='center', wrap=True)
-    fig.suptitle(' ', fontsize=16, y = 1)
-    #fig.suptitle('Zoomed In Trajectories, Around HeatShock')
-    plt.tight_layout()
-
-    saveFig(data_dir, str(opt.name_suffix), opt, prefix ='ProRegZoom')
-    if bool(opt.shf) == True: plt.show()
-    plt.close()
 
 
 
@@ -703,68 +756,93 @@ def plot_A1vsTime_asOne(grouped_data, data_dir, numberofiteration, name_suffix, 
 ## 5. Variability Analysis
 #######################################################################
 
-def df_Processing_HS(data_df, data_dir,hss,hsd, end_time, opt):
-    ss1_start = 1000
+def df_Processing_HS(data_df, hss, hsd, end_time, opt):
+    ss1_start = 200
     ss1_end = int(hss)
-    ssHS_start = int(hss) + 100
+    ssHS_start = int(hss)
     ssHS_end = int(hss) + int(hsd)
-    ss3_start = ssHS_end + 500
+    ss3_start = ssHS_end
     ss3_end = end_time
     print(f"hss:{hss}, hsd: {hsd}")
     print(f"ss1: {ss1_start} - {ss1_end} \nssHS: {ssHS_start} - {ssHS_end} \nss3:{ss3_start} - {ss3_end} ")
 
     ss1_df = data_df[(data_df['time'] >= ss1_start) & (data_df['time'] <= ss1_end)]
     ssHS_df = data_df[(data_df['time'] >= ssHS_start) & (data_df['time'] <= ssHS_end)]
-    ss3_df = data_df[(data_df['time'] >= ss3_start) & (data_df['time'] <= ss3_end)]
+    ss3_df = data_df[data_df['time'] >= ss3_start]
 
-    #print("ss1_df")
-    #print(ss1_df)
-    #print(ss1_df.shape)
-    #print("ssHS_df")
-    #print(ssHS_df)
-    #print(ssHS_df.shape)
-    #print("ss3_df")
-    #print(ss3_df)
-    #print(ss3_df.shape)
+    print("ss1_df", ss1_df.shape)
+    print("ssHS_df", ssHS_df.shape)
+    print("ss3_df", ss3_df.shape)
 
     df_list = [ss1_df, ssHS_df, ss3_df]
+
+    #totalHSPR_df_outlist = []
+    #for grouped_df in df_list:
+    #    result_df = grouped_df.agg(['mean','std'])
+    #    result_df['cv'] = result_df['std'] / result_df['mean']
+    #    result_df.columns = ['mean_totalHSPR', 'std_totalHSPR', 'cv_totalHSPR']
+    #    result_df.reset_index(inplace=True)
+    #    totalHSPR_df_outlist.append(result_df)
     return df_list
 
 
-def df_Processing_HS_1(data_df, data_dir,hss,hsd, end_time, opt):
-    ss1_start = 1000
-    ss1_end = int(hss)
-    ssHS_start = int(hss) + 100
-    ssHS_end = int(hss) + int(hsd)
-    ss3_start = ssHS_end + 500
-    ss3_end = end_time
-    print(f"hss:{hss}, hsd: {hsd}")
-    print(f"ss1: {ss1_start} - {ss1_end} \nssHS: {ssHS_start} - {ssHS_end} \nss3:{ss3_start} - {ss3_end} ")
 
-    ss1_df = data_df[(data_df['time'] >= ss1_start) & (data_df['time'] <= ss1_end)].groupby('Iteration_Identifier')['totalHSPR']
-    ssHS_df = data_df[(data_df['time'] >= ssHS_start) & (data_df['time'] <= ssHS_end)].groupby('Iteration_Identifier')['totalHSPR']
-    ss3_df = data_df[(data_df['time'] >= ss3_start) & (data_df['time'] <= ss3_end)].groupby('Iteration_Identifier')['totalHSPR']
 
-    #print("ss1_df")
-    #print(ss1_df)
-    #print(ss1_df.shape)
-    #print("ssHS_df")
-    #print(ssHS_df)
-    #print(ssHS_df.shape)
-    #print("ss3_df")
-    #print(ss3_df)
-    #print(ss3_df.shape)
+def bootHSPR_toList(df_list):
+    HSPR_list = []
+    for df in df_list:
+        print(len(df['totalHSPR'].tolist()))
+        HSPR_conc = random.choices(df['totalHSPR'].tolist(), k=5)
+        HSPR_list.append(HSPR_conc)
+    return HSPR_list
 
-    df_list = [ss1_df, ssHS_df, ss3_df]
-    totalHSPR_df_outlist = []
-    for grouped_df in df_list:
-        result_df = grouped_df.agg(['mean','std'])
-        result_df['cv'] = result_df['std'] / result_df['mean']
-        result_df.columns = ['mean_totalHSPR', 'std_totalHSPR', 'cv_totalHSPR']
-        result_df.reset_index(inplace=True)
-        totalHSPR_df_outlist.append(result_df)
-    
-    return totalHSPR_df_outlist
+
+
+def bootstrap_HSPR_hist_overlap(df_list, plot_dir, maxVal, opt):
+    HSPR_list = bootHSPR_toList(df_list)
+
+    print("Plot total HSPR histogram")
+    fig = plt.figure(figsize=(12, 6))
+    label_list = ["before HS", "during HS", "after HS"]
+    plt.hist(HSPR_list, bins = range(0, maxVal, 1), label = label_list, density=True, alpha=0.50, histtype='stepfilled')
+    plt.title("Distribution of HSPR conc, bootstrapped")
+    plt.xlabel("HSPR")
+    plt.ylabel("Frequency")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.) # Adjust the figure size to accommodate the legend
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    plt.tight_layout()
+
+    saveFig(plot_dir, str(opt.name_suffix), opt, prefix ='bootHistOver')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
+
+
+
+
+def bootstrap_HSPR_hist_subplot(df_list, plot_dir, maxVal, opt):
+    HSPR_list = bootHSPR_toList(df_list)
+    print("Plot total HSPR histogram")
+    label_list = ["before HS", "during HS", "after HS"]
+    color_list = ['green','red','blue']
+    fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True,sharey=True, figsize=(15,12))
+    for i, (HSPR_conc, label, ax, color) in enumerate(zip(HSPR_list, label_list, axes, color_list)):
+        ax.hist(HSPR_conc, bins = range(0, maxVal, 1), label = label, density=True, alpha=0.50, histtype='stepfilled', color = color)
+        ax.set_ylabel("Frequency")
+        if i == 0:
+            ax.set_title("Before HS")
+        elif i ==1: 
+            ax.set_title("During HS")
+        elif i ==2:
+            ax.set_title("After HS")
+        else: print("i exception in function plot_CVsq_mean")
+    fig.suptitle('Distribution of HSPR conc, bootstrapped')
+    plt.subplots_adjust(right=0.8)  # Increase the right margin
+    plt.xlabel('HSPR level')
+    plt.tight_layout()
+
+    saveFig(plot_dir, str(opt.name_suffix), opt, prefix ='bootHistSep')
+    if bool(opt.shf) == True: plt.show()
+    plt.close()
 
 def df_HSPR_stats(df_list, opt):
     totalHSPR_df_outlist = []
@@ -776,6 +854,7 @@ def df_HSPR_stats(df_list, opt):
         result_df.reset_index(inplace=True)
         totalHSPR_df_outlist.append(result_df)
     return totalHSPR_df_outlist
+
 
 def plot_CVsq_mean(totalHSPR_df_outlist, data_dir, name_suffix, opt):
     print("plot HSPR CV vs Mean")
@@ -832,74 +911,6 @@ def plot_HSPR_hist(totalHSPR_df_outlist, data_dir, name_suffix, opt):
         plt.savefig(f"{unique_plot_name}")
 
         plot_name = f"{data_dir}/Hist_TotalHSPR_{name_suffix}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        print(f"save figure {opt.sfg == True}")
-    if bool(opt.shf) == True: plt.show()
-    plt.close()
-
-
-def bootstrap_HSPR_hist_overlap(df_list, data_dir, name_suffix, opt):
-    HSPR_list = []
-    for df in df_list:
-        HSPR_conc = random.choices(df['totalHSPR'].tolist(), k=2000)
-        HSPR_list.append(HSPR_conc)
-    print("Plot total HSPR histogram")
-    fig = plt.figure(figsize=(12, 6))
-    label_list = ["before HS", "during HS", "after HS"]
-    #for list, label in zip(HSPR_list, label_list):
-    #    plt.hist(list, bins, label=label, density=True, alpha=0.50)
-    plt.hist(HSPR_list, bins = range(0, 250, 1), label = label_list, density=True, alpha=0.50, histtype='stepfilled')
-
-    plt.title("Distribution of HSPR conc, bootstrapped")
-    plt.xlabel("HSPR")
-    plt.ylabel("Frequency")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.) # Adjust the figure size to accommodate the legend
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    plt.tight_layout()
-
-    if bool(opt.sfg) == True:
-        plot_name = f"{data_dir}/HistOverlap_bootstrapHSPR_{name_suffix}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-        plot_name = f"{data_dir}/HistOverlap_bootstrapHSPR_{name_suffix}.svg"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-        print(f"save figure {opt.sfg == True}")
-    if bool(opt.shf) == True: plt.show()
-    plt.close()
-
-def bootstrap_HSPR_hist_subplot(df_list, data_dir, name_suffix, opt):
-    HSPR_list = []
-    for df in df_list:
-        HSPR_conc = random.choices(df['totalHSPR'].tolist(), k=2000)
-        HSPR_list.append(HSPR_conc)
-    print("Plot total HSPR histogram")
-    label_list = ["before HS", "during HS", "after HS"]
-    color_list = ['green','red','blue']
-    fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True,sharey=True, figsize=(15,12))
-    for i, (HSPR_conc, label, ax, color) in enumerate(zip(HSPR_list, label_list, axes, color_list)):
-        ax.hist(HSPR_conc, bins = range(0, 250, 1), label = label, density=True, alpha=0.50, histtype='stepfilled', color = color)
-        ax.set_ylabel("Frequency")
-        if i == 0:
-            ax.set_title("Before HS")
-        elif i ==1: 
-            ax.set_title("During HS")
-        elif i ==2:
-            ax.set_title("After HS")
-        else: print("i exception in function plot_CVsq_mean")
-    fig.suptitle('Distribution of HSPR conc, bootstrapped')
-    plt.subplots_adjust(right=0.8)  # Increase the right margin
-    plt.xlabel('HSPR level')
-    plt.tight_layout()
-
-    if bool(opt.sfg) == True:
-        plot_name = f"{data_dir}/HistSub_bootstrapHSPR_{name_suffix}.pdf"
-        unique_plot_name = get_unique_filename(plot_name)
-        plt.savefig(f"{unique_plot_name}")
-
-        plot_name = f"{data_dir}/HistSub_bootstrapHSPR_{name_suffix}.svg"
         unique_plot_name = get_unique_filename(plot_name)
         plt.savefig(f"{unique_plot_name}")
         print(f"save figure {opt.sfg == True}")

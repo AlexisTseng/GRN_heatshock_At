@@ -1351,3 +1351,66 @@ Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -
 Start : 03/15/24 11:54:47
 Script: HSPR_AZ_hpc.py
 Call  : -ids 2024-02-13_numIter2_Time1200.0004531273535_HSstart700_HSduration3 -nit 5 -bmu 1
+Start : 04/03/24 16:00:46
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5
+Start : 04/03/24 16:18:17
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -shf 1 -sfg 0
+Start : 04/03/24 16:19:18
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -shf 1 -sfg 0 -mdn replaceA1
+Start : 04/03/24 16:20:37
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10
+Start : 04/03/24 16:29:04
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10
+Start : 04/03/24 16:29:32
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10
+Start : 04/03/24 16:29:41
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10
+Start : 04/03/24 16:31:16
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10
+Start : 04/03/24 16:33:12
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10 -ssd 0
+Start : 04/03/24 16:34:03
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10 -ssd 0
+Start : 04/03/24 16:38:45
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -shf 1 -sfg 0 -mdn replaceA1 -tsp 300 -hss 150 -hsd 10 -ssd 0
+Start : 04/03/24 17:01:19
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:01:36
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:03:22
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:03:54
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:05:14
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:05:32
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:06:12
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:09:51
+Script: HSPR_AZ_hpc.py
+Call  : -nit 2 -ids 159.461275414781 -psd 0
+Start : 04/03/24 17:11:37
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 159.461275414781 -psd 0 -hsd 1 -tsp 600 -hss 400
+Start : 04/03/24 18:16:30
+Script: HSPR_AZ_hpc.py
+Call  : -nit 5 -ids 159.461275414781 -psd 0 -hsd 1 -tsp 600 -hss 400

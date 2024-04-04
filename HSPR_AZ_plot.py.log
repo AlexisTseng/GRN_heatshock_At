@@ -1216,3 +1216,84 @@ Call  : -ids 2024-02-24_step50_time900_hss600_hsd50/159.461275414781_SimuData_20
 Start : 02/29/24 13:44:59
 Script: HSPR_AZ_plot.py
 Call  : -ids 2024-02-24_step50_time900_hss600_hsd50/159.461275414781_SimuData_2024-02-28_replaceA1_numIter20_Time1000.0026486889622_HSstart600_HSduration30 -shf 0
+Start : 04/03/24 20:52:27
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 20:53:02
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 20:54:26
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 20:56:01
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 20:57:44
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 20:58:31
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 20:59:00
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:07:13
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:08:06
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:08:47
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:09:11
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:10:28
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:16:54
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:18:40
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:19:28
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:20:22
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:21:08
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:22:21
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:24:12
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:25:23
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:25:36
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:26:07
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:27:35
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/03/24 21:28:30
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/04/24 09:17:12
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/04/24 09:17:56
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1
+Start : 04/04/24 09:29:04
+Script: HSPR_AZ_plot.py
+Call  : -ids simuData_for_varAna/159.461275414781_replaceA1_numIter5_Time600.0008946411682_HSstart400_HSduration1 -van 1

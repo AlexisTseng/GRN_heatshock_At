@@ -5,6 +5,7 @@ script_usage="""
 usage
     For de novo parameter setting: HSPR_AZ_hpc.py -nit <numberInteration> -wa2 <withA2> -mdn <modelVersion> [options]
     For imported parameter setting: HSPR_AZ_hpc.py -nit <numberInteration> -ids <ImportDataset>
+    To run on HPC, use -psd 0
 
 version
     HSPR_AZ_hpc.py 0.0.2 (alpha)
@@ -21,7 +22,7 @@ description
     The number of interations for Gillespi simulation
 
 --importParamDataset,-ids
-    Dataset name from which parameters are extracted. e.g. from SA '2024-02-24_step2_time900_hss600_hsd50/11.792037432365467' from simuData '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000' (default: )
+    Dataset name from which parameters are extracted. From SA: '2024-02-24_step2_time900_hss600_hsd50/11.792037432365467'. // From simuData: '2023-11-26_numIter1_Time20000.002736231276_HSstart10000_HSduration5000'. // From variance analysis: "159.461275414781"...... All without .csv (default: )
 
 --modelName,-mdn
     which model version or Gillespie Function to use (default: )
@@ -181,8 +182,11 @@ description
 --thread,-thr
     The number of threads used for multiprocessing (default: 4)
 
---plotsaveData,-psd
+--plotsimuData,-psd
     whether to plot simulation data (default: 1)
+
+--savesimuData,-ssd
+    whether to save simulation data (default: 1)
 
 --saveFig,-sfg
     Whether to save the figures and plots generated. Default = True (default: 1)
@@ -220,17 +224,18 @@ import multiprocessing as mp
 
 
 def main(opt):
-    #print(type(sys.argv))
-    #print(sys.argv)
-
+    #print(type(sys.argv)) #a list
+    #print(sys.argv.index('sfaisuf'))
+    #exit()
     print("Step1: Specify output directory")
-    data_dir, plot_dir, param_rootdir = dir_gen()
+    data_dir, param_rootdir, varPara_dir, varData_dir = dir_gen()
 
     print("Step2: Specify parameters")
     if bool(opt.ids) == False: # de novo setting
         param_dict = param_spec(opt)
+        
     else: 
-        param_dict, opt = load_Param_fromFile(param_rootdir, data_dir, opt)
+        param_dict, opt = load_Param_fromFile(param_rootdir, data_dir, varPara_dir, opt)
     
     print("Step3: Simulation begins")
     ## no multiprocessing
@@ -243,7 +248,12 @@ def main(opt):
 
     print("Step4: Combine and save data")
     listM6 = combine_data(listtime2, listM4, rr_list2, opt)
-    data_file = saveGilData(listM6, param_dict, data_dir,param_rootdir, numberofiteration, end_time, model_name, opt)
+    if bool(opt.ssd) == True:
+        data_file = saveGilData(listM6, param_dict, data_dir, varData_dir, param_rootdir, numberofiteration, end_time, model_name, opt)
+
+    
+    if bool(opt.ids) == False: # de novo setting
+        saveParam(param_dict, data_dir, numberofiteration, end_time, model_name, opt)
 
     if bool(opt.psd) == True:
         print("Step 5: Plot Gillespie Outcome")
@@ -258,7 +268,7 @@ def main(opt):
 ##################################################################
 
 
-def load_Param_fromFile(param_rootdir, data_dir, opt):
+def load_Param_fromFile(param_rootdir, data_dir, varPara_dir, opt):
     try: 
         S, cost_func, param_dict = loadData(f"{param_rootdir}/{opt.ids}.pcl")
         para_csv_name = f"{param_rootdir}/{opt.ids}.pcl"
@@ -289,6 +299,10 @@ def load_Param_fromFile(param_rootdir, data_dir, opt):
         elif os.path.exists(f"{data_dir}/d1upCons_Para_{opt.ids}.csv"):
             para_csv_name = f"{data_dir}/d1upCons_Para_{opt.ids}.csv"
             model_name = "d1upCons"
+        #### variance analysis
+        elif os.path.exists(f"{varPara_dir}/{opt.ids}.csv"):
+            para_csv_name = f"{varPara_dir}/{opt.ids}.csv"
+            model_name = "replaceA1"
 
         param_dict = {}
         with open(para_csv_name, 'r') as param_file:
@@ -306,10 +320,31 @@ def load_Param_fromFile(param_rootdir, data_dir, opt):
     opt.para_csv_name = para_csv_name
 
     param_dict['numberofiteration'] = int(opt.nit)
+
+    if any(s in sys.argv for s in ['-tsp', '-hsd', 'hss']):
+        #print(sys.argv)
+        opt = customise_simu(opt)
+    #else: print('pass')
+
     init_HSFA1, a1, leakage_A1, init_HSFB, a5, leakage_B, init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR, init_C_HSFA1_HSPR_val = gen_mutant(opt)
     param_dict = reAssign_paramVal(param_dict, init_HSFA1, a1, leakage_A1, init_HSFB, a5, leakage_B, init_C_HSPR_MMP, init_HSPR, a2, leakage_HSPR, init_C_HSFA1_HSPR_val)
     return param_dict, opt
 
+
+def customise_simu(opt):
+    if '-tsp' or '--timeStep' in sys.argv:
+        try: pos = sys.argv.index('-tsp')
+        except ValueError: pos = sys.argv.index('--timeStep')
+        opt.tsp = int(sys.argv[pos + 1])
+    if '-hss' or '--heatShockStart' in sys.argv:
+        try: pos = sys.argv.index('-hss')
+        except ValueError: pos = sys.argv.index('--heatShockStart')
+        opt.hss = int(sys.argv[pos + 1])
+    if '-hsd' or '--heatShockDuration' in sys.argv:
+        try: pos = sys.argv.index('-hsd')
+        except ValueError: pos = sys.argv.index('--heatShockDuration')
+        opt.hsd = int(sys.argv[pos + 1])
+    return opt
 
 def model_from_date(file):
     ctime = datetime.fromtimestamp(os.path.getmtime(file))
@@ -456,11 +491,16 @@ def dir_gen():
 
     data_dir = os.path.join(partiii_dir,"Ritu_simulation_data")
     if not os.path.isdir(data_dir): os.makedirs(data_dir, 0o777)
-    plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
-    if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
+    #plot_dir = os.path.join(partiii_dir,"Gillespi_plots")
+    #if not os.path.isdir(plot_dir): os.makedirs(plot_dir, 0o777)
     param_rootdir = os.path.join(partiii_dir,"Param_Optimisation")
-    if not os.path.isdir(param_rootdir): os.makedirs(plot_dir, 0o777)
-    return data_dir, plot_dir, param_rootdir
+    if not os.path.isdir(param_rootdir): os.makedirs(param_rootdir, 0o777)
+
+    varPara_dir = os.path.join(partiii_dir,"param_for_varAna")
+    if not os.path.isdir(varPara_dir): os.makedirs(varPara_dir, 0o777)
+    varData_dir = os.path.join(partiii_dir,"simuData_for_varAna")
+    if not os.path.isdir(varData_dir): os.makedirs(varData_dir, 0o777)
+    return data_dir, param_rootdir, varPara_dir, varData_dir
 
 ############################################################################
 ## 3. Gillespi Simulation
@@ -925,7 +965,7 @@ def init_iter():
     return listM2, Time, listtime, rr_list, counter
 
 def get_d1_d4(param_dict, Time, opt):
-    hss, hsd = param_dict['hstart'], param_dict['hduration']
+    hss, hsd = opt.hss, opt.hsd
     if Time >= int(hss) and Time <= int(hss) + int(hsd): 
         d4 = param_dict['d4_heat']
         if opt.mdn == 'd1upCons': 
@@ -933,7 +973,7 @@ def get_d1_d4(param_dict, Time, opt):
         else:
             d1 = param_dict['d1']
     elif bool(opt.hs2) == True:
-        hs2 = param_dict['hstart2']
+        hs2 = opt.hs2
         if Time >= int(hs2) and Time <= int(hs2) + int(hsd): 
             d4 = param_dict['d4_heat']
             if opt.mdn == 'd1upCons': 
@@ -1045,15 +1085,17 @@ def combine_data(listtime2, listM4, rr_list2, opt):
     return listM6
 
 
-def saveGilData(list, param_dict, data_dir,param_rootdir, numberofiteration, end_time, model_name, opt): ## function not in use
+def saveGilData(list, param_dict, data_dir, varData_dir, param_rootdir, numberofiteration, end_time, model_name, opt): ## function not in use
     date = datetime.now().date()
     if bool(opt.ids) == False: #de novo
         data_file = f"{data_dir}/{model_name}_SimuData_{date}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}_withA2-{bool(opt.wa2)}"
         saveParam(param_dict, data_dir, numberofiteration, end_time, model_name, opt)
     elif bool(re.search(re.compile(r'/'), opt.ids)) == True: #input from SA param:
         data_file = f"{param_rootdir}/{opt.ids}_SimuData_{date}_{opt.mdn}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}.csv"
-    else: ## imported param from simuData
+    elif bool(re.search(re.compile(r'Para'), opt.ids)) == True: ## imported param from simuData
         data_file = f"{opt.para_csv_name[:-4].replace('Para', 'SimuData')}-rerunon{date}_numIter{numberofiteration}"
+    else: ## variance analysis
+        data_file = f"{varData_dir}/{opt.ids}_{model_name}_numIter{numberofiteration}_Time{end_time}_HSstart{opt.hss}_HSduration{opt.hsd}"
     if bool(opt.hs2) == True:
         data_file = data_file + f"_hs2-{opt.hs2}"
     data_file = data_file + '.csv'
@@ -1148,13 +1190,14 @@ def Gillespie_list_to_df(header, listM6, opt):
 def plot_results(Stoich_df, param_dir, data_name, data_df, grouped_data, param_dict, opt):
 
     numberofiteration= param_dict['numberofiteration']
-    hss = param_dict['hstart']
-    hsd = param_dict['hduration']
+    hss = opt.hss
+    hsd = opt.hsd
 
     conc = Stoich_df.columns.to_list()
+    conc =['HSFA1','HSPR','C_HSFA1_HSPR','MMP', 'FMP', 'C_HSPR_MMP','HSFB','totalHSPR', 'totalA1']
     rates = Stoich_df.index.to_list()
 
-    plotReactionRate(rates, data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, opt)
+    #plotReactionRate(rates, data_df, grouped_data, param_dir, numberofiteration, data_name, hss, hsd, opt)
     plot_FMPMMPvsTime_2(conc, data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt)
     plot_FMPMMP_zoom(conc, data_df, grouped_data, param_dir, numberofiteration,data_name, hss, hsd, opt)
 
@@ -1353,10 +1396,10 @@ if __name__ == "__main__":
             arg_req, arg_in = type_dict[key], trans(var)
             if type(arg_req) == type(arg_in):
                 opt[key] = arg_in
-            else:
-                print(f"Error: Argument {key} is not of type {type(arg_req)}!")
-                sys.exit()
-    ############################################################################
+            #else:
+            #    print(f"Error: Argument {key} is not of type {type(arg_req)}!")
+            #    sys.exit()
+    #############################################################################
     ## add log create options class
     opt["log"] = True
     copt = options(**opt)
